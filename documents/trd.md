@@ -1,11 +1,11 @@
 # TRD — Amali Residences Amenities Operations Prototype
 
-| | |
-|---|---|
+|                  |                                                                             |
+| ---------------- | --------------------------------------------------------------------------- |
 | **Companion to** | `prd.md` v1.0 (product requirements). This document says **how** it's built |
-| **Audience** | Claude Code (primary builder) and Ishaan (reviewer) |
-| **Version** | v1.0 — 14 Oct 2026 |
-| **Runtime** | Static, client-only web app. No backend |
+| **Audience**     | Claude Code (primary builder) and Ishaan (reviewer)                         |
+| **Version**      | v1.0 — 14 Oct 2026                                                          |
+| **Runtime**      | Static, client-only web app. No backend                                     |
 
 Section references like **PRD §8.1** point to `prd.md`.
 
@@ -13,15 +13,15 @@ Section references like **PRD §8.1** point to `prd.md`.
 
 ## 1. Technical goals and constraints
 
-| # | Goal | What it means in practice |
-|---|---|---|
-| T1 | **Live across surfaces** | One state store feeds up to two device frames at once, plus optional extra browser tabs. An action anywhere is visible everywhere in under 100ms |
-| T2 | **Deterministic** | The same seed and clock always produce the same data, the same delivery timings and the same report numbers. Rehearsals match the live demo |
-| T3 | **Time-travel safe** | The demo clock can jump hours or days. Every timed effect runs exactly once, in order |
-| T4 | **Rules are data** | Every business number lives in one typed config, which is validated at boot |
-| T5 | **Smooth** | 60fps on the role switch, sheets, lists and the urgent-closure flow, on a 2020 MacBook Air at 1440p |
-| T6 | **Offline-capable demo** | After the first load, it runs without a network connection, so a venue Wi-Fi failure doesn't stop the demo. All assets are local, and fonts are self-hosted |
-| T7 | **Vibe-codable** | Small files, clear seams and strict types. Claude Code can build each phase without needing the whole codebase in context |
+| #   | Goal                     | What it means in practice                                                                                                                                   |
+| --- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T1  | **Live across surfaces** | One state store feeds up to two device frames at once, plus optional extra browser tabs. An action anywhere is visible everywhere in under 100ms            |
+| T2  | **Deterministic**        | The same seed and clock always produce the same data, the same delivery timings and the same report numbers. Rehearsals match the live demo                 |
+| T3  | **Time-travel safe**     | The demo clock can jump hours or days. Every timed effect runs exactly once, in order                                                                       |
+| T4  | **Rules are data**       | Every business number lives in one typed config, which is validated at boot                                                                                 |
+| T5  | **Smooth**               | 60fps on the role switch, sheets, lists and the urgent-closure flow, on a 2020 MacBook Air at 1440p                                                         |
+| T6  | **Offline-capable demo** | After the first load, it runs without a network connection, so a venue Wi-Fi failure doesn't stop the demo. All assets are local, and fonts are self-hosted |
+| T7  | **Vibe-codable**         | Small files, clear seams and strict types. Claude Code can build each phase without needing the whole codebase in context                                   |
 
 **Constraints:**
 
@@ -35,66 +35,66 @@ Section references like **PRD §8.1** point to `prd.md`.
 
 ### 2.1 Core
 
-| Concern | Package | Version | Why |
-|---|---|---|---|
-| Runtime | Node.js | 22 LTS | Long-term support; works with all the tools below |
-| Package manager | pnpm | 9.x | Fast and strict about dependencies |
-| Framework | `next` | 15.x (App Router) | Matches the PRD; static export; good DX with Claude Code |
-| UI | `react`, `react-dom` | 19.x | Required by Next 15 |
-| Language | `typescript` | 5.x, `strict: true` | Domain safety |
-| Styling | `tailwindcss` | 4.x (+ `@tailwindcss/postcss`) | Token-driven utility classes; logical properties for RTL |
-| Class helpers | `clsx`, `tailwind-merge` | latest | `cn()` helper |
-| Motion | `motion` | 12.x (`motion/react`) | Framer Motion; springs, layout animations, gestures |
-| State | `zustand` | 5.x | Small API; slices, `persist` and `subscribeWithSelector` |
-| Immutable updates | `immer` | 10.x | Through zustand's `immer` middleware |
-| Dates | `date-fns` | 4.x | Formatting and arithmetic |
-| Time zones | `@date-fns/tz` | 1.x | `TZDate` for `Asia/Dubai` (the official date-fns v4 companion) |
-| Recurrence | `rrule` | 2.8.x | RRULE expansion for recurring activities |
-| Validation | `zod` | 3.x | Config, form and seed validation |
-| IDs | `nanoid` | 5.x | Readable IDs with a prefix (`bk_`, `wo_`) |
-| Seeded randomness | `seedrandom` | 3.x | Deterministic seed data and simulations |
-| Icons | `lucide-react` | latest | Stroke-1.5 line icons tinted bronze |
-| Charts | `recharts` | 2.15.x or 3.x | Styled with the design tokens |
-| QR | `qrcode.react` | 4.x | Tickets, guardian passes |
-| i18n | `i18next`, `react-i18next` | 24.x / 15.x | Keyed strings; `ar` later |
-| Excel export | `exceljs` | 4.x | **Deviation from PRD §16.1.** The free SheetJS edition can't style cells, and PRD §8.10 needs bold headers, frozen panes and AED number formats. ExcelJS does all three |
-| File save | `file-saver` | 2.x | Triggers the `.xlsx` download |
-| Toasts | Custom component (§9.6) | — | Must use the dynamic-island motion (PRD M13), so no library |
-| Bottom sheets | Custom, built on `motion` drag | — | Needs PRD M6 physics |
+| Concern           | Package                        | Version                        | Why                                                                                                                                                                     |
+| ----------------- | ------------------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Runtime           | Node.js                        | 22 LTS                         | Long-term support; works with all the tools below                                                                                                                       |
+| Package manager   | pnpm                           | 9.x                            | Fast and strict about dependencies                                                                                                                                      |
+| Framework         | `next`                         | 15.x (App Router)              | Matches the PRD; static export; good DX with Claude Code                                                                                                                |
+| UI                | `react`, `react-dom`           | 19.x                           | Required by Next 15                                                                                                                                                     |
+| Language          | `typescript`                   | 5.x, `strict: true`            | Domain safety                                                                                                                                                           |
+| Styling           | `tailwindcss`                  | 4.x (+ `@tailwindcss/postcss`) | Token-driven utility classes; logical properties for RTL                                                                                                                |
+| Class helpers     | `clsx`, `tailwind-merge`       | latest                         | `cn()` helper                                                                                                                                                           |
+| Motion            | `motion`                       | 12.x (`motion/react`)          | Framer Motion; springs, layout animations, gestures                                                                                                                     |
+| State             | `zustand`                      | 5.x                            | Small API; slices, `persist` and `subscribeWithSelector`                                                                                                                |
+| Immutable updates | `immer`                        | 10.x                           | Through zustand's `immer` middleware                                                                                                                                    |
+| Dates             | `date-fns`                     | 4.x                            | Formatting and arithmetic                                                                                                                                               |
+| Time zones        | `@date-fns/tz`                 | 1.x                            | `TZDate` for `Asia/Dubai` (the official date-fns v4 companion)                                                                                                          |
+| Recurrence        | `rrule`                        | 2.8.x                          | RRULE expansion for recurring activities                                                                                                                                |
+| Validation        | `zod`                          | 3.x                            | Config, form and seed validation                                                                                                                                        |
+| IDs               | `nanoid`                       | 5.x                            | Readable IDs with a prefix (`bk_`, `wo_`)                                                                                                                               |
+| Seeded randomness | `seedrandom`                   | 3.x                            | Deterministic seed data and simulations                                                                                                                                 |
+| Icons             | `lucide-react`                 | latest                         | Stroke-1.5 line icons tinted bronze                                                                                                                                     |
+| Charts            | `recharts`                     | 2.15.x or 3.x                  | Styled with the design tokens                                                                                                                                           |
+| QR                | `qrcode.react`                 | 4.x                            | Tickets, guardian passes                                                                                                                                                |
+| i18n              | `i18next`, `react-i18next`     | 24.x / 15.x                    | Keyed strings; `ar` later                                                                                                                                               |
+| Excel export      | `exceljs`                      | 4.x                            | **Deviation from PRD §16.1.** The free SheetJS edition can't style cells, and PRD §8.10 needs bold headers, frozen panes and AED number formats. ExcelJS does all three |
+| File save         | `file-saver`                   | 2.x                            | Triggers the `.xlsx` download                                                                                                                                           |
+| Toasts            | Custom component (§9.6)        | —                              | Must use the dynamic-island motion (PRD M13), so no library                                                                                                             |
+| Bottom sheets     | Custom, built on `motion` drag | —                              | Needs PRD M6 physics                                                                                                                                                    |
 
 ### 2.2 Dev and quality
 
-| Concern | Package |
-|---|---|
-| Lint | `eslint` 9 (flat config), `eslint-config-next`, `eslint-plugin-react-hooks` |
-| Format | `prettier` 3 + `prettier-plugin-tailwindcss` |
-| Unit tests | `vitest` 3, `@vitest/coverage-v8` |
-| Component tests | `@testing-library/react`, `jsdom` |
-| E2E tests | `@playwright/test` (Chromium) |
-| Accessibility | `@axe-core/playwright` |
-| Git hooks | `lefthook` (format, lint and typecheck on pre-commit) |
+| Concern         | Package                                                                     |
+| --------------- | --------------------------------------------------------------------------- |
+| Lint            | `eslint` 9 (flat config), `eslint-config-next`, `eslint-plugin-react-hooks` |
+| Format          | `prettier` 3 + `prettier-plugin-tailwindcss`                                |
+| Unit tests      | `vitest` 3, `@vitest/coverage-v8`                                           |
+| Component tests | `@testing-library/react`, `jsdom`                                           |
+| E2E tests       | `@playwright/test` (Chromium)                                               |
+| Accessibility   | `@axe-core/playwright`                                                      |
+| Git hooks       | `lefthook` (format, lint and typecheck on pre-commit)                       |
 
 ### 2.3 Fonts (self-hosted through `next/font`)
 
-| Font | Source | Use |
-|---|---|---|
-| Manrope 400/500/700 | `next/font/google` | App UI |
-| Jost 400/500 | `next/font/google` | Shell notes panel |
-| IBM Plex Sans Arabic 400/500/700 | `next/font/google` | Arabic UI |
-| PP Neue Montreal Book | `next/font/local` from `src/assets/fonts/` **if the license and files are provided** | Tags, shell labels |
-| Inter Tight 400 | `next/font/google` | Fallback for PP Neue Montreal |
+| Font                             | Source                                                                               | Use                           |
+| -------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------- |
+| Manrope 400/500/700              | `next/font/google`                                                                   | App UI                        |
+| Jost 400/500                     | `next/font/google`                                                                   | Shell notes panel             |
+| IBM Plex Sans Arabic 400/500/700 | `next/font/google`                                                                   | Arabic UI                     |
+| PP Neue Montreal Book            | `next/font/local` from `src/assets/fonts/` **if the license and files are provided** | Tags, shell labels            |
+| Inter Tight 400                  | `next/font/google`                                                                   | Fallback for PP Neue Montreal |
 
 `next/font` self-hosts the files at build time, which meets T6.
 
 ### 2.4 Not used, and why
 
-| Rejected | Reason |
-|---|---|
-| Redux / RTK | Too much ceremony for a client-only demo |
-| React Query / SWR | There's no server to fetch from. Simulated latency lives in a small helper (§9.5) |
+| Rejected                           | Reason                                                                                                                                        |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Redux / RTK                        | Too much ceremony for a client-only demo                                                                                                      |
+| React Query / SWR                  | There's no server to fetch from. Simulated latency lives in a small helper (§9.5)                                                             |
 | Next.js routing for in-app screens | Two devices can show different screens at the same time, so URL routes can't represent both. Each device has its own in-memory navigator (§6) |
-| Supabase or a realtime backend | Out of scope for v1. A stretch-goal adapter seam is noted in §8.4 |
-| UI kits (shadcn, MUI) | The Figma components are bespoke. Primitives are built once in `src/ui/` |
+| Supabase or a realtime backend     | Out of scope for v1. A stretch-goal adapter seam is noted in §8.4                                                                             |
+| UI kits (shadcn, MUI)              | The Figma components are bespoke. Primitives are built once in `src/ui/`                                                                      |
 
 ---
 
@@ -119,13 +119,13 @@ Section references like **PRD §8.1** point to `prd.md`.
 
 **Layering rules**, enforced with ESLint `no-restricted-imports`:
 
-| Layer | May import | Must not import |
-|---|---|---|
-| `domain/*` | `config`, `lib`, `types` | `react`, `store`, `ui`, `surfaces` |
-| `store/*` | `domain`, `config`, `lib`, `types` | `ui`, `surfaces`, `shell` |
-| `ui/*` (primitives) | `design`, `lib` | `store`, `domain` |
-| `surfaces/*` | everything except other surfaces | `surfaces/<other>` (shared pieces go to `features/`) |
-| `shell/*` | `store`, `ui`, `design`, `scenarios` | `surfaces/*` internals (only each surface's entry component) |
+| Layer               | May import                           | Must not import                                              |
+| ------------------- | ------------------------------------ | ------------------------------------------------------------ |
+| `domain/*`          | `config`, `lib`, `types`             | `react`, `store`, `ui`, `surfaces`                           |
+| `store/*`           | `domain`, `config`, `lib`, `types`   | `ui`, `surfaces`, `shell`                                    |
+| `ui/*` (primitives) | `design`, `lib`                      | `store`, `domain`                                            |
+| `surfaces/*`        | everything except other surfaces     | `surfaces/<other>` (shared pieces go to `features/`)         |
+| `shell/*`           | `store`, `ui`, `design`, `scenarios` | `surfaces/*` internals (only each surface's entry component) |
 
 The domain layer is **pure TypeScript**: functions that take state and input and return a new state, events and jobs. This keeps the rules engine unit-testable without React.
 
@@ -300,35 +300,58 @@ type Tower = 'east' | 'west';
 type Cluster = 'north' | 'south';
 
 interface Unit {
-  id: string;                  // 'E-1804', 'PV-05', 'PH-02'
+  id: string; // 'E-1804', 'PV-05', 'PH-02'
   kind: 'apartment' | 'duplex' | 'penthouse' | 'villa';
-  tower?: Tower; floor?: number; cluster?: Cluster;
-  amenityRightsHolderId: string;  // resident id (owner or tenant)
+  tower?: Tower;
+  floor?: number;
+  cluster?: Cluster;
+  amenityRightsHolderId: string; // resident id (owner or tenant)
   leaseEnd?: string;
   accessSuspended?: { reason: 'dues' | 'admin'; since: string };
 }
 
 interface Resident {
-  id: string; name: string; avatar: string; unitId: string;
+  id: string;
+  name: string;
+  avatar: string;
+  unitId: string;
   type: 'owner' | 'tenant' | 'household';
-  phone: string; email: string;
+  phone: string;
+  email: string;
   channels: { appPush: boolean; whatsapp: boolean; whatsappOptIn: boolean; appInstalled: boolean };
   locale: 'en' | 'ar';
   walletRole: 'primary' | 'spender' | 'none';
 }
 
 interface Staff {
-  id: string; name: string; avatar: string;
-  role: 'guard' | 'creche_lead' | 'creche_carer' | 'fnb_manager' | 'host' | 'chef'
-      | 'community_manager' | 'amenity_supervisor' | 'call_centre'
-      | 'lifeguard' | 'gym_attendant' | 'technician' | 'housekeeping';
+  id: string;
+  name: string;
+  avatar: string;
+  role:
+    | 'guard'
+    | 'creche_lead'
+    | 'creche_carer'
+    | 'fnb_manager'
+    | 'host'
+    | 'chef'
+    | 'community_manager'
+    | 'amenity_supervisor'
+    | 'call_centre'
+    | 'lifeguard'
+    | 'gym_attendant'
+    | 'technician'
+    | 'housekeeping';
   assignedAmenities?: AmenityKey[];
   post?: string;
 }
 
 interface Vendor {
-  id: string; name: string; services: string[]; contact: { name: string; phone: string };
-  contract: { start: string; end: string }; sla: Record<Priority, { respondMins: number; resolveMins: number }>;
+  id: string;
+  name: string;
+  services: string[];
+  contact: { name: string; phone: string };
+  contract: { start: string; end: string };
+  sla: Record<Priority, { respondMins: number; resolveMins: number }>;
   rateCard: { item: string; fils: number }[];
 }
 ```
@@ -340,23 +363,54 @@ type AmenityKey = 'padel' | 'screening' | 'music' | 'creche' | 'dining' | 'pool'
 type AmenityStatus = 'open' | 'limited' | 'closed' | 'maintenance' | 'emergency';
 
 interface Amenity {
-  key: AmenityKey; name: string; image: string; location: string;
+  key: AmenityKey;
+  name: string;
+  image: string;
+  location: string;
   bookingModel: 'slot' | 'event' | 'session' | 'reservation' | 'none';
-  capacity: number; ageMin?: number;
+  capacity: number;
+  ageMin?: number;
 }
 
-interface StatusEntry {           // history kept for audit and reports
-  amenity: AmenityKey; status: AmenityStatus; reason?: string;
-  from: string; to?: string; workOrderId?: string; setBy: string;
+interface StatusEntry {
+  // history kept for audit and reports
+  amenity: AmenityKey;
+  status: AmenityStatus;
+  reason?: string;
+  from: string;
+  to?: string;
+  workOrderId?: string;
+  setBy: string;
 }
 
-interface WeeklyHours { amenity: AmenityKey; day: 0|1|2|3|4|5|6; open: string /*'06:00'*/; close: string }
-interface HoursException { id: string; amenity: AmenityKey; date: string; open?: string; close?: string; closed?: boolean; label: string; seasonId?: string }
+interface WeeklyHours {
+  amenity: AmenityKey;
+  day: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  open: string /*'06:00'*/;
+  close: string;
+}
+interface HoursException {
+  id: string;
+  amenity: AmenityKey;
+  date: string;
+  open?: string;
+  close?: string;
+  closed?: boolean;
+  label: string;
+  seasonId?: string;
+}
 
 interface Blackout {
-  id: string; amenity: AmenityKey; start: string; end: string; reason: string;
-  recurrence?: string /*RRULE*/; source: 'maintenance' | 'programme';
-  handling: 'cancel_priority_rebook' | 'auto_move'; workOrderId?: string; createdBy: string;
+  id: string;
+  amenity: AmenityKey;
+  start: string;
+  end: string;
+  reason: string;
+  recurrence?: string /*RRULE*/;
+  source: 'maintenance' | 'programme';
+  handling: 'cancel_priority_rebook' | 'auto_move';
+  workOrderId?: string;
+  createdBy: string;
 }
 ```
 
@@ -371,61 +425,127 @@ The result is memoised per `(amenity, date, durationMins)`.
 ### 5.3 Bookings, holds, waitlists, penalties
 
 ```ts
-type BookingState = 'held' | 'confirmed' | 'checked_in' | 'completed' | 'cancelled'
-                  | 'late_cancelled' | 'no_show' | 'cancelled_by_ops';
+type BookingState =
+  | 'held'
+  | 'confirmed'
+  | 'checked_in'
+  | 'completed'
+  | 'cancelled'
+  | 'late_cancelled'
+  | 'no_show'
+  | 'cancelled_by_ops';
 
 interface Booking {
-  id: string; amenity: 'padel'; unitId: string; bookerId: string;
-  start: string; end: string;
+  id: string;
+  amenity: 'padel';
+  unitId: string;
+  bookerId: string;
+  start: string;
+  end: string;
   players: { residentId?: string; guestName?: string; guestPhone?: string }[];
   charges: { label: string; fils: number }[];
-  state: BookingState; history: { state: BookingState; at: string; by: string; note?: string }[];
+  state: BookingState;
+  history: { state: BookingState; at: string; by: string; note?: string }[];
   source: 'resident' | 'agent' | 'waitlist' | 'priority_rebook';
   countsTowardQuota: boolean;
 }
 
-interface Hold { id: string; resourceKey: string /*'padel:2026-10-15T13:00Z'*/; byResidentId: string; expiresAt: string }
+interface Hold {
+  id: string;
+  resourceKey: string /*'padel:2026-10-15T13:00Z'*/;
+  byResidentId: string;
+  expiresAt: string;
+}
 
 interface WaitlistEntry {
-  id: string; resourceKey: string; residentId: string; partySize: number; position: number;
+  id: string;
+  resourceKey: string;
+  residentId: string;
+  partySize: number;
+  position: number;
   state: 'waiting' | 'offered' | 'accepted' | 'expired' | 'withdrawn' | 'skipped';
   offer?: { sentAt: string; expiresAt: string; mode: 'sequential' | 'open_release' };
 }
 
-interface Strike { id: string; residentId: string; unitId: string; amenity: AmenityKey; kind: 'no_show' | 'late_cancel'; at: string; bookingId: string }
-interface Suspension { id: string; residentId: string; amenity: AmenityKey; from: string; to: string; liftedBy?: string }
+interface Strike {
+  id: string;
+  residentId: string;
+  unitId: string;
+  amenity: AmenityKey;
+  kind: 'no_show' | 'late_cancel';
+  at: string;
+  bookingId: string;
+}
+interface Suspension {
+  id: string;
+  residentId: string;
+  amenity: AmenityKey;
+  from: string;
+  to: string;
+  liftedBy?: string;
+}
 ```
 
 ### 5.4 Events and attendance
 
 ```ts
 interface ProgrammeEvent {
-  id: string; title: string; venue: 'screening' | 'music' | 'pool' | 'padel';
+  id: string;
+  title: string;
+  venue: 'screening' | 'music' | 'pool' | 'padel';
   type: 'movie' | 'live_music' | 'workshop' | 'class' | 'clinic';
-  poster: string; description: string; ageRating: 'G' | 'PG' | 'PG-13' | '18+';
-  durationMins: number; pricing: Record<AttendeeCategory, number /*fils*/>;
-  recurrence?: string; seasonId?: string;
+  poster: string;
+  description: string;
+  ageRating: 'G' | 'PG' | 'PG-13' | '18+';
+  durationMins: number;
+  pricing: Record<AttendeeCategory, number /*fils*/>;
+  recurrence?: string;
+  seasonId?: string;
   lifecycle: 'draft' | 'scheduled' | 'published' | 'cancelled' | 'completed';
   publishAt?: string;
 }
 type AttendeeCategory = 'resident' | 'household' | 'guest_adult' | 'guest_child';
 
 interface Showtime {
-  id: string; eventId: string; start: string; end: string;
-  capacityMode: 'seats' | 'headcount'; capacity: number; blockedSeats: string[];
-  regOpens: string; regCloses: string;
+  id: string;
+  eventId: string;
+  start: string;
+  end: string;
+  capacityMode: 'seats' | 'headcount';
+  capacity: number;
+  blockedSeats: string[];
+  regOpens: string;
+  regCloses: string;
   state: 'open' | 'full' | 'closed' | 'in_progress' | 'completed' | 'cancelled';
 }
 
 interface Rsvp {
-  id: string; showtimeId: string; unitId: string; bookerId: string;
-  attendees: { id: string; name: string; category: AttendeeCategory; seat?: string;
-               attendance?: 'attended' | 'no_show'; markedAt?: string; markedBy?: string; mode?: 'live' | 'post' }[];
+  id: string;
+  showtimeId: string;
+  unitId: string;
+  bookerId: string;
+  attendees: {
+    id: string;
+    name: string;
+    category: AttendeeCategory;
+    seat?: string;
+    attendance?: 'attended' | 'no_show';
+    markedAt?: string;
+    markedBy?: string;
+    mode?: 'live' | 'post';
+  }[];
   charges: { label: string; fils: number }[];
   state: 'confirmed' | 'cancelled' | 'late_cancelled';
 }
 
-interface Season { id: string; name: string; start: string; end: string; banner: string; hoursOverrides: HoursException[] }
+interface Season {
+  id: string;
+  name: string;
+  start: string;
+  end: string;
+  banner: string;
+  hoursOverrides: HoursException[];
+}
 ```
 
 ### 5.5 Creche
@@ -434,21 +554,44 @@ interface Season { id: string; name: string; start: string; end: string; banner:
 type AgeBand = 'toddlers' | 'kids' | 'juniors';
 
 interface Child {
-  id: string; unitId: string; name: string; dob: string; photo: string;
-  allergies?: { text: string; severe: boolean }; dietary?: string; photoConsent: boolean;
-  guardianIds: string[]; emergencyContact: { name: string; phone: string };
+  id: string;
+  unitId: string;
+  name: string;
+  dob: string;
+  photo: string;
+  allergies?: { text: string; severe: boolean };
+  dietary?: string;
+  photoConsent: boolean;
+  guardianIds: string[];
+  emergencyContact: { name: string; phone: string };
 }
 
 interface Guardian {
-  id: string; childIds: string[]; name: string; relation: string; phone: string; photo: string;
-  idLast4: string; residentId?: string; validUntil?: string;
+  id: string;
+  childIds: string[];
+  name: string;
+  relation: string;
+  phone: string;
+  photo: string;
+  idLast4: string;
+  residentId?: string;
+  validUntil?: string;
   approval: 'approved' | 'pending' | 'rejected';
 }
 
-interface CrecheSession { id: string; date: string; start: string; end: string; kind: 'morning' | 'afternoon' | 'dropin' }
+interface CrecheSession {
+  id: string;
+  date: string;
+  start: string;
+  end: string;
+  kind: 'morning' | 'afternoon' | 'dropin';
+}
 
 interface CrecheBooking {
-  id: string; sessionId: string; childId: string; bookedBy: string;
+  id: string;
+  sessionId: string;
+  childId: string;
+  bookedBy: string;
   state: 'confirmed' | 'waitlisted' | 'checked_in' | 'checked_out' | 'cancelled' | 'no_show';
   checkIn?: { at: string; by: string; guardianId: string; allergyAck?: boolean };
   checkOut?: { at: string; by: string; guardianId?: string; oneTimeApproval?: ApprovalRequest };
@@ -456,9 +599,20 @@ interface CrecheBooking {
   lateFeeFils?: number;
 }
 
-interface BandAssignment { date: string; band: AgeBand; staffIds: string[] }   // drives capacity
-interface ApprovalRequest { id: string; collectorName: string; collectorPhoto: string; requestedAt: string;
-                            state: 'pending' | 'approved' | 'denied'; decidedAt?: string; decidedBy?: string }
+interface BandAssignment {
+  date: string;
+  band: AgeBand;
+  staffIds: string[];
+} // drives capacity
+interface ApprovalRequest {
+  id: string;
+  collectorName: string;
+  collectorPhoto: string;
+  requestedAt: string;
+  state: 'pending' | 'approved' | 'denied';
+  decidedAt?: string;
+  decidedBy?: string;
+}
 ```
 
 ### 5.6 Dining and wallet
@@ -467,24 +621,58 @@ interface ApprovalRequest { id: string; collectorName: string; collectorPhoto: s
 type VenueKey = 'restaurant' | 'pdr' | 'teppanyaki';
 type ServicePeriod = 'breakfast' | 'lunch' | 'dinner' | 'iftar';
 
-interface Table { id: string; venue: VenueKey; seats: number; zone: 'indoor' | 'terrace' | 'canal' | 'private' | 'counter';
-                  x: number; y: number; combinableWith: string[] }
+interface Table {
+  id: string;
+  venue: VenueKey;
+  seats: number;
+  zone: 'indoor' | 'terrace' | 'canal' | 'private' | 'counter';
+  x: number;
+  y: number;
+  combinableWith: string[];
+}
 
 interface Reservation {
-  id: string; venue: VenueKey; residentId: string; unitId: string;
-  start: string; end: string; period: ServicePeriod; partySize: number;
-  seatingPref?: Table['zone']; occasion?: string; dietary: string[]; requests?: string; highChair?: boolean;
-  tableIds: string[]; mode: 'instant' | 'request';
+  id: string;
+  venue: VenueKey;
+  residentId: string;
+  unitId: string;
+  start: string;
+  end: string;
+  period: ServicePeriod;
+  partySize: number;
+  seatingPref?: Table['zone'];
+  occasion?: string;
+  dietary: string[];
+  requests?: string;
+  highChair?: boolean;
+  tableIds: string[];
+  mode: 'instant' | 'request';
   depositHoldId?: string;
-  state: 'requested' | 'confirmed' | 'seated' | 'completed' | 'no_show' | 'cancelled' | 'late_cancelled' | 'declined';
+  state:
+    | 'requested'
+    | 'confirmed'
+    | 'seated'
+    | 'completed'
+    | 'no_show'
+    | 'cancelled'
+    | 'late_cancelled'
+    | 'declined';
   bill?: { totalFils: number; settledAt: string; method: 'wallet' | 'unit_account' };
 }
 
-interface Wallet { unitId: string; balanceFils: number }   // available = balance − active holds
+interface Wallet {
+  unitId: string;
+  balanceFils: number;
+} // available = balance − active holds
 interface LedgerEntry {
-  id: string; unitId: string; at: string;
+  id: string;
+  unitId: string;
+  at: string;
   kind: 'topup' | 'charge' | 'hold' | 'hold_release' | 'refund' | 'fee' | 'forfeit';
-  fils: number; label: string; ref?: { type: string; id: string }; byResidentId?: string;
+  fils: number;
+  label: string;
+  ref?: { type: string; id: string };
+  byResidentId?: string;
 }
 ```
 
@@ -493,43 +681,112 @@ interface LedgerEntry {
 ```ts
 type Priority = 'P1' | 'P2' | 'P3';
 
-interface ChecklistTemplate { id: string; amenity: AmenityKey; kind: 'opening' | 'midday' | 'closing'; dueTime: string; items: { id: string; label: string }[] }
-interface ChecklistRun {
-  id: string; templateId: string; date: string; by: string; completedAt?: string;
-  items: { itemId: string; result: 'pass' | 'fail'; note?: string; photo?: string; incidentId?: string }[];
+interface ChecklistTemplate {
+  id: string;
+  amenity: AmenityKey;
+  kind: 'opening' | 'midday' | 'closing';
+  dueTime: string;
+  items: { id: string; label: string }[];
 }
-interface CleaningLog { id: string; zone: string; at: string; by: string; nextDue: string }
-interface WaterReading { id: string; at: string; by: string; ph: number; freeChlorine: number; tempC: number; clarity: 'pass' | 'fail'; outOfRange: string[] }
+interface ChecklistRun {
+  id: string;
+  templateId: string;
+  date: string;
+  by: string;
+  completedAt?: string;
+  items: {
+    itemId: string;
+    result: 'pass' | 'fail';
+    note?: string;
+    photo?: string;
+    incidentId?: string;
+  }[];
+}
+interface CleaningLog {
+  id: string;
+  zone: string;
+  at: string;
+  by: string;
+  nextDue: string;
+}
+interface WaterReading {
+  id: string;
+  at: string;
+  by: string;
+  ph: number;
+  freeChlorine: number;
+  tempC: number;
+  clarity: 'pass' | 'fail';
+  outOfRange: string[];
+}
 
-interface Shift { id: string; staffId: string; date: string; start: string; end: string; amenity?: AmenityKey; band?: AgeBand;
-                  state: 'scheduled' | 'sick' | 'swapped' }
+interface Shift {
+  id: string;
+  staffId: string;
+  date: string;
+  start: string;
+  end: string;
+  amenity?: AmenityKey;
+  band?: AgeBand;
+  state: 'scheduled' | 'sick' | 'swapped';
+}
 
 interface Incident {
-  id: string; amenity: AmenityKey | 'creche'; category: string; severity: 'low' | 'medium' | 'high';
-  description: string; photo?: string; raisedBy: string; raisedVia: 'guard' | 'console' | 'resident' | 'checklist' | 'creche';
-  at: string; childId?: string; parentAck?: { at: string; by: string }; workOrderId?: string; mergedInto?: string;
+  id: string;
+  amenity: AmenityKey | 'creche';
+  category: string;
+  severity: 'low' | 'medium' | 'high';
+  description: string;
+  photo?: string;
+  raisedBy: string;
+  raisedVia: 'guard' | 'console' | 'resident' | 'checklist' | 'creche';
+  at: string;
+  childId?: string;
+  parentAck?: { at: string; by: string };
+  workOrderId?: string;
+  mergedInto?: string;
 }
 
 interface WorkOrder {
-  id: string; incidentId?: string; amenity: AmenityKey; title: string; priority: Priority;
+  id: string;
+  incidentId?: string;
+  amenity: AmenityKey;
+  title: string;
+  priority: Priority;
   assignee: { kind: 'staff' | 'vendor'; id: string };
   state: 'open' | 'assigned' | 'in_progress' | 'on_hold' | 'resolved' | 'closed';
-  sla: { respondBy: string; resolveBy: string; pausedMs: number; pausedSince?: string; respondedAt?: string };
+  sla: {
+    respondBy: string;
+    resolveBy: string;
+    pausedMs: number;
+    pausedSince?: string;
+    respondedAt?: string;
+  };
   timeline: { at: string; by: string; type: string; text?: string }[];
   resolution?: { note: string; afterPhoto?: string; costFils?: number };
 }
 
-interface AuditEntry { id: string; at: string; actor: { kind: 'staff' | 'resident' | 'system'; id: string; role?: string };
-                       action: string; target: { type: string; id: string }; before?: unknown; after?: unknown; reason?: string }
+interface AuditEntry {
+  id: string;
+  at: string;
+  actor: { kind: 'staff' | 'resident' | 'system'; id: string; role?: string };
+  action: string;
+  target: { type: string; id: string };
+  before?: unknown;
+  after?: unknown;
+  reason?: string;
+}
 ```
 
 ### 5.8 Communications
 
 ```ts
-type Channel = 'app_push' | 'app_banner' | 'app_inbox' | 'wa_direct' | 'wa_channel' | 'sms_fallback';
+type Channel =
+  'app_push' | 'app_banner' | 'app_inbox' | 'wa_direct' | 'wa_channel' | 'sms_fallback';
 
 interface AudienceRule {
-  include: AudienceClause[]; exclude: AudienceClause[];
+  include: AudienceClause[];
+  exclude: AudienceClause[];
 }
 type AudienceClause =
   | { kind: 'all' }
@@ -542,32 +799,62 @@ type AudienceClause =
   | { kind: 'optedIn'; topic: AmenityKey };
 
 interface Announcement {
-  id: string; type: 'daily' | 'event' | 'closure' | 'urgent' | 'general';
-  title: string; body: string; amenityTags: AmenityKey[];
-  audience: AudienceRule; channels: Channel[];
+  id: string;
+  type: 'daily' | 'event' | 'closure' | 'urgent' | 'general';
+  title: string;
+  body: string;
+  amenityTags: AmenityKey[];
+  audience: AudienceRule;
+  channels: Channel[];
   banner?: { style: 'info' | 'warning' | 'urgent' | 'success'; cta?: string; expiresAt: string };
   schedule: { mode: 'now' } | { mode: 'at'; at: string } | { mode: 'daily'; time: string };
   state: 'draft' | 'scheduled' | 'sending' | 'sent' | 'recalled';
-  sentAt?: string; resolvedRecipientIds?: string[]; editedAt?: string; createdBy: string;
+  sentAt?: string;
+  resolvedRecipientIds?: string[];
+  editedAt?: string;
+  createdBy: string;
 }
 
-interface Delivery {          // one per (announcement or system message) × recipient × channel
-  id: string; messageRef: { type: 'announcement' | 'system'; id: string };
-  recipientId: string; channel: Channel;
-  state: 'queued' | 'held_quiet_hours' | 'sent' | 'delivered' | 'read' | 'failed' | 'skipped_opt_out';
+interface Delivery {
+  // one per (announcement or system message) × recipient × channel
+  id: string;
+  messageRef: { type: 'announcement' | 'system'; id: string };
+  recipientId: string;
+  channel: Channel;
+  state:
+    'queued' | 'held_quiet_hours' | 'sent' | 'delivered' | 'read' | 'failed' | 'skipped_opt_out';
   times: Partial<Record<'queued' | 'sent' | 'delivered' | 'read' | 'failed', string>>;
 }
 
-interface WaMessage {         // simulated WhatsApp
-  id: string; threadResidentId: string; dir: 'in' | 'out'; at: string;
+interface WaMessage {
+  // simulated WhatsApp
+  id: string;
+  threadResidentId: string;
+  dir: 'in' | 'out';
+  at: string;
   kind: 'text' | 'template' | 'quick_reply_answer';
-  text: string; buttons?: { id: string; label: string; action: CommandRef }[];
+  text: string;
+  buttons?: { id: string; label: string; action: CommandRef }[];
   ticks?: 'sent' | 'delivered' | 'read';
 }
-interface ChannelPost { id: string; announcementId: string; at: string; views: number; reactions: Record<string, number> }
+interface ChannelPost {
+  id: string;
+  announcementId: string;
+  at: string;
+  views: number;
+  reactions: Record<string, number>;
+}
 
-interface Notification { id: string; recipientId: string; at: string; title: string; body: string; deepLink: string;
-                         priority: 'normal' | 'high'; read: boolean }
+interface Notification {
+  id: string;
+  recipientId: string;
+  at: string;
+  title: string;
+  body: string;
+  deepLink: string;
+  priority: 'normal' | 'high';
+  read: boolean;
+}
 ```
 
 `CommandRef = { name: CommandName; args: unknown }` means a WhatsApp quick-reply button calls a real domain command (for example `waitlist.acceptOffer`).
@@ -579,8 +866,11 @@ type Role = 'resident' | 'whatsapp' | 'guard' | 'creche' | 'fnb' | 'console';
 type ConsoleRole = 'community_manager' | 'amenity_supervisor' | 'call_centre';
 
 interface DeviceSession {
-  slot: 'A' | 'B'; role: Role; actorId: string;       // resident id or staff id
-  consoleRole?: ConsoleRole; locale: 'en' | 'ar';
+  slot: 'A' | 'B';
+  role: Role;
+  actorId: string; // resident id or staff id
+  consoleRole?: ConsoleRole;
+  locale: 'en' | 'ar';
   nav: { stack: { route: string; params: Record<string, string> }[] };
   offline: boolean;
 }
@@ -588,10 +878,13 @@ interface DeviceSession {
 interface DemoState {
   clock: { now: string; mode: 'live' | 'paused'; speed: 1 | 2 | 5 | 10 };
   motionSpeed: 0 | 0.5 | 1;
-  dualView: boolean; devices: { A: DeviceSession; B?: DeviceSession };
+  dualView: boolean;
+  devices: { A: DeviceSession; B?: DeviceSession };
   scenario?: { id: string; step: number };
-  tickerOn: boolean; simulatedLatencyMs: [number, number];
-  seed: string; version: number;
+  tickerOn: boolean;
+  simulatedLatencyMs: [number, number];
+  seed: string;
+  version: number;
 }
 ```
 
@@ -640,22 +933,34 @@ type CommandResult<O> =
 
 **Command catalogue (non-exhaustive, one file each):**
 
-| Domain | Commands |
-|---|---|
-| Padel | `slot.hold`, `slot.releaseHold`, `booking.create`, `booking.cancel`, `booking.checkIn`, `booking.markNoShow`, `waitlist.join`, `waitlist.withdraw`, `waitlist.acceptOffer`, `waitlist.declineOffer`, `penalty.liftSuspension` |
-| Ops | `blackout.preview`, `blackout.create`, `blackout.update`, `blackout.delete`, `amenity.setStatus`, `amenity.setHours`, `amenity.addException`, `checklist.submit`, `cleaning.log`, `water.log`, `occupancy.adjust`, `incident.raise`, `incident.merge`, `incident.convertToWorkOrder`, `workOrder.assign`, `workOrder.transition`, `workOrder.comment`, `roster.upsertShift`, `roster.markSick`, `roster.assignBand` |
-| Events | `event.create`, `event.update`, `event.publish`, `event.cancel`, `showtime.add`, `showtime.changeTime`, `showtime.reduceCapacity`, `rsvp.create`, `rsvp.cancel`, `rsvp.removeAttendees`, `attendance.mark`, `attendance.syncOffline` |
-| Creche | `child.register`, `guardian.add`, `guardian.approve`, `creche.book`, `creche.cancel`, `creche.checkIn`, `creche.checkOut`, `creche.requestPickupApproval`, `creche.decidePickupApproval`, `creche.setActivity`, `incident.ackByParent` |
-| Dining | `reservation.create`, `reservation.cancel`, `reservation.approve`, `reservation.decline`, `reservation.seat`, `reservation.markNoShow`, `reservation.moveTables`, `reservation.runningLate`, `bill.settle` |
-| Wallet | `wallet.topUp`, `wallet.hold`, `wallet.releaseHold`, `wallet.refund` |
-| Comms | `announcement.saveDraft`, `announcement.schedule`, `announcement.send`, `announcement.edit`, `announcement.recall`, `wa.reply` |
-| Demo | `demo.setRole`, `demo.setPersona`, `demo.setConsoleRole`, `demo.jumpClock`, `demo.reset`, `demo.snapshot`, `demo.restore`, `demo.setLocale`, `demo.setOffline` |
+| Domain | Commands                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Padel  | `slot.hold`, `slot.releaseHold`, `booking.create`, `booking.cancel`, `booking.checkIn`, `booking.markNoShow`, `waitlist.join`, `waitlist.withdraw`, `waitlist.acceptOffer`, `waitlist.declineOffer`, `penalty.liftSuspension`                                                                                                                                                                                       |
+| Ops    | `blackout.preview`, `blackout.create`, `blackout.update`, `blackout.delete`, `amenity.setStatus`, `amenity.setHours`, `amenity.addException`, `checklist.submit`, `cleaning.log`, `water.log`, `occupancy.adjust`, `incident.raise`, `incident.merge`, `incident.convertToWorkOrder`, `workOrder.assign`, `workOrder.transition`, `workOrder.comment`, `roster.upsertShift`, `roster.markSick`, `roster.assignBand` |
+| Events | `event.create`, `event.update`, `event.publish`, `event.cancel`, `showtime.add`, `showtime.changeTime`, `showtime.reduceCapacity`, `rsvp.create`, `rsvp.cancel`, `rsvp.removeAttendees`, `attendance.mark`, `attendance.syncOffline`                                                                                                                                                                                |
+| Creche | `child.register`, `guardian.add`, `guardian.approve`, `creche.book`, `creche.cancel`, `creche.checkIn`, `creche.checkOut`, `creche.requestPickupApproval`, `creche.decidePickupApproval`, `creche.setActivity`, `incident.ackByParent`                                                                                                                                                                              |
+| Dining | `reservation.create`, `reservation.cancel`, `reservation.approve`, `reservation.decline`, `reservation.seat`, `reservation.markNoShow`, `reservation.moveTables`, `reservation.runningLate`, `bill.settle`                                                                                                                                                                                                          |
+| Wallet | `wallet.topUp`, `wallet.hold`, `wallet.releaseHold`, `wallet.refund`                                                                                                                                                                                                                                                                                                                                                |
+| Comms  | `announcement.saveDraft`, `announcement.schedule`, `announcement.send`, `announcement.edit`, `announcement.recall`, `wa.reply`                                                                                                                                                                                                                                                                                      |
+| Demo   | `demo.setRole`, `demo.setPersona`, `demo.setConsoleRole`, `demo.jumpClock`, `demo.reset`, `demo.snapshot`, `demo.restore`, `demo.setLocale`, `demo.setOffline`                                                                                                                                                                                                                                                      |
 
 ### 7.2 Rules engine contract (PRD §7)
 
 ```ts
-export function validateBooking(state: AppState, req: BookingRequest, now: string, cfg: Rules): RuleOutcome;
-type RuleOutcome = { ok: true; charges: Charge[] } | { ok: false; code: RuleCode; params: Record<string, string|number>; alternatives: Alternative[] };
+export function validateBooking(
+  state: AppState,
+  req: BookingRequest,
+  now: string,
+  cfg: Rules,
+): RuleOutcome;
+type RuleOutcome =
+  | { ok: true; charges: Charge[] }
+  | {
+      ok: false;
+      code: RuleCode;
+      params: Record<string, string | number>;
+      alternatives: Alternative[];
+    };
 ```
 
 - The checks are an **ordered array** of `(ctx) => RuleOutcome | null`, and the first non-null result wins. Adding a check means adding one file and one entry in the array.
@@ -669,22 +974,44 @@ type RuleOutcome = { ok: true; charges: Charge[] } | { ok: false; code: RuleCode
 
 Subscribers are side-effect modules registered once at boot:
 
-| Subscriber | Reacts by |
-|---|---|
-| `notifications` | Creating `Notification` records + WhatsApp messages, using the PRD §10 matrix as a lookup table in `domain/comms/matrix.ts` |
-| `islandQueue` | Pushing a device-level island notification for the persona currently on screen |
-| `ticker` | Appending to the presenter ticker |
-| `deliverySimulator` | Creating `Delivery` rows and scheduling tick jobs |
+| Subscriber          | Reacts by                                                                                                                   |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `notifications`     | Creating `Notification` records + WhatsApp messages, using the PRD §10 matrix as a lookup table in `domain/comms/matrix.ts` |
+| `islandQueue`       | Pushing a device-level island notification for the persona currently on screen                                              |
+| `ticker`            | Appending to the presenter ticker                                                                                           |
+| `deliverySimulator` | Creating `Delivery` rows and scheduling tick jobs                                                                           |
 
 ### 7.4 Scheduler
 
 ```ts
-interface Job { id: string /*deterministic*/; type: JobType; runAt: string; payload: unknown; done?: boolean }
-type JobType = 'hold.expire' | 'waitlist.offerExpire' | 'booking.reminder' | 'booking.noShowSweep'
-  | 'event.reminder' | 'event.regClose' | 'showtime.complete' | 'dining.reminder' | 'dining.noShowFlag'
-  | 'creche.pickupReminder' | 'creche.latePickup' | 'creche.endOfDaySweep'
-  | 'announcement.send' | 'delivery.tick' | 'quietHours.release'
-  | 'sla.check' | 'water.dueCheck' | 'checklist.dueCheck' | 'banner.expire' | 'event.publish';
+interface Job {
+  id: string /*deterministic*/;
+  type: JobType;
+  runAt: string;
+  payload: unknown;
+  done?: boolean;
+}
+type JobType =
+  | 'hold.expire'
+  | 'waitlist.offerExpire'
+  | 'booking.reminder'
+  | 'booking.noShowSweep'
+  | 'event.reminder'
+  | 'event.regClose'
+  | 'showtime.complete'
+  | 'dining.reminder'
+  | 'dining.noShowFlag'
+  | 'creche.pickupReminder'
+  | 'creche.latePickup'
+  | 'creche.endOfDaySweep'
+  | 'announcement.send'
+  | 'delivery.tick'
+  | 'quietHours.release'
+  | 'sla.check'
+  | 'water.dueCheck'
+  | 'checklist.dueCheck'
+  | 'banner.expire'
+  | 'event.publish';
 ```
 
 - **Job IDs are deterministic**, e.g. `booking.noShowSweep:bk_123`. Enqueuing an ID that already exists does nothing, which makes jobs idempotent.
@@ -696,6 +1023,7 @@ type JobType = 'hold.expire' | 'waitlist.offerExpire' | 'booking.reminder' | 'bo
   4. Mark it done.
 
   Jobs can create new jobs. The loop runs until nothing is due, with a guard of 5,000 jobs per jump.
+
 - **Jumps** (`+15m`, `+1h`, `Next day`, picker) call `runDue` once. The ticker groups the results ("Ran 46 jobs: 3 reminders, 1 no-show sweep, 40 delivery ticks…").
 - **Leader only:** only the leader tab runs the clock and jobs (§8.2).
 
@@ -722,17 +1050,36 @@ type JobType = 'hold.expire' | 'waitlist.offerExpire' | 'booking.reminder' | 'bo
 
 ```ts
 export const useStore = create<AppState>()(
-  devtools(                     // dev only
+  devtools(
+    // dev only
     persist(
       subscribeWithSelector(
         immer((...a) => ({
-          ...communitySlice(...a), ...amenitiesSlice(...a), ...bookingsSlice(...a), ...eventsSlice(...a),
-          ...crecheSlice(...a), ...diningSlice(...a), ...walletSlice(...a), ...opsSlice(...a),
-          ...commsSlice(...a), ...notificationsSlice(...a), ...auditSlice(...a),
-          ...schedulerSlice(...a), ...demoSlice(...a),
-        }))),
-      { name: 'amali-demo:v1', version: 1, migrate, partialize: excludeEphemeral, storage: debouncedStorage(300) }
-    )));
+          ...communitySlice(...a),
+          ...amenitiesSlice(...a),
+          ...bookingsSlice(...a),
+          ...eventsSlice(...a),
+          ...crecheSlice(...a),
+          ...diningSlice(...a),
+          ...walletSlice(...a),
+          ...opsSlice(...a),
+          ...commsSlice(...a),
+          ...notificationsSlice(...a),
+          ...auditSlice(...a),
+          ...schedulerSlice(...a),
+          ...demoSlice(...a),
+        })),
+      ),
+      {
+        name: 'amali-demo:v1',
+        version: 1,
+        migrate,
+        partialize: excludeEphemeral,
+        storage: debouncedStorage(300),
+      },
+    ),
+  ),
+);
 ```
 
 - **Selectors:** colocated in `store/selectors/*`. Use `useStore(selector, shallow)` for object results. Expensive derivations (slot grid, KPIs, heatmap) are memoised with a small key-based cache that is invalidated by the slices they depend on.
@@ -864,6 +1211,7 @@ interface ScenarioStep {
   4. Prints a table of matches and gaps.
 
   Gaps fall back to the placeholder gradient (PRD §5.8).
+
 - **Avatars and posters:** use neutral generated placeholders (initials on brand tint, poster gradients with a title). **No real people's photos**, and no film posters, studio artwork or film titles from real films. Invent the film titles for the screening events.
 
 ---
@@ -876,6 +1224,7 @@ interface ScenarioStep {
 Read prd.md (what) and trd.md (how) before any phase. Build one phase at a time (trd.md §13).
 
 ## Non-negotiables
+
 - No raw colours/sizes/durations in components. Use design/tokens.ts, design/motion.ts, Tailwind theme classes.
 - No business numbers in code. Use config/rules.ts.
 - Never call new Date()/Date.now() outside scheduler/clock.ts. Use useDemoClock() / ctx.now.
@@ -889,13 +1238,15 @@ Read prd.md (what) and trd.md (how) before any phase. Build one phase at a time 
 - Use layoutIds prefixed with the device slot.
 
 ## Workflow per phase
+
 1. Re-read the PRD sections for the phase.
 2. Write/extend types and domain functions first, with vitest tests.
 3. Add commands + selectors. 4. Build UI. 5. Wire scenario steps.
-6. Run: pnpm typecheck && pnpm lint && pnpm test && pnpm e2e --grep <scenario>.
-7. Update trd.md "Build log" (§16) with what was done and any deviations. Commit.
+4. Run: pnpm typecheck && pnpm lint && pnpm test && pnpm e2e --grep <scenario>.
+5. Update trd.md "Build log" (§16) with what was done and any deviations. Commit.
 
 ## Commands
+
 pnpm dev | pnpm build | pnpm typecheck | pnpm lint | pnpm test | pnpm e2e | pnpm images:map
 ```
 
@@ -1128,16 +1479,16 @@ P4, P5, P6 and P8 can run in parallel sessions or git worktrees once P3 is done.
 
 ## 14. Performance budgets
 
-| Metric | Budget |
-|---|---|
-| JS (first load, gzipped) | ≤ 350 KB. Lazy-load the console, F&B, charts and ExcelJS with `next/dynamic` |
-| Time to interactive (laptop) | ≤ 2.0s on the first load; ≤ 0.8s after cache |
-| Store update → frame paint | ≤ 16ms for any single command on screens visible in dual view |
-| Slot grid derivation | ≤ 2ms per (amenity, date) (memoised) |
-| Report generation (90 days, all amenities) | ≤ 400ms of compute (the skeleton animation covers the rest) |
-| Excel export | ≤ 1.5s |
-| Clock jump of 7 days | ≤ 300ms to run all jobs |
-| Images | `public/amenities/*` resized to at most 1200px wide, WebP with a JPG fallback, under 250 KB each |
+| Metric                                     | Budget                                                                                           |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| JS (first load, gzipped)                   | ≤ 350 KB. Lazy-load the console, F&B, charts and ExcelJS with `next/dynamic`                     |
+| Time to interactive (laptop)               | ≤ 2.0s on the first load; ≤ 0.8s after cache                                                     |
+| Store update → frame paint                 | ≤ 16ms for any single command on screens visible in dual view                                    |
+| Slot grid derivation                       | ≤ 2ms per (amenity, date) (memoised)                                                             |
+| Report generation (90 days, all amenities) | ≤ 400ms of compute (the skeleton animation covers the rest)                                      |
+| Excel export                               | ≤ 1.5s                                                                                           |
+| Clock jump of 7 days                       | ≤ 300ms to run all jobs                                                                          |
+| Images                                     | `public/amenities/*` resized to at most 1200px wide, WebP with a JPG fallback, under 250 KB each |
 
 **Techniques:**
 
@@ -1151,15 +1502,15 @@ P4, P5, P6 and P8 can run in parallel sessions or git worktrees once P3 is done.
 
 ## 15. Testing strategy
 
-| Layer | Tool | What |
-|---|---|---|
-| Domain unit | Vitest | Rules checks and order; quotas; penalties; waitlist logic; ratio; deposits; wallet invariant; SLA timers; audience resolver; delivery timing determinism; KPI formulas; RRULE expansion; edit scopes |
-| Scheduler | Vitest | Idempotency, ordering, jump batches, local `now` per job |
-| Scenario (headless) | Vitest | S1–S8 `script` + `expect` against the real store |
-| Component | Testing Library | Primitives' states, seat-map keyboard navigation, form validation messages |
-| E2E | Playwright | One spec per scenario; the dual-view race; the multi-tab sync; RTL smoke |
-| Accessibility | axe + Playwright | Key screens per surface |
-| Visual | Playwright screenshots | Home, Amenities, Padel detail, console overview, in EN and AR (manual review, not CI-blocking) |
+| Layer               | Tool                   | What                                                                                                                                                                                                 |
+| ------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Domain unit         | Vitest                 | Rules checks and order; quotas; penalties; waitlist logic; ratio; deposits; wallet invariant; SLA timers; audience resolver; delivery timing determinism; KPI formulas; RRULE expansion; edit scopes |
+| Scheduler           | Vitest                 | Idempotency, ordering, jump batches, local `now` per job                                                                                                                                             |
+| Scenario (headless) | Vitest                 | S1–S8 `script` + `expect` against the real store                                                                                                                                                     |
+| Component           | Testing Library        | Primitives' states, seat-map keyboard navigation, form validation messages                                                                                                                           |
+| E2E                 | Playwright             | One spec per scenario; the dual-view race; the multi-tab sync; RTL smoke                                                                                                                             |
+| Accessibility       | axe + Playwright       | Key screens per surface                                                                                                                                                                              |
+| Visual              | Playwright screenshots | Home, Amenities, Padel detail, console overview, in EN and AR (manual review, not CI-blocking)                                                                                                       |
 
 **CI** (GitHub Actions, optional): `typecheck → lint → test → build → e2e`.
 
@@ -1169,19 +1520,20 @@ P4, P5, P6 and P8 can run in parallel sessions or git worktrees once P3 is done.
 
 Claude Code adds a dated entry here at the end of each phase.
 
-| Date | Phase | Summary | Deviations from PRD/TRD |
-|---|---|---|---|
-| 2026-10-14 | — | TRD created | Excel export uses ExcelJS instead of SheetJS (cell styling) |
-| 2026-10-14 | P0 | Project foundations: Next 15 + TS strict + Tailwind v4 + ESLint (layering rule) + Prettier + Vitest + Playwright + lefthook scaffolded. Tokens → CSS pipeline (`scripts/tokens-to-css.ts`) and `/tokens` preview page. `config/rules.ts`/`rules.schema.ts` with every PRD §8 business number, zod-validated at import. All `src/types/*` per TRD §5. Store skeleton: 13 slices (community/amenities/bookings/events/creche/dining/wallet/ops/comms/notifications/audit/scheduler/demo), immer + persist + subscribeWithSelector, a generic `dispatch()` with an extensible `CommandRegistry` (phases register commands via declaration merging rather than editing a shared file), and a typed event bus. Scheduler: `JobQueue` (idempotent by job id) + `SchedulerEngine.runDue` (ordered by `(runAt, id)`, each job sees its own `runAt` as local `now`, 5,000-job safety guard), plus pure clock-jump math and a `useDemoClock` hook. `buildSeed(seed, now)` for community (~230 units / ~420 residents, deterministic via namespaced `seedrandom` streams), the 6 personas + related records (Khalid, Rashid's tenant, Omar/Noor), 17 named staff, 5 vendors and the 7 amenities. `scripts/map-amenity-images.ts` run — all 7 amenity images mapped (no gradient placeholders needed; 5 extra non-matching images left as-is). 51 unit tests (time, random, rules, rbac, scheduler, seed determinism) pass; `pnpm typecheck`/`lint`/`build` (static `out/`) all clean. | `next-env.d.ts` excluded from ESLint (auto-generated). RBAC's `config/rbac.ts` + `domain/rbac/can.ts` built in P0 (ahead of its TRD §13 phase placement) since `dispatch()`'s RBAC check needed *something* to call — kept intentionally minimal (grant scope only, no PII-masking logic yet). Demo/presenter commands (`demo.setRole` etc., listed in the TRD §7.1 catalogue) are implemented as direct slice actions on `store/slices/demo.ts` rather than routed through `dispatch()` — they're presenter-tool mechanics, not domain mutations needing RBAC/audit/events, and P1 (shell) is where they get a UI. Fixed a latent bug in `TZDate#toISOString()` (zone-offset suffix instead of UTC `Z`) that would have silently broken ISO-string ordering — `lib/time.ts#toIso` normalizes via `new Date(x.getTime())` wherever a TZDate-derived value becomes a stored ISO string. |
+| Date       | Phase | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Deviations from PRD/TRD                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-10-14 | —     | TRD created                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Excel export uses ExcelJS instead of SheetJS (cell styling)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| 2026-10-14 | P0    | Project foundations: Next 15 + TS strict + Tailwind v4 + ESLint (layering rule) + Prettier + Vitest + Playwright + lefthook scaffolded. Tokens → CSS pipeline (`scripts/tokens-to-css.ts`) and `/tokens` preview page. `config/rules.ts`/`rules.schema.ts` with every PRD §8 business number, zod-validated at import. All `src/types/*` per TRD §5. Store skeleton: 13 slices (community/amenities/bookings/events/creche/dining/wallet/ops/comms/notifications/audit/scheduler/demo), immer + persist + subscribeWithSelector, a generic `dispatch()` with an extensible `CommandRegistry` (phases register commands via declaration merging rather than editing a shared file), and a typed event bus. Scheduler: `JobQueue` (idempotent by job id) + `SchedulerEngine.runDue` (ordered by `(runAt, id)`, each job sees its own `runAt` as local `now`, 5,000-job safety guard), plus pure clock-jump math and a `useDemoClock` hook. `buildSeed(seed, now)` for community (~230 units / ~420 residents, deterministic via namespaced `seedrandom` streams), the 6 personas + related records (Khalid, Rashid's tenant, Omar/Noor), 17 named staff, 5 vendors and the 7 amenities. `scripts/map-amenity-images.ts` run — all 7 amenity images mapped (no gradient placeholders needed; 5 extra non-matching images left as-is). 51 unit tests (time, random, rules, rbac, scheduler, seed determinism) pass; `pnpm typecheck`/`lint`/`build` (static `out/`) all clean.                                                                                                                                                                                    | `next-env.d.ts` excluded from ESLint (auto-generated). RBAC's `config/rbac.ts` + `domain/rbac/can.ts` built in P0 (ahead of its TRD §13 phase placement) since `dispatch()`'s RBAC check needed _something_ to call — kept intentionally minimal (grant scope only, no PII-masking logic yet). Demo/presenter commands (`demo.setRole` etc., listed in the TRD §7.1 catalogue) are implemented as direct slice actions on `store/slices/demo.ts` rather than routed through `dispatch()` — they're presenter-tool mechanics, not domain mutations needing RBAC/audit/events, and P1 (shell) is where they get a UI. Fixed a latent bug in `TZDate#toISOString()` (zone-offset suffix instead of UTC `Z`) that would have silently broken ISO-string ordering — `lib/time.ts#toIso` normalizes via `new Date(x.getTime())` wherever a TZDate-derived value becomes a stored ISO string.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 2026-10-15 | P1    | Demo shell end to end: RolePill (shared-`layoutId` indicator slide, keys 1-6), ResetButton (confirm + 360° spin + `hydrateFromSeed`), MenuButton → PresenterMenu (scenario index, clock controls, dual view, motion speed, language, offline, a `/rules` config viewer link). PersonaPicker (6 personas on Resident/WhatsApp; role-scoped staff list elsewhere). DemoClockBadge (+15m/+1h/Next day + free datetime picker). NotesPanel + ScenarioIndex with a proper empty state (`scenarios/` is typed and wired but empty until P3+). DeviceFrame (Phone/Tablet/Browser + StatusBar + DynamicIsland) with a width-and-height-aware scaling hook. DeviceSlot maps role → frame kind/theme and animates the PRD M1 swap. Navigator: push/pop stack navigation (PRD M3) with edge-swipe-to-pop, up to 4 mounted screens, used by a shared placeholder surface per role (real surfaces land in P2+). `navigation/useNav` + `navigation/deepLinks` (`amali://surface/route?params`). `store/sync.ts`: BroadcastChannel + localStorage-lease leader election; only the leader runs the live clock tick and due jobs (`useDemoClock` gates on `useIsLeader()`). `/present?role=&persona=` single-device second-screen page. Keyboard shortcuts (1-6, T, D, arrows). 17 new unit tests (deep links, nav actions) — 68 total passing; `typecheck`/`lint`/`build` clean. Manually verified in-browser: push/pop transitions, all 3 frame kinds, staff dark theme, dual view (Resident+Guard), and — the critical one — live bidirectional sync between the main tab and a `/present` tab (clock jump leader→follower, nav push follower→leader), with no page reload. | Found and fixed 3 real bugs during manual testing, each with broader implications: (1) fresh device sessions started with an empty `nav.stack`, racing `hydrateFromSeed`'s full-state replace against the surface's own seeding effect — fixed by never creating a device session with an empty stack (the seeding effect became unnecessary and was removed); (2) Navigator's stacked screens had no background colour, so the screen underneath visibly bled through during transitions — added `bg-bg-page`; (3) **Tailwind v4's `@theme` resolution constant-folds a `var(--theme-token: var(--raw-token))` indirection to `--raw-token`'s `:root` value at build time**, which silently broke every theme-switchable utility (`bg-bg-page`, `text-text-body`, etc.) under the `.staff` dark-theme scope — the 9 affected utilities are now hand-written `@utility` rules in `globals.css` instead of `@theme` mappings (documented there for future tokens). Also: a classic flexbox `min-width:auto` bug let the two dual-view device frames' fixed-pixel content (e.g. a 1440px browser frame) overflow their flex row — fixed with `min-w-0` on the flex items. Deferred: the PRD §4.1 sub-600px responsive mode (full-screen chrome-hidden, long-press role switcher) — not exercised by any P1 exit criterion; revisit only if a real-phone demo becomes a requirement. Reset's confirm dialog uses native `window.confirm()` (not a themed modal) — simplest correct choice for an internal presenter action. |
 
 ---
 
 ## 17. Delivery
 
-| Item | Detail |
-|---|---|
-| Hosting | Vercel (static, from `out/`) or Netlify. No environment variables needed |
-| Presenter laptop | Chrome, latest. Open `/` once online before the demo so that fonts and images are cached (T6) |
-| Second screen (optional) | Open `/present?role=guard` in a second Chrome window on the same profile |
-| Rehearsal | Reset → snapshot "Clean" → run S1–S8 → restore "Clean" |
-| Hand-off | Repo with README (setup, scripts, scenario list), `prd.md`, `trd.md`, `CLAUDE.md` |
+| Item                     | Detail                                                                                        |
+| ------------------------ | --------------------------------------------------------------------------------------------- |
+| Hosting                  | Vercel (static, from `out/`) or Netlify. No environment variables needed                      |
+| Presenter laptop         | Chrome, latest. Open `/` once online before the demo so that fonts and images are cached (T6) |
+| Second screen (optional) | Open `/present?role=guard` in a second Chrome window on the same profile                      |
+| Rehearsal                | Reset → snapshot "Clean" → run S1–S8 → restore "Clean"                                        |
+| Hand-off                 | Repo with README (setup, scripts, scenario list), `prd.md`, `trd.md`, `CLAUDE.md`             |

@@ -3,26 +3,30 @@
 
 /*
  * Maps the generated CSS variables (src/app/tokens.css) into Tailwind v4's
- * @theme block, so utilities like `bg-surface`, `text-brand`, `border-card`,
- * `rounded-card` and `shadow-bar` exist. Source of truth is
- * src/design/tokens.ts — regenerate tokens.css with `pnpm tokens:css`.
+ * @theme block, so utilities like `rounded-card` and `shadow-bar` exist.
+ * Source of truth is src/design/tokens.ts — regenerate tokens.css with
+ * `pnpm tokens:css`.
+ *
+ * The 8 tokens the staff theme overrides (brand, bg-page, surface,
+ * border-card, text-title/body/muted/placeholder — see `.staff` in
+ * tokens.css) are deliberately NOT mapped here. Tailwind v4's @theme
+ * resolution constant-folds a `var(--color-x: var(--raw-x))` indirection to
+ * raw-x's :root value at build time (via its Lightning CSS pipeline), which
+ * would make `.staff`'s override invisible to any `bg-*`/`text-*` utility
+ * using it. Those 9 utility classes are hand-written as `@utility` rules
+ * below instead, which aren't subject to that folding.
  */
 @theme {
-  --color-brand: var(--brand);
   --color-brand-tint: var(--brand-tint);
   --color-on-brand: var(--on-brand);
-  --color-text-title: var(--text-title);
-  --color-text-body: var(--text-body);
-  --color-text-muted: var(--text-muted);
-  --color-text-placeholder: var(--text-placeholder);
-  --color-border-card: var(--border-card);
-  --color-surface: var(--surface);
-  --color-bg-page: var(--bg-page);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-info: var(--info);
   --color-maintenance: var(--maintenance);
+
+  --color-browser-chrome-frame: var(--browser-chrome-frame);
+  --color-browser-chrome-toolbar: var(--browser-chrome-toolbar);
 
   --color-shell-stage: var(--shell-stage);
   --color-shell-stage-raised: var(--shell-stage-raised);
@@ -60,6 +64,39 @@
       background-position: -200% 0;
     }
   }
+}
+
+/*
+ * Theme-switchable utilities (see the @theme comment above for why these
+ * aren't @theme-mapped). Each references its raw CSS variable directly, so
+ * `.staff`'s override (tokens.css) is visible at runtime, per element.
+ */
+@utility bg-bg-page {
+  background-color: var(--bg-page);
+}
+@utility bg-surface {
+  background-color: var(--surface);
+}
+@utility bg-brand {
+  background-color: var(--brand);
+}
+@utility text-brand {
+  color: var(--brand);
+}
+@utility text-text-title {
+  color: var(--text-title);
+}
+@utility text-text-body {
+  color: var(--text-body);
+}
+@utility text-text-muted {
+  color: var(--text-muted);
+}
+@utility text-text-placeholder {
+  color: var(--text-placeholder);
+}
+@utility border-border-card {
+  border-color: var(--border-card);
 }
 
 html,

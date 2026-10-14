@@ -119,3 +119,63 @@ export interface RootActions {}
 export type RootStore = AppState & RootActions;
 
 export type StoreSlice<Slice> = StateCreator<RootStore, [['zustand/immer', never]], [], Slice>;
+
+/**
+ * Every `AppState` key, in one place. `store/sync.ts` uses this to pick the
+ * pure-data slice of `RootStore` before posting it over `BroadcastChannel`
+ * (action methods can't survive structured clone). Kept as a `satisfies`
+ * check so a typo here is a compile error; `tests/unit/store.test.ts`
+ * checks the list is also *complete* against `buildSeed`'s output.
+ */
+export const APP_STATE_KEYS = [
+  'units',
+  'residents',
+  'children',
+  'guardians',
+  'staff',
+  'vendors',
+  'amenities',
+  'amenityStatus',
+  'hours',
+  'exceptions',
+  'blackouts',
+  'bookings',
+  'holds',
+  'waitlist',
+  'strikes',
+  'suspensions',
+  'events',
+  'showtimes',
+  'rsvps',
+  'seasons',
+  'crecheSessions',
+  'crecheBookings',
+  'bandAssignments',
+  'tables',
+  'reservations',
+  'wallets',
+  'ledger',
+  'checklistTemplates',
+  'checklistRuns',
+  'cleaningLogs',
+  'waterReadings',
+  'shifts',
+  'incidents',
+  'workOrders',
+  'announcements',
+  'deliveries',
+  'waMessages',
+  'channelPosts',
+  'notifications',
+  'auditLog',
+  'jobs',
+  'demo',
+] as const satisfies readonly (keyof AppState)[];
+
+export function pickAppState(state: RootStore): AppState {
+  const picked = {} as AppState;
+  for (const key of APP_STATE_KEYS) {
+    (picked as unknown as Record<string, unknown>)[key] = state[key];
+  }
+  return picked;
+}

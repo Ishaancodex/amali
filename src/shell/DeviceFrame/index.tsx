@@ -1,0 +1,73 @@
+'use client';
+
+import { deviceFrame, type DeviceKind } from '@/design/tokens';
+import { useDeviceScale } from './useDeviceScale';
+import { Phone } from './Phone';
+import { Tablet } from './Tablet';
+import { Browser } from './Browser';
+
+export interface DeviceFrameProps {
+  kind: DeviceKind;
+  now: string;
+  dir: 'ltr' | 'rtl';
+  lang: string;
+  themeClass?: string;
+  island?: React.ReactNode;
+  address?: string;
+  reserveHeight?: number;
+  maxScale?: number;
+  children: React.ReactNode;
+}
+
+export { useDeviceScale } from './useDeviceScale';
+export { Phone } from './Phone';
+export { Tablet } from './Tablet';
+export { Browser } from './Browser';
+export { StatusBar } from './StatusBar';
+export { DynamicIsland } from './DynamicIsland';
+
+export function DeviceFrame({
+  kind,
+  now,
+  dir,
+  lang,
+  themeClass,
+  island,
+  address,
+  reserveHeight,
+  maxScale,
+  children,
+}: DeviceFrameProps) {
+  const { width, height } = deviceFrame[kind];
+  const { scale, containerRef } = useDeviceScale({
+    frameWidth: width,
+    frameHeight: height,
+    reserveHeight,
+    maxScale,
+  });
+
+  return (
+    <div
+      ref={containerRef}
+      className="flex h-full w-full items-start justify-center overflow-hidden"
+    >
+      <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
+        {kind === 'phone' && (
+          <Phone now={now} dir={dir} lang={lang} themeClass={themeClass} island={island}>
+            {children}
+          </Phone>
+        )}
+        {kind === 'tablet' && (
+          <Tablet now={now} dir={dir} lang={lang} themeClass={themeClass}>
+            {children}
+          </Tablet>
+        )}
+        {kind === 'browser' && (
+          <Browser dir={dir} lang={lang} themeClass={themeClass} address={address}>
+            {children}
+          </Browser>
+        )}
+      </div>
+    </div>
+  );
+}

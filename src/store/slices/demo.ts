@@ -3,9 +3,18 @@
  * view and presenter settings. `scheduler/useDemoClock.ts` reads/writes
  * `demo.clock` through the actions here.
  */
-import type { DeviceSession, Role, ConsoleRole, ClockSpeed, MotionSpeed, DemoState } from '@/types/demo';
+import type {
+  DeviceSession,
+  Role,
+  ConsoleRole,
+  ClockSpeed,
+  MotionSpeed,
+  DemoState,
+  NavStackEntry,
+} from '@/types/demo';
 import { applyJump, type ClockJump } from '@/scheduler/clock';
-import { PERSONA_IDS } from '@/seed/personaIds';
+import { PERSONA_IDS, STAFF_IDS } from '@/seed/personaIds';
+import { eventBus } from '../eventBus';
 import type { DemoSliceState, StoreSlice } from '../types';
 
 // PRD §15 S1 — "Start: Wed 14 Oct, 17:30" → 13:30 UTC (Dubai is UTC+4, no DST).
@@ -19,13 +28,16 @@ function defaultDeviceA(): DeviceSession {
     role: 'resident',
     actorId: PERSONA_IDS.layla,
     locale: 'en',
-    nav: { stack: [] },
+    nav: { stack: [{ route: 'home', params: {} }] },
     offline: false,
   };
 }
 
 /** Shared by this slice's initial state and `seed/index.ts#buildSeed`, so they never drift. */
-export function defaultDemoState(now: string = DEMO_START_ISO, seed: string = SEED_NAME): DemoState {
+export function defaultDemoState(
+  now: string = DEMO_START_ISO,
+  seed: string = SEED_NAME,
+): DemoState {
   return {
     clock: { now, mode: 'paused', speed: 1 },
     motionSpeed: 1,
@@ -50,8 +62,14 @@ export interface DemoActions {
   setPersona: (slot: 'A' | 'B', actorId: string) => void;
   setConsoleRole: (slot: 'A' | 'B', consoleRole: ConsoleRole) => void;
   setDeviceOffline: (slot: 'A' | 'B', offline: boolean) => void;
+  setLocale: (slot: 'A' | 'B', locale: 'en' | 'ar') => void;
   setScenario: (id: string, step: number) => void;
   clearScenario: () => void;
+  /** Per-device stack navigation (TRD §6) — `navigation/useNav.ts` is the ergonomic wrapper. */
+  pushRoute: (slot: 'A' | 'B', route: string, params?: Record<string, string>) => void;
+  popRoute: (slot: 'A' | 'B') => void;
+  replaceRoute: (slot: 'A' | 'B', route: string, params?: Record<string, string>) => void;
+  resetNavTo: (slot: 'A' | 'B', route: string, params?: Record<string, string>) => void;
 }
 
 export type DemoSlice = DemoSliceState & DemoActions;
@@ -72,7 +90,10 @@ export const createDemoSlice: StoreSlice<DemoSlice> = (set) => ({
 
   jumpClock: (jump) =>
     set((s) => {
-      s.demo.clock.now = applyJump(s.demo.clock.now, jump);
+      const from = s.demo.clock.now;
+      const to = applyJump(from, jump);
+      s.demo.clock.now = to;
+      eventBus.emit({ type: 'demo.clockJumped', at: to, from, to });
     }),
 
   setClockSpeed: (speed) =>
@@ -97,9 +118,9 @@ export const createDemoSlice: StoreSlice<DemoSlice> = (set) => ({
         s.demo.devices.B = {
           slot: 'B',
           role: 'guard',
-          actorId: '',
+          actorId: STAFF_IDS.guardImran,
           locale: 'en',
-          nav: { stack: [] },
+          nav: { stack: [{ route: 'home', params: {} }] },
           offline: false,
         };
       }
@@ -116,14 +137,14 @@ export const createDemoSlice: StoreSlice<DemoSlice> = (set) => ({
       if (device) {
         device.role = role;
         device.actorId = actorId;
-        device.nav.stack = [];
+        device.nav.stack = [{ route: 'home', params: {} }];
       } else if (slot === 'B') {
         s.demo.devices.B = {
           slot: 'B',
           role,
           actorId,
           locale: 'en',
-          nav: { stack: [] },
+          nav: { stack: [{ route: 'home', params: {} }] },
           offline: false,
         };
       }
@@ -147,13 +168,60 @@ export const createDemoSlice: StoreSlice<DemoSlice> = (set) => ({
       if (device) device.offline = offline;
     }),
 
+  setLocale: (slot, locale) =>
+    set((s) => {
+      const device = s.demo.devices[slot];
+      if (device) device.locale = locale;
+    }),
+
   setScenario: (id, step) =>
     set((s) => {
       s.demo.scenario = { id, step };
+      eventBus.emit({ type: 'demo.scenarioChanged', at: s.demo.clock.now, scenarioId: id, step });
     }),
 
   clearScenario: () =>
     set((s) => {
       s.demo.scenario = undefined;
+      eventBus.emit({
+        type: 'demo.scenarioChanged',
+        at: s.demo.clock.now,
+        scenarioId: null,
+        step: null,
+      });
+    }),
+
+  pushRoute: (slot, route, params = {}) =>
+    set((s) => {
+      const device = s.demo.devices[slot];
+      if (!device) return;
+      const entry: NavStackEntry = { route, params };
+      device.nav.stack.push(entry);
+    }),
+
+  popRoute: (slot) =>
+    set((s) => {
+      const device = s.demo.devices[slot];
+      if (!device || device.nav.stack.length <= 1) return;
+      device.nav.stack.pop();
+    }),
+
+  replaceRoute: (slot, route, params = {}) =>
+    set((s) => {
+      const device = s.demo.devices[slot];
+      if (!device) return;
+      const entry: NavStackEntry = { route, params };
+      if (device.nav.stack.length === 0) {
+        device.nav.stack.push(entry);
+      } else {
+        device.nav.stack[device.nav.stack.length - 1] = entry;
+      }
+    }),
+
+  resetNavTo: (slot, route, params = {}) =>
+    set((s) => {
+      const device = s.demo.devices[slot];
+      if (!device) return;
+      device.nav.stack = [{ route, params }];
     }),
 });

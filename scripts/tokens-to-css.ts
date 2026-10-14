@@ -9,6 +9,7 @@ import { resolve } from 'node:path';
 import {
   appColor,
   sosGradient,
+  browserChrome,
   staffColor,
   shellColor,
   shadow,
@@ -80,6 +81,8 @@ const rootLines: string[] = [
   ...colorVars(appColor),
   `  --sos-gradient-from: ${sosGradient.from};`,
   `  --sos-gradient-to: ${sosGradient.to};`,
+  `  --browser-chrome-frame: ${browserChrome.frame};`,
+  `  --browser-chrome-toolbar: ${browserChrome.toolbar};`,
   '',
   '  /* Shadows — PRD §5.2 */',
   `  --shadow-bar: ${shadow.bar};`,

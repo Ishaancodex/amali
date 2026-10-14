@@ -43,4 +43,12 @@ pnpm dev | pnpm build | pnpm typecheck | pnpm lint | pnpm test | pnpm e2e | pnpm
 
 Project foundations, tokens → CSS pipeline + `/tokens` preview page, `config/rules.ts` (zod-validated, every PRD §8 number), all types (`src/types/*`), the store skeleton (every slice, persist, dispatch, event bus), the scheduler (`JobQueue` + `SchedulerEngine.runDue`, tested for idempotency and ordering across multi-day jumps), and `buildSeed` for community (~230 units / ~420 residents), the 6 personas, named staff, 5 vendors and the 7 amenities — deterministic under `(seed, now)`. The amenity images are mapped (`pnpm images:map`).
 
-Not yet built (later phases, per trd.md §13): the demo shell (P1), all resident/guard/creche/F&B/console UI (P2+), the booking rules engine and every domain's commands (P3+), i18n content, motion wiring in components, and RBAC enforcement beyond the `can()` primitive.
+Not yet built at that point (later phases, per trd.md §13): the demo shell (P1), all resident/guard/creche/F&B/console UI (P2+), the booking rules engine and every domain's commands (P3+), i18n content, motion wiring in components, and RBAC enforcement beyond the `can()` primitive.
+
+## Phase P1 status (done)
+
+The demo shell: RolePill, Reset, PresenterMenu (scenario index + clock/dual-view/motion-speed/language/offline controls + a `/rules` viewer), PersonaPicker, DemoClockBadge, NotesPanel/ScenarioIndex (empty until P3+ scenarios land), DeviceFrame (Phone/Tablet/Browser), DeviceSlot (role → frame/theme), Navigator (push/pop, PRD M3), `useNav`/deep links, keyboard shortcuts (1-6/T/D/arrows), `/present?role=` second-screen page, and `store/sync.ts` (BroadcastChannel + leader election — only the leader ticks the clock/runs jobs). Each role currently renders a shared placeholder surface (real surfaces are P2+).
+
+**Read before touching theme-switchable colours:** Tailwind v4's `@theme` resolves a `var(--theme-token: var(--raw-token))` indirection to a literal value at build time, breaking any token meant to change per-scope (like `.staff`'s dark overrides). The 9 tokens that `.staff` overrides (`brand`, `bg-page`, `surface`, `border-card`, `text-title`/`body`/`muted`/`placeholder`) are hand-written `@utility` rules in `globals.css`, not `@theme` entries — see the comment there before adding a new theme-switchable token.
+
+Not yet built: real per-role surfaces and their screens (P2+), the booking rules engine and domain commands (P3+), scenarios S1-S8, i18n content, the sub-600px responsive shell mode (deferred — see trd.md §16).

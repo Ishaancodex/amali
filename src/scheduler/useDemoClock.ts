@@ -1,14 +1,16 @@
 'use client';
 
 /**
- * React hook over the demo clock (TRD §7.4, §16.4). In 'live' mode it
+ * React hook over the demo clock (TRD §7.4, §16.4, §8.2). In 'live' mode it
  * advances `demo.clock.now` on every animation frame, scaled by
  * `demo.clock.speed`, and runs due jobs on every change. Only the leader
- * tab should actually tick (TRD §8.2) — that gating is added in Phase P1
- * once BroadcastChannel sync exists; for now every tab ticks its own clock.
+ * tab ticks the live loop or runs jobs — followers just display whatever
+ * clock value `store/sync.ts` mirrors in, so jobs never run twice across
+ * tabs.
  */
 import { useEffect, useRef } from 'react';
 import { useStore } from '@/store';
+import { useIsLeader } from '@/store/sync';
 import { tickLive, type ClockJump } from './clock';
 import { schedulerEngine } from './engine';
 
@@ -20,11 +22,12 @@ export function useDemoClock() {
   const jumpClockAction = useStore((s) => s.jumpClock);
   const setClockMode = useStore((s) => s.setClockMode);
   const setClockSpeed = useStore((s) => s.setClockSpeed);
+  const isLeader = useIsLeader();
 
   const lastFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (mode !== 'live') {
+    if (mode !== 'live' || !isLeader) {
       lastFrameRef.current = null;
       return;
     }
@@ -43,17 +46,17 @@ export function useDemoClock() {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [mode, speed, setClockNow]);
+  }, [mode, speed, setClockNow, isLeader]);
 
   function jump(j: ClockJump) {
     jumpClockAction(j);
-    schedulerEngine.runDue(useStore.getState().demo.clock.now);
+    if (isLeader) schedulerEngine.runDue(useStore.getState().demo.clock.now);
   }
 
   function setNow(iso: string) {
     setClockNow(iso);
-    schedulerEngine.runDue(iso);
+    if (isLeader) schedulerEngine.runDue(iso);
   }
 
-  return { now, mode, speed, jump, setNow, setClockMode, setClockSpeed };
+  return { now, mode, speed, isLeader, jump, setNow, setClockMode, setClockSpeed };
 }

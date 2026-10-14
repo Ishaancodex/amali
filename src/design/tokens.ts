@@ -31,6 +31,12 @@ export const sosGradient = {
   to: '#D2382A',
 } as const;
 
+/** Browser device-frame window chrome (PRD §4.1 "Browser: ... window chrome"). */
+export const browserChrome = {
+  frame: '#E8E6E1',
+  toolbar: '#F3F1EC',
+} as const;
+
 // ---------------------------------------------------------------------------
 // Colour — staff theme (Guard, Creche), PRD §5.3
 // ---------------------------------------------------------------------------
