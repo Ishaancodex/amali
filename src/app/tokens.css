@@ -1,0 +1,132 @@
+/**
+ * GENERATED FILE — do not edit by hand.
+ * Source: src/design/tokens.ts. Regenerate with `pnpm tokens:css`.
+ */
+
+:root {
+  /* App colour tokens — PRD §5.2 */
+  --brand: #B29368;
+  --brand-tint: #FFFBF4;
+  --on-brand: #FFFFFF;
+  --text-title: #51575E;
+  --text-body: #31383C;
+  --text-muted: #6F7A80;
+  --text-placeholder: #868686;
+  --border-card: #E2DDDB;
+  --surface: #FFFFFF;
+  --bg-page: #F7F4F0;
+  --success: #19B27A;
+  --warning: #C98A2E;
+  --danger: #D2493A;
+  --info: #4F7A94;
+  --maintenance: #8A7F72;
+  --sos-gradient-from: #E8572B;
+  --sos-gradient-to: #D2382A;
+
+  /* Shadows — PRD §5.2 */
+  --shadow-bar: 0 0 0 rgba(49,42,29,0.05), 0 -1px 0 rgba(49,42,29,0.05), 0 -4px 4px rgba(49,42,29,0.04), 0 -9px 9px rgba(49,42,29,0.03), 0 -17px 17px rgba(49,42,29,0.01), 0 -26px 26px rgba(49,42,29,0);
+  --shadow-card-hover: 4px 4px 10px rgba(174,105,85,0.16);
+
+  /* Shape, spacing and layout — PRD §5.6 */
+  --page-padding: 16px;
+  --card-padding: 12px;
+  --card-gap: 16px;
+  --radius-card: 12px;
+  --radius-card-image: 8px;
+  --radius-input: 8px;
+  --radius-button: 4px;
+  --radius-tag: 16px;
+  --radius-bottom-sheet-top: 20px;
+  --border-card-width: 0.5px;
+  --touch-resident: 44px;
+  --touch-staff: 56px;
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+  --space-7: 24px;
+  --space-8: 32px;
+  --space-9: 40px;
+  --space-10: 48px;
+
+  /* Device frames — PRD §4.1/§4.2 */
+  --frame-phone-w: 390px;
+  --frame-phone-h: 844px;
+  --frame-tablet-w: 1180px;
+  --frame-tablet-h: 820px;
+  --frame-browser-w: 1440px;
+  --frame-browser-h: 900px;
+}
+
+/* Staff theme (Guard, Creche) — PRD §5.3. Scoped by .staff on the device root. */
+.staff {
+  --bg-page: #14130F;
+  --surface: #1F1E1A;
+  --border-card: #2F2D2A;
+  --text-title: #F5F1E8;
+  --text-body: #F5F1E8;
+  --text-muted: #A3A09A;
+  --text-placeholder: #A3A09A;
+  --brand: #B29368;
+}
+
+/* Shell (presentation stage) tokens — PRD §5.4. Scoped to .shell. */
+.shell {
+  --shell-stage: #0E0D0B;
+  --shell-stage-raised: #1C1B18;
+  --shell-stage-border: #3C3C39;
+  --shell-stage-rule: #2F2D2A;
+  --shell-stage-active: #F5F1E8;
+  --shell-stage-active-text: #14130F;
+  --shell-stage-text: #A3A09A;
+  --shell-notes-label: #948C7E;
+  --shell-notes-number: #737B80;
+  --shell-notes-body: #B2AA9A;
+}
+
+/* Typography — PRD §5.5. @theme so Tailwind generates text-* utilities. */
+@theme {
+  --text-title-l: 1.25rem;
+  --text-title-l--line-height: 1.5rem;
+  --text-title-l--font-weight: 500;
+  --text-label-1: 1rem;
+  --text-label-1--line-height: 1.25rem;
+  --text-label-1--font-weight: 500;
+  --text-label-2: 0.875rem;
+  --text-label-2--line-height: 1.125rem;
+  --text-label-2--font-weight: 500;
+  --text-label-3: 0.75rem;
+  --text-label-3--line-height: 1rem;
+  --text-label-3--font-weight: 500;
+  --text-body-2: 0.875rem;
+  --text-body-2--line-height: 1.25rem;
+  --text-body-2--font-weight: 400;
+  --text-body-3: 0.75rem;
+  --text-body-3--line-height: 1rem;
+  --text-body-3--font-weight: 400;
+  --text-button: 1rem;
+  --text-button--line-height: 1.25rem;
+  --text-button--font-weight: 700;
+  --text-tag: 0.75rem;
+  --text-tag--line-height: 1rem;
+  --text-tag--font-weight: 400;
+  --text-tag--letter-spacing: 0.02em;
+  --text-display: 1.75rem;
+  --text-display--line-height: 2.125rem;
+  --text-display--font-weight: 500;
+  --text-shell-label: 0.8125rem;
+  --text-shell-label--line-height: 1rem;
+  --text-shell-label--font-weight: 400;
+  --text-shell-label--letter-spacing: 0.24em;
+  --text-shell-heading: 2.5rem;
+  --text-shell-heading--line-height: 3rem;
+  --text-shell-heading--font-weight: 400;
+  --text-shell-number: 2.75rem;
+  --text-shell-number--line-height: 3rem;
+  --text-shell-number--font-weight: 500;
+  --text-shell-body: 1.25rem;
+  --text-shell-body--line-height: 2.125rem;
+  --text-shell-body--font-weight: 400;
+}

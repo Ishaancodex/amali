@@ -1,0 +1,94 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+/*
+ * Maps the generated CSS variables (src/app/tokens.css) into Tailwind v4's
+ * @theme block, so utilities like `bg-surface`, `text-brand`, `border-card`,
+ * `rounded-card` and `shadow-bar` exist. Source of truth is
+ * src/design/tokens.ts — regenerate tokens.css with `pnpm tokens:css`.
+ */
+@theme {
+  --color-brand: var(--brand);
+  --color-brand-tint: var(--brand-tint);
+  --color-on-brand: var(--on-brand);
+  --color-text-title: var(--text-title);
+  --color-text-body: var(--text-body);
+  --color-text-muted: var(--text-muted);
+  --color-text-placeholder: var(--text-placeholder);
+  --color-border-card: var(--border-card);
+  --color-surface: var(--surface);
+  --color-bg-page: var(--bg-page);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-maintenance: var(--maintenance);
+
+  --color-shell-stage: var(--shell-stage);
+  --color-shell-stage-raised: var(--shell-stage-raised);
+  --color-shell-stage-border: var(--shell-stage-border);
+  --color-shell-stage-rule: var(--shell-stage-rule);
+  --color-shell-stage-active: var(--shell-stage-active);
+  --color-shell-stage-active-text: var(--shell-stage-active-text);
+  --color-shell-stage-text: var(--shell-stage-text);
+  --color-shell-notes-label: var(--shell-notes-label);
+  --color-shell-notes-number: var(--shell-notes-number);
+  --color-shell-notes-body: var(--shell-notes-body);
+
+  --shadow-bar: var(--shadow-bar);
+  --shadow-card-hover: var(--shadow-card-hover);
+
+  --radius-card: var(--radius-card);
+  --radius-card-image: var(--radius-card-image);
+  --radius-input: var(--radius-input);
+  --radius-button: var(--radius-button);
+  --radius-tag: var(--radius-tag);
+  --radius-bottom-sheet: var(--radius-bottom-sheet-top);
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-shell-label: var(--font-pp-neue-fallback), ui-sans-serif, sans-serif;
+  --font-shell-heading: var(--font-jost), ui-sans-serif, sans-serif;
+  --font-arabic: var(--font-ibm-plex-arabic), ui-sans-serif, sans-serif;
+
+  --animate-shimmer: shimmer 1.4s linear infinite;
+
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-body);
+  font-variant-numeric: tabular-nums;
+}
+
+* {
+  border-color: var(--border-card);
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
