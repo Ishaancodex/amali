@@ -4,8 +4,10 @@
  * presenter's Reset control (PRD §4.1) — built in Phase P1.
  */
 import { buildSeed } from '@/seed';
+import { schedulerEngine } from '@/scheduler/engine';
 import { useStore } from './index';
 import './commands/registerAll';
+import '@/scheduler/registerJobs';
 
 export function hydrateFromSeed(seed?: string, now?: string): void {
   const nextState = buildSeed(seed, now);
@@ -13,6 +15,10 @@ export function hydrateFromSeed(seed?: string, now?: string): void {
   // overwrites its previous value, while the action methods (not present in
   // `nextState`, which is pure data) are left untouched.
   useStore.setState(nextState);
+  // The live scheduler queue is separate from the persisted `jobs` record (see
+  // store/commands/dispatch.ts) — a reset must clear both, or stale jobs from the old seed
+  // (referencing bookings/waitlist entries that no longer exist) could still fire later.
+  schedulerEngine.queue.clear();
 }
 
 /** True if the store looks un-seeded (e.g. right after a version bump wiped persisted state). */

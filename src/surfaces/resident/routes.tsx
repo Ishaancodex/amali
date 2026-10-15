@@ -14,6 +14,7 @@ import { AmenitiesListScreen } from './screens/amenities/AmenitiesListScreen';
 import { AmenityDetailScreen } from './screens/amenities/AmenityDetailScreen';
 import { WhatsOnScreen } from './screens/whats-on/WhatsOnScreen';
 import { WalletScreen } from './screens/wallet/WalletScreen';
+import { PadelBookScreen } from './screens/amenities/padel/PadelBookScreen';
 
 export function residentRoutes(slot: DeviceSlotId): Record<string, RouteComponent> {
   return {
@@ -26,5 +27,6 @@ export function residentRoutes(slot: DeviceSlotId): Record<string, RouteComponen
     'amenity-detail': (params) => <AmenityDetailScreen slot={slot} amenityKey={params.key ?? ''} />,
     'whats-on': () => <WhatsOnScreen slot={slot} />,
     wallet: () => <WalletScreen slot={slot} />,
+    'padel-book': () => <PadelBookScreen slot={slot} />,
   };
 }

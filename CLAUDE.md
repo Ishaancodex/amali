@@ -63,3 +63,14 @@ Resident core + shared UI: all P2 primitives (`ui/Button`/`Tag`/`Card`/`Input`/`
 - **A `<button>` can never contain another `<button>`** (invalid HTML, breaks hydration) — `AmenityCard`'s Book button is a sibling, absolutely positioned to visually overlap the image, not nested inside the card's own button. Watch for this pattern anywhere a card has its own secondary action.
 
 Not yet built: real booking flows for any amenity (P3+), events/screening content, creche/F&B/console surfaces (P5+), i18n content, guest management.
+
+## Phase P3 status (done)
+
+The padel booking rules engine, end to end — the first fully real domain in the app. `domain/booking/` (pure): `validate.ts#validateBooking` runs all 11 PRD §7 checks in order (`domain/rules/errors.ts#RuleCode`), plus `slots.ts`/`hours.ts`/`quota.ts`/`strikes.ts`/`waitlistOffer.ts`/`blackoutImpact.ts`/`alternatives.ts`. Commands (`store/commands/`): `booking.hold`/`.confirm`/`.bookNow`/`.cancel`/`.checkIn`/`.markNoShow`/`.priorityRebook`, `waitlist.join`/`.accept`/`.withdraw`/`.expireOffer`, `blackout.create`, `suspension.lift`. Scheduler job handlers (`scheduler/jobs/booking.ts`) for `hold.expire`/`waitlist.offerExpire`/`booking.noShowSweep`. S1 and S2 (`scenarios/`) pass headless end to end via `tests/scenarios/runner.ts`. Resident UI: a real padel booking flow (`screens/amenities/padel/`) and a status card (quota, suspension, upcoming booking with cancel/check-in, waitlist). 124 tests passing.
+
+**Two architectural fixes from this phase, relevant to any future command/job work:**
+
+- **The scheduler's live `schedulerEngine.queue` and the persisted `state.jobs` record are two separate stores** — `dispatch()` now bridges every job a command creates into both. A job-triggered `dispatch()` call should always pass `opts.now` as the firing job's own `runAt` (not the live clock), so multi-day jumps keep each job's timestamp honest.
+- **Never return a live draft reference as a command's `value`.** `const x = ctx.state.foo[id]; ...mutate x...; return { value: x }` returns a proxy that's revoked the instant the producer exits — `dispatch()` now calls immer's `current()` on it automatically, but don't rely on returning a draft from anywhere else.
+
+Guard check-in, the console blackout screen, and a WhatsApp waitlist-offer thread are real, tested commands with no UI surface yet — Guard/Console/WhatsApp still render P1's placeholder surface; P6/P10/P5 build those for real. No visible hold-countdown UI (the two-step `booking.hold`/`.confirm` architecture exists and is tested; the screen itself calls `booking.bookNow`). No Playwright e2e specs (consistent with P0-P2) — the double-confirm race and the waitlist hand-off are covered by dispatching against the real store in `tests/unit/booking-commands.test.ts` instead.

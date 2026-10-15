@@ -23,7 +23,14 @@ export interface ScenarioStepSetup {
 
 export interface ScenarioScriptEntry {
   command: string;
-  input: unknown;
+  /**
+   * Static input, or a function of the state *as of just before this entry
+   * runs* — needed once a scenario's later steps act on something an
+   * earlier step created (e.g. cancelling the very booking step 1 made),
+   * since a command's generated id isn't known when the scenario is
+   * authored as data.
+   */
+  input: unknown | ((s: AppState) => unknown);
   actor: Actor;
 }
 

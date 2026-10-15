@@ -12,7 +12,7 @@ import { useEffect, useRef } from 'react';
 import { useStore } from '@/store';
 import { useIsLeader } from '@/store/sync';
 import { tickLive, type ClockJump } from './clock';
-import { schedulerEngine } from './engine';
+import { runDueAndSync } from './runDueAndSync';
 
 export function useDemoClock() {
   const now = useStore((s) => s.demo.clock.now);
@@ -40,7 +40,7 @@ export function useDemoClock() {
         const elapsedMs = frameTime - last;
         const next = tickLive(useStore.getState().demo.clock.now, elapsedMs, speed);
         setClockNow(next);
-        schedulerEngine.runDue(next);
+        runDueAndSync(next);
       }
       raf = requestAnimationFrame(tick);
     };
@@ -50,12 +50,12 @@ export function useDemoClock() {
 
   function jump(j: ClockJump) {
     jumpClockAction(j);
-    if (isLeader) schedulerEngine.runDue(useStore.getState().demo.clock.now);
+    if (isLeader) runDueAndSync(useStore.getState().demo.clock.now);
   }
 
   function setNow(iso: string) {
     setClockNow(iso);
-    if (isLeader) schedulerEngine.runDue(iso);
+    if (isLeader) runDueAndSync(iso);
   }
 
   return { now, mode, speed, isLeader, jump, setNow, setClockMode, setClockSpeed };

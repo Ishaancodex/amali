@@ -14,6 +14,7 @@ import { HoursTable } from '@/features/status/HoursTable';
 import { AmenityStatusTag } from '@/features/status/AmenityStatusTag';
 import { OccupancyRing } from '@/features/status/OccupancyRing';
 import { AMENITY_ICON } from '@/features/status/amenityIcons';
+import { PadelStatusCard } from './padel/PadelStatusCard';
 import { estimateOccupancy } from '@/domain/ops/occupancyEstimate';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
@@ -53,7 +54,7 @@ export function AmenityDetailScreen({
   amenityKey: string;
 }) {
   const amenityKey = amenityKeyProp as AmenityKey;
-  const { pop } = useNav(slot);
+  const { pop, push } = useNav(slot);
   const pushToast = useUiStore((s) => s.pushToast);
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const resident = useStore((s) => s.residents[actorId]);
@@ -68,7 +69,7 @@ export function AmenityDetailScreen({
   const [imageFailed, setImageFailed] = useState(false);
 
   const { status, data } = useSimulatedQuery(`amenity-detail:${amenityKey}`, () => ({
-    currentStatus: selectCurrentStatus({ amenityStatus }, amenityKey),
+    currentStatus: selectCurrentStatus({ amenityStatus }, amenityKey, now),
   }));
 
   if (!amenity) return null;
@@ -126,17 +127,31 @@ export function AmenityDetailScreen({
             </div>
           )}
 
-          {amenityKey !== 'pool' && amenityKey !== 'gym' && (
+          {amenityKey === 'padel' && <PadelStatusCard slot={slot} />}
+
+          {amenityKey === 'padel' ? (
             <Button
               variant="primary"
               fullWidth
               disabled={accessBlocked}
-              onClick={() =>
-                pushToast(slot, 'Booking opens in a later phase (TRD §13).', 'neutral')
-              }
+              onClick={() => push('padel-book')}
             >
               {accessBlocked ? 'Booking unavailable' : 'Book'}
             </Button>
+          ) : (
+            amenityKey !== 'pool' &&
+            amenityKey !== 'gym' && (
+              <Button
+                variant="primary"
+                fullWidth
+                disabled={accessBlocked}
+                onClick={() =>
+                  pushToast(slot, 'Booking opens in a later phase (TRD §13).', 'neutral')
+                }
+              >
+                {accessBlocked ? 'Booking unavailable' : 'Book'}
+              </Button>
+            )
           )}
         </div>
       </div>

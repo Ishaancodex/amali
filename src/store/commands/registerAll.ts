@@ -5,3 +5,7 @@
  * adds its own command module's import here as it's built.
  */
 import './wallet';
+import './booking';
+import './bookingOps';
+import './waitlist';
+import './blackout';

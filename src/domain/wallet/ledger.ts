@@ -40,6 +40,59 @@ export function applyTopUp(wallet: Wallet | undefined, input: TopUpInput): TopUp
   };
 }
 
+export interface ChargeInput {
+  unitId: string;
+  amountFils: number;
+  label: string;
+  byResidentId?: string;
+  ref?: LedgerEntry['ref'];
+  now: ISODateTime;
+}
+
+/** Debits the wallet (PRD §8.1 guest fees, charged on confirm). `fils` is stored negative. */
+export function applyCharge(
+  wallet: Wallet | undefined,
+  input: ChargeInput,
+): { wallet: Wallet; entry: Omit<LedgerEntry, 'id'> } {
+  const current = wallet ?? { unitId: input.unitId, balanceFils: 0 };
+  return {
+    wallet: { ...current, balanceFils: current.balanceFils - input.amountFils },
+    entry: {
+      createdAt: input.now,
+      updatedAt: input.now,
+      unitId: input.unitId,
+      at: input.now,
+      kind: 'charge',
+      fils: -input.amountFils,
+      label: input.label,
+      byResidentId: input.byResidentId,
+      ref: input.ref,
+    },
+  };
+}
+
+/** Credits the wallet back (PRD §8.1: on-time cancellation refunds the guest fee in full). */
+export function applyRefund(
+  wallet: Wallet | undefined,
+  input: ChargeInput,
+): { wallet: Wallet; entry: Omit<LedgerEntry, 'id'> } {
+  const current = wallet ?? { unitId: input.unitId, balanceFils: 0 };
+  return {
+    wallet: { ...current, balanceFils: current.balanceFils + input.amountFils },
+    entry: {
+      createdAt: input.now,
+      updatedAt: input.now,
+      unitId: input.unitId,
+      at: input.now,
+      kind: 'refund',
+      fils: input.amountFils,
+      label: input.label,
+      byResidentId: input.byResidentId,
+      ref: input.ref,
+    },
+  };
+}
+
 /** PRD §8.4: "Low-balance warning below AED 200." */
 export const LOW_BALANCE_THRESHOLD_FILS = 20000;
 

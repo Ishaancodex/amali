@@ -35,7 +35,7 @@ export function HomeScreen({ slot }: { slot: DeviceSlotId }) {
   const { status, data } = useSimulatedQuery(`home:${actorId}`, () => {
     const list = Object.values(amenities);
     const statusByKey = Object.fromEntries(
-      list.map((a) => [a.key, selectCurrentStatus({ amenityStatus }, a.key)]),
+      list.map((a) => [a.key, selectCurrentStatus({ amenityStatus }, a.key, now)]),
     );
     return { list, statusByKey };
   });
