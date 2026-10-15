@@ -8,6 +8,9 @@ import type { AgeBand } from './creche';
 
 export type Priority = 'P1' | 'P2' | 'P3';
 
+/** Occupancy gauge band (PRD M17) — shared vocabulary for domain/ops and ui/RingGauge. */
+export type OccupancyBand = 'quiet' | 'moderate' | 'busy';
+
 export interface ChecklistItemDef {
   id: string;
   label: string;
@@ -86,12 +89,7 @@ export interface Incident extends BaseEntity {
 }
 
 export type WorkOrderState =
-  | 'open'
-  | 'assigned'
-  | 'in_progress'
-  | 'on_hold'
-  | 'resolved'
-  | 'closed';
+  'open' | 'assigned' | 'in_progress' | 'on_hold' | 'resolved' | 'closed';
 
 export interface WorkOrderAssignee {
   kind: 'staff' | 'vendor';

@@ -5,6 +5,7 @@
  */
 import { buildSeed } from '@/seed';
 import { useStore } from './index';
+import './commands/registerAll';
 
 export function hydrateFromSeed(seed?: string, now?: string): void {
   const nextState = buildSeed(seed, now);

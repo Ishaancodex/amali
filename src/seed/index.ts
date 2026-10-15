@@ -12,6 +12,8 @@ import { buildPersonas } from './personas';
 import { buildStaff } from './staff';
 import { buildVendors } from './vendors';
 import { buildAmenities } from './amenities';
+import { buildWeeklyHours } from './hours';
+import { buildAmenityStatus } from './amenityStatus';
 
 export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
   const demo = defaultDemoState(now, seed);
@@ -37,8 +39,8 @@ export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
     vendors: buildVendors(seedNow),
 
     amenities: buildAmenities(),
-    amenityStatus: [],
-    hours: [],
+    amenityStatus: buildAmenityStatus(seed, seedNow),
+    hours: buildWeeklyHours(),
     exceptions: {},
     blackouts: {},
 

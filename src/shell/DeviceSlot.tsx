@@ -20,6 +20,8 @@ import { GuardApp } from '@/surfaces/guard/GuardApp';
 import { CrecheApp } from '@/surfaces/creche/CrecheApp';
 import { FnbApp } from '@/surfaces/fnb/FnbApp';
 import { ConsoleApp } from '@/surfaces/console/ConsoleApp';
+import { IslandNotification } from '@/features/notifications/IslandNotification';
+import { ToastHost } from './ToastHost';
 
 const STAFF_DARK_ROLES: readonly Role[] = ['guard', 'creche'];
 
@@ -72,6 +74,8 @@ export function DeviceSlot({ slot }: { slot: DeviceSlotId }) {
         >
           <DeviceFrame kind={kind} now={now} dir={dir} lang={device.locale} themeClass={themeClass}>
             <SurfaceFor role={device.role} slot={slot} />
+            {kind === 'phone' && <IslandNotification slot={slot} />}
+            <ToastHost slot={slot} />
           </DeviceFrame>
         </motion.div>
       </AnimatePresence>

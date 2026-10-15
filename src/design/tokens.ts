@@ -37,6 +37,27 @@ export const browserChrome = {
   toolbar: '#F3F1EC',
 } as const;
 
+/** Skeleton shimmer (PRD §5.7: "warm grey #EFEAE4 with a shimmer"). */
+export const skeletonColor = {
+  base: '#EFEAE4',
+  highlight: '#F5F1EC',
+} as const;
+
+/** Amali gradient placeholder for a missing amenity image (PRD §5.8: "--brand-tint → #E9E1D6"). */
+export const gradientPlaceholderEnd = '#E9E1D6';
+
+/**
+ * Home hero fallback (PRD §9, §18.7): no real Amali render has been
+ * supplied yet, so a warm dusk-toned gradient stands in, approximating
+ * amaliproperties.com's described tone ("warm stone, water and dusk
+ * light") until the real asset arrives.
+ */
+export const heroFallback = {
+  top: '#4A4030',
+  mid: '#2A2420',
+  bottom: '#171310',
+} as const;
+
 // ---------------------------------------------------------------------------
 // Colour — staff theme (Guard, Creche), PRD §5.3
 // ---------------------------------------------------------------------------

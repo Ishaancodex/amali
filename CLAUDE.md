@@ -52,3 +52,14 @@ The demo shell: RolePill, Reset, PresenterMenu (scenario index + clock/dual-view
 **Read before touching theme-switchable colours:** Tailwind v4's `@theme` resolves a `var(--theme-token: var(--raw-token))` indirection to a literal value at build time, breaking any token meant to change per-scope (like `.staff`'s dark overrides). The 9 tokens that `.staff` overrides (`brand`, `bg-page`, `surface`, `border-card`, `text-title`/`body`/`muted`/`placeholder`) are hand-written `@utility` rules in `globals.css`, not `@theme` entries — see the comment there before adding a new theme-switchable token.
 
 Not yet built: real per-role surfaces and their screens (P2+), the booking rules engine and domain commands (P3+), scenarios S1-S8, i18n content, the sub-600px responsive shell mode (deferred — see trd.md §16).
+
+## Phase P2 status (done)
+
+Resident core + shared UI: all P2 primitives (`ui/Button`/`Tag`/`Card`/`Input`/`Stepper`/`IconButton`/`Sheet`/`Toast`/`Banner`/`Odometer`/`RingGauge`/`Skeleton`/`EmptyState`/`ErrorState`/`NoPermission`/`OfflineBar`/`TopBar`/`BottomNav`/`QuickActionTile`/`AmenityCard`/`InfoCard`/`Calendar`), `useSimulatedQuery`, and real Resident screens: Home, Amenities list + Detail, What's On, Activity, My Unit, Wallet, Profile, Search. Wallet is the one fully real domain this phase: `domain/wallet/ledger.ts#applyTopUp` → `wallet.topUp` command (balance + ledger entry + audit, decline path included) — verified end to end in-browser. Occupancy is a deterministic placeholder curve (`domain/ops/occupancyEstimate.ts`) until P6's real guard counter. Booking buttons on non-padel amenities are stubs (toast only) until each amenity's phase lands.
+
+**Two footguns found this phase, worth knowing before writing new screens:**
+
+- **Never return a freshly-computed array/object from a Zustand selector** (`useStore((s) => Object.values(s.x).filter(...))`) — each render gets a new reference, which Zustand's `useSyncExternalStore` treats as a real change, causing an infinite re-render loop. Select the raw `Record` from the store, then `.filter()`/`.map()` in the component body instead.
+- **A `<button>` can never contain another `<button>`** (invalid HTML, breaks hydration) — `AmenityCard`'s Book button is a sibling, absolutely positioned to visually overlap the image, not nested inside the card's own button. Watch for this pattern anywhere a card has its own secondary action.
+
+Not yet built: real booking flows for any amenity (P3+), events/screening content, creche/F&B/console surfaces (P5+), i18n content, guest management.
