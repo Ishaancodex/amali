@@ -54,11 +54,6 @@
   --spacing-card: var(--card-padding);
   --spacing-card-gap: var(--card-gap);
 
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --font-shell-label: var(--font-pp-neue-fallback), ui-sans-serif, sans-serif;
-  --font-shell-heading: var(--font-jost), ui-sans-serif, sans-serif;
-  --font-arabic: var(--font-ibm-plex-arabic), ui-sans-serif, sans-serif;
-
   @keyframes shimmer {
     from {
       background-position: 200% 0;
@@ -108,12 +103,42 @@
   border-color: var(--border-card);
 }
 
+/*
+ * Fonts (Amali brand book: Aviano Sans ≈ Poppins, DIN 2014 ≈ Barlow,
+ * "Romantically" script accent ≈ Alex Brush — design/fonts.ts). The
+ * `--font-poppins` etc. variables are only ever defined where next/font's
+ * `.variable` className lands (`<body>` in layout.tsx), never in
+ * tokens.css's `:root` — so Lightning CSS's @theme pass can't see a
+ * definition for them at build time and silently drops the custom
+ * property instead of folding it (same family of bug as the @theme
+ * comment above, one step further: here there's nothing to fold to).
+ *
+ * `font-sans` specifically can't be fixed with the usual @utility
+ * workaround either: Tailwind v4 ships `font-sans` as a built-in utility,
+ * and a same-named @utility rule doesn't win against it. So the brand's
+ * primary typeface is set directly on the `body` element below instead —
+ * layout.tsx deliberately does NOT add a `font-sans` class.
+ */
+body {
+  font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+}
+@utility font-secondary {
+  font-family: var(--font-barlow), ui-sans-serif, sans-serif;
+}
+@utility font-script {
+  font-family: var(--font-script-accent), cursive;
+}
+@utility font-arabic {
+  font-family: var(--font-ibm-plex-arabic), ui-sans-serif, sans-serif;
+}
+
 .sos-gradient {
   background-image: linear-gradient(135deg, var(--sos-gradient-from), var(--sos-gradient-to));
 }
 
-/* Hero fallback (PRD §9/§5.1): no real Amali render supplied yet (PRD §18.7) — a
-   warm dusk-toned gradient stands in, matching amaliproperties.com's described tone. */
+/* Hero fallback (PRD §9/§5.1): shown only if the real Amali render
+   (public/brand/hero.jpg) fails to load — a warm dusk-toned gradient in
+   the same Sand/Ember family stands in. */
 .hero-gradient-fallback {
   background-image:
     radial-gradient(

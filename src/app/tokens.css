@@ -5,10 +5,10 @@
 
 :root {
   /* App colour tokens — PRD §5.2 */
-  --brand: #B29368;
-  --brand-tint: #FFFBF4;
+  --brand: #BE7E63;
+  --brand-tint: #F1ECE2;
   --on-brand: #FFFFFF;
-  --text-title: #51575E;
+  --text-title: #57585B;
   --text-body: #31383C;
   --text-muted: #6F7A80;
   --text-placeholder: #868686;
@@ -77,7 +77,7 @@
   --text-body: #F5F1E8;
   --text-muted: #A3A09A;
   --text-placeholder: #A3A09A;
-  --brand: #B29368;
+  --brand: #BE7E63;
 }
 
 /* Shell (presentation stage) tokens — PRD §5.4. Scoped to .shell. */
@@ -124,6 +124,9 @@
   --text-display: 1.75rem;
   --text-display--line-height: 2.125rem;
   --text-display--font-weight: 500;
+  --text-script-accent: 2.25rem;
+  --text-script-accent--line-height: 2.5rem;
+  --text-script-accent--font-weight: 400;
   --text-shell-label: 0.8125rem;
   --text-shell-label--line-height: 1rem;
   --text-shell-label--font-weight: 400;

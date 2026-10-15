@@ -13,6 +13,15 @@ import { useNav } from '@/navigation/useNav';
 import { useStore } from '@/store';
 import type { DeviceSlotId, Role } from '@/types/demo';
 
+const ROLE_LABEL: Record<Role, string> = {
+  resident: 'Resident',
+  whatsapp: 'WhatsApp',
+  guard: 'Guard',
+  creche: 'Creche',
+  fnb: 'F&B',
+  console: 'Management',
+};
+
 function ActorLabel({ slot }: { slot: DeviceSlotId }) {
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId);
   const resident = useStore((s) => (actorId ? s.residents[actorId] : undefined));
@@ -36,11 +45,11 @@ function ActorLabel({ slot }: { slot: DeviceSlotId }) {
   return <p className="text-body-2 text-text-muted">No actor selected</p>;
 }
 
-function HomeScreen({ slot, roleLabel }: { slot: DeviceSlotId; roleLabel: string }) {
+function HomeScreen({ slot, role }: { slot: DeviceSlotId; role: Role }) {
   const { push } = useNav(slot);
   return (
     <div className="flex h-full flex-col gap-4 p-5">
-      <span className="text-tag text-brand">{roleLabel.toUpperCase()}</span>
+      <span className="text-tag font-secondary text-brand">{ROLE_LABEL[role]}</span>
       <h1 className="text-title-l text-text-title">Home</h1>
       <ActorLabel slot={slot} />
       <button
@@ -81,7 +90,7 @@ function DetailScreen({ slot }: { slot: DeviceSlotId }) {
 
 export function PlaceholderSurface({ slot, role }: { slot: DeviceSlotId; role: Role }) {
   const routes: Record<string, RouteComponent> = {
-    home: () => <HomeScreen slot={slot} roleLabel={role} />,
+    home: () => <HomeScreen slot={slot} role={role} />,
     detail: () => <DetailScreen slot={slot} />,
   };
 

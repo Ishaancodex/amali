@@ -8,11 +8,16 @@
 // Colour — app (light theme), PRD §5.2
 // ---------------------------------------------------------------------------
 
+/**
+ * Brand palette, aligned to `documents/Amali Properties_Brand Guidelines.pdf`
+ * (base palette: Amali Sand #BE7E63, Pearl #F1ECE2, Stone #57585B, Ember
+ * #000000 — sampled directly from the brand book's colour-swatch page).
+ */
 export const appColor = {
-  brand: '#B29368',
-  brandTint: '#FFFBF4',
+  brand: '#BE7E63', // Amali Sand
+  brandTint: '#F1ECE2', // Amali Pearl
   onBrand: '#FFFFFF',
-  textTitle: '#51575E',
+  textTitle: '#57585B', // Amali Stone
   textBody: '#31383C',
   textMuted: '#6F7A80',
   textPlaceholder: '#868686',
@@ -47,10 +52,9 @@ export const skeletonColor = {
 export const gradientPlaceholderEnd = '#E9E1D6';
 
 /**
- * Home hero fallback (PRD §9, §18.7): no real Amali render has been
- * supplied yet, so a warm dusk-toned gradient stands in, approximating
- * amaliproperties.com's described tone ("warm stone, water and dusk
- * light") until the real asset arrives.
+ * Home hero fallback (PRD §9, §18.7): shown only if `hero.jpg` (the real
+ * Amali render from the brand guidelines, see `public/hero/`) fails to
+ * load — a warm dusk-toned gradient in the same Sand/Ember family.
  */
 export const heroFallback = {
   top: '#4A4030',
@@ -68,7 +72,7 @@ export const staffColor = {
   border: '#2F2D2A',
   textPrimary: '#F5F1E8',
   textMuted: '#A3A09A',
-  brand: '#B29368',
+  brand: '#BE7E63', // Amali Sand
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -108,42 +112,55 @@ export const shadow = {
 // Typography, PRD §5.5
 // ---------------------------------------------------------------------------
 
+/**
+ * `font` is a role, not a literal font name, so the brand's two typefaces
+ * (primary/secondary) stay swappable in one place — see `design/fonts.ts`.
+ * `primary` = Aviano Sans (via Poppins), `secondary` = DIN 2014 (via
+ * Barlow), `script` = the "Romantically" accent (via Alex Brush), reserved
+ * for the one decorative, non-functional moment that calls for it.
+ *
+ * Label-style text is never set in all-caps (no `transform` field): tracked
+ * letter-spacing alone gives the brand book's "eyebrow label" rhythm
+ * without resorting to an uppercase transform.
+ */
 export interface TypeStyle {
-  font: 'manrope' | 'ppNeueMontreal' | 'jost';
+  font: 'primary' | 'secondary' | 'script';
   sizePx: number;
   lineHeightPx: number;
   weight: number;
   trackingEm?: number;
-  transform?: 'none' | 'uppercase';
 }
 
 export const appType: Record<
-  'titleL' | 'label1' | 'label2' | 'label3' | 'body2' | 'body3' | 'button' | 'tag' | 'display',
+  | 'titleL'
+  | 'label1'
+  | 'label2'
+  | 'label3'
+  | 'body2'
+  | 'body3'
+  | 'button'
+  | 'tag'
+  | 'display'
+  | 'scriptAccent',
   TypeStyle
 > = {
-  titleL: { font: 'manrope', sizePx: 20, lineHeightPx: 24, weight: 500 },
-  label1: { font: 'manrope', sizePx: 16, lineHeightPx: 20, weight: 500 },
-  label2: { font: 'manrope', sizePx: 14, lineHeightPx: 18, weight: 500 },
-  label3: { font: 'manrope', sizePx: 12, lineHeightPx: 16, weight: 500 },
-  body2: { font: 'manrope', sizePx: 14, lineHeightPx: 20, weight: 400 },
-  body3: { font: 'manrope', sizePx: 12, lineHeightPx: 16, weight: 400 },
-  button: { font: 'manrope', sizePx: 16, lineHeightPx: 20, weight: 700 },
-  tag: { font: 'ppNeueMontreal', sizePx: 12, lineHeightPx: 16, weight: 400, trackingEm: 0.02 },
-  display: { font: 'manrope', sizePx: 28, lineHeightPx: 34, weight: 500 },
+  titleL: { font: 'primary', sizePx: 20, lineHeightPx: 24, weight: 500 },
+  label1: { font: 'primary', sizePx: 16, lineHeightPx: 20, weight: 500 },
+  label2: { font: 'primary', sizePx: 14, lineHeightPx: 18, weight: 500 },
+  label3: { font: 'primary', sizePx: 12, lineHeightPx: 16, weight: 500 },
+  body2: { font: 'primary', sizePx: 14, lineHeightPx: 20, weight: 400 },
+  body3: { font: 'primary', sizePx: 12, lineHeightPx: 16, weight: 400 },
+  button: { font: 'primary', sizePx: 16, lineHeightPx: 20, weight: 700 },
+  tag: { font: 'secondary', sizePx: 12, lineHeightPx: 16, weight: 400, trackingEm: 0.02 },
+  display: { font: 'primary', sizePx: 28, lineHeightPx: 34, weight: 500 },
+  scriptAccent: { font: 'script', sizePx: 36, lineHeightPx: 40, weight: 400 },
 };
 
 export const shellType: Record<'label' | 'heading' | 'number' | 'body', TypeStyle> = {
-  label: {
-    font: 'ppNeueMontreal',
-    sizePx: 13,
-    lineHeightPx: 16,
-    weight: 400,
-    trackingEm: 0.24,
-    transform: 'uppercase',
-  },
-  heading: { font: 'jost', sizePx: 40, lineHeightPx: 48, weight: 400 },
-  number: { font: 'jost', sizePx: 44, lineHeightPx: 48, weight: 500 },
-  body: { font: 'jost', sizePx: 20, lineHeightPx: 34, weight: 400 },
+  label: { font: 'secondary', sizePx: 13, lineHeightPx: 16, weight: 400, trackingEm: 0.24 },
+  heading: { font: 'primary', sizePx: 40, lineHeightPx: 48, weight: 400 },
+  number: { font: 'primary', sizePx: 44, lineHeightPx: 48, weight: 500 },
+  body: { font: 'primary', sizePx: 20, lineHeightPx: 34, weight: 400 },
 };
 
 // ---------------------------------------------------------------------------

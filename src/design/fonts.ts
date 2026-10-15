@@ -1,21 +1,36 @@
 /**
- * Self-hosted fonts via `next/font/google` (TRD §2.3). PP Neue Montreal is a
- * commercial font with no files provided yet, so `tag` text style falls back
- * to Inter Tight with the same tracking (PRD §5.5).
+ * Self-hosted fonts via `next/font/google` (TRD §2.3), chosen to match
+ * `documents/Amali Properties_Brand Guidelines.pdf`: Poppins stands in for
+ * the brand's primary typeface (Aviano Sans — commercial, no license
+ * supplied) since it shares the same five-weight range (Thin/Light/
+ * Regular/Bold/Black ≈ 300/400/500/700/900) and the same geometric,
+ * rounded-terminal character. Barlow stands in for the secondary typeface
+ * (DIN 2014 — also commercial) for the same reason designers commonly pair
+ * it with DIN: a low-contrast, slightly condensed industrial grotesque.
+ * Alex Brush stands in for the brand's script accent ("Romantically") for
+ * the one decorative, non-functional moment that calls for it (the Home
+ * hero greeting) — never for dense or functional UI text.
  */
-import { Manrope, Jost, IBM_Plex_Sans_Arabic, Inter_Tight } from 'next/font/google';
+import { Poppins, Barlow, Alex_Brush, IBM_Plex_Sans_Arabic } from 'next/font/google';
 
-export const manrope = Manrope({
+export const poppins = Poppins({
   subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  variable: '--font-manrope',
+  weight: ['300', '400', '500', '700', '900'],
+  variable: '--font-poppins',
   display: 'swap',
 });
 
-export const jost = Jost({
+export const barlow = Barlow({
   subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-jost',
+  weight: ['400', '600'],
+  variable: '--font-barlow',
+  display: 'swap',
+});
+
+export const alexBrush = Alex_Brush({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-script-accent',
   display: 'swap',
 });
 
@@ -26,17 +41,9 @@ export const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   display: 'swap',
 });
 
-/** Fallback for PP Neue Montreal Book until licensed files are supplied. */
-export const interTight = Inter_Tight({
-  subsets: ['latin'],
-  weight: ['400'],
-  variable: '--font-pp-neue-fallback',
-  display: 'swap',
-});
-
 export const fontVariables = [
-  manrope.variable,
-  jost.variable,
+  poppins.variable,
+  barlow.variable,
+  alexBrush.variable,
   ibmPlexSansArabic.variable,
-  interTight.variable,
 ].join(' ');

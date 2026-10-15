@@ -69,6 +69,7 @@ const appTypeNames: Record<keyof typeof appType, string> = {
   button: 'button',
   tag: 'tag',
   display: 'display',
+  scriptAccent: 'script-accent',
 };
 
 const shellTypeNames: Record<keyof typeof shellType, string> = {

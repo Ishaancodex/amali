@@ -1,11 +1,14 @@
 'use client';
 
 /**
- * Home hero (PRD §9.1): a 320px full-bleed render, "AMALI ▾" community
+ * Home hero (PRD §9.1): a 320px full-bleed render, "Amali ▾" community
  * switcher, a glass icon button, the SOS pill. Greeting overlays the
- * bottom. No real Amali render has been supplied (PRD §18.7) — see
- * `.hero-gradient-fallback` in globals.css for the stand-in.
+ * bottom in the brand's script accent (PRD §6's real Amali render,
+ * `public/brand/hero.jpg`, sourced from the brand guidelines' 3D render
+ * guide — `.hero-gradient-fallback` in globals.css only shows if it fails
+ * to load).
  */
+import { useState } from 'react';
 import { ChevronDown } from '@/ui/icons';
 import { IconButton } from '@/ui/IconButton';
 import { Bell } from '@/ui/icons';
@@ -24,12 +27,26 @@ function greetingFor(now: string): string {
 }
 
 export function Hero({ name, now, onSos }: { name: string; now: string; onSos: () => void }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
   return (
-    <div className="hero-gradient-fallback relative h-80 w-full overflow-hidden">
-      <div className="flex items-center justify-between p-4">
-        <button type="button" className="text-label-1 text-on-brand flex items-center gap-1">
-          AMALI
-          <ChevronDown className="h-4 w-4" strokeWidth={1.5} />
+    <div
+      className={`relative h-80 w-full overflow-hidden ${imageFailed ? 'hero-gradient-fallback' : ''}`}
+    >
+      {!imageFailed && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src="/brand/hero.jpg"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      )}
+      <div className="relative flex items-center justify-between p-4">
+        <button type="button" className="flex items-center gap-1.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/amali-logo-white.svg" alt="Amali" className="h-5 w-auto" />
+          <ChevronDown className="text-on-brand h-4 w-4" strokeWidth={1.5} />
         </button>
         <div className="flex items-center gap-2">
           <IconButton icon={Bell} label="Notifications" variant="glass" />
@@ -42,8 +59,8 @@ export function Hero({ name, now, onSos }: { name: string; now: string; onSos: (
           </button>
         </div>
       </div>
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-5 pt-10 pb-5">
-        <p className="text-display text-on-brand">
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-5 pt-14 pb-5">
+        <p className="text-script-accent font-script text-on-brand">
           {greetingFor(now)}, {name}
         </p>
       </div>

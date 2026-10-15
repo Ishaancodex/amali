@@ -50,7 +50,7 @@ export function RolePill() {
             type="button"
             onClick={() => selectRole('A', r)}
             aria-pressed={active}
-            className={`font-shell-label text-shell-label relative rounded-full px-4 py-1.5 uppercase transition-colors ${
+            className={`font-secondary text-shell-label relative rounded-full px-4 py-1.5 transition-colors ${
               active
                 ? 'text-shell-stage-active-text'
                 : 'text-shell-stage-text hover:text-shell-stage-active'

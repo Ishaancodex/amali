@@ -10,7 +10,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" dir="ltr">
-      <body className={`${fontVariables} font-sans antialiased`}>{children}</body>
+      {/* No `font-sans` class here — see the `body { font-family }` rule in
+          globals.css for why the brand's primary typeface is set directly. */}
+      <body className={`${fontVariables} antialiased`}>{children}</body>
     </html>
   );
 }

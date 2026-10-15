@@ -48,16 +48,14 @@ export function PresenterMenu({ onClose }: { onClose: () => void }) {
         </div>
 
         <section className="mb-6">
-          <h3 className="font-shell-label text-shell-label text-shell-notes-label mb-2 uppercase">
-            Scenarios
-          </h3>
+          <h3 className="font-secondary text-shell-label text-shell-notes-label mb-2">Scenarios</h3>
           <ScenarioIndex onSelect={onClose} />
         </section>
 
         <div className="bg-shell-stage-rule my-2 h-px" />
 
         <section className="space-y-5 py-4">
-          <h3 className="font-shell-label text-shell-label text-shell-notes-label uppercase">
+          <h3 className="font-secondary text-shell-label text-shell-notes-label">
             Presenter tools
           </h3>
           <ClockControls />

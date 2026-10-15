@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Scenario notes panel (PRD §4.1, M2): an uppercase tracked label, a large
+ * Scenario notes panel (PRD §4.1, M2): a tracked label, a large
  * step number, a title, a rule line that draws in, and body copy. Steps
  * are clickable and apply "Take me there" (role/persona/clock) on select.
  * Empty until scenarios exist (Phase P3+).
@@ -32,9 +32,7 @@ export function NotesPanel() {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
         <div className="border-shell-stage-border h-10 w-10 rounded-full border border-dashed" />
-        <p className="font-shell-label text-shell-label text-shell-notes-label uppercase">
-          Scenario notes
-        </p>
+        <p className="font-secondary text-shell-label text-shell-notes-label">Scenario notes</p>
         <p className="text-shell-body text-shell-notes-body max-w-[220px]">
           No scenario selected. Open the menu to pick one once they&apos;re built.
         </p>
@@ -44,9 +42,7 @@ export function NotesPanel() {
 
   return (
     <div className="flex h-full flex-col gap-3 px-6 py-8">
-      <span className="font-shell-label text-shell-label text-shell-notes-label uppercase">
-        Scenario notes
-      </span>
+      <span className="font-secondary text-shell-label text-shell-notes-label">Scenario notes</span>
       <span key={`num-${stepIndex}`} className="text-shell-number text-shell-notes-number">
         {String(stepIndex + 1).padStart(2, '0')}
       </span>
@@ -74,7 +70,7 @@ export function NotesPanel() {
             />
           ))}
         </div>
-        <div className="font-shell-label text-shell-label text-shell-notes-label flex items-center gap-4 uppercase">
+        <div className="font-secondary text-shell-label text-shell-notes-label flex items-center gap-4">
           <button
             type="button"
             disabled={stepIndex === 0}

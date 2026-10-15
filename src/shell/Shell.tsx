@@ -76,7 +76,7 @@ export function Shell() {
           <button
             type="button"
             onClick={() => setNotesDrawerOpen((v) => !v)}
-            className="border-shell-stage-border bg-shell-stage-raised font-shell-label text-shell-label text-shell-notes-label flex w-full items-center justify-center border-t py-2 uppercase"
+            className="border-shell-stage-border bg-shell-stage-raised font-secondary text-shell-label text-shell-notes-label flex w-full items-center justify-center border-t py-2"
           >
             Scenario notes
           </button>
