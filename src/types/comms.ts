@@ -5,7 +5,8 @@ import type { BaseEntity, ISODateTime } from './common';
 import type { AmenityKey } from './amenity';
 import type { Tower, Cluster } from './community';
 
-export type Channel = 'app_push' | 'app_banner' | 'app_inbox' | 'wa_direct' | 'wa_channel' | 'sms_fallback';
+export type Channel =
+  'app_push' | 'app_banner' | 'app_inbox' | 'wa_direct' | 'wa_channel' | 'sms_fallback';
 
 export type AudienceClause =
   | { kind: 'all' }
@@ -32,9 +33,7 @@ export interface AnnouncementBanner {
 }
 
 export type AnnouncementSchedule =
-  | { mode: 'now' }
-  | { mode: 'at'; at: ISODateTime }
-  | { mode: 'daily'; time: string };
+  { mode: 'now' } | { mode: 'at'; at: ISODateTime } | { mode: 'daily'; time: string };
 
 export type AnnouncementState = 'draft' | 'scheduled' | 'sending' | 'sent' | 'recalled';
 
@@ -55,13 +54,7 @@ export interface Announcement extends BaseEntity {
 }
 
 export type DeliveryState =
-  | 'queued'
-  | 'held_quiet_hours'
-  | 'sent'
-  | 'delivered'
-  | 'read'
-  | 'failed'
-  | 'skipped_opt_out';
+  'queued' | 'held_quiet_hours' | 'sent' | 'delivered' | 'read' | 'failed' | 'skipped_opt_out';
 
 export interface Delivery extends BaseEntity {
   messageRef: { type: 'announcement' | 'system'; id: string };
@@ -92,6 +85,10 @@ export interface WaMessage extends BaseEntity {
   kind: WaMessageKind;
   text: string;
   buttons?: WaMessageButton[];
+  /** Set once one of `buttons` has been tapped, so the thread stops offering it again. */
+  answeredButtonId?: string;
+  /** For a message tied to the delivery simulator: the live `Delivery` row to derive ticks from (PRD M16), instead of a static snapshot. */
+  deliveryId?: string;
   ticks?: WaTicks;
 }
 

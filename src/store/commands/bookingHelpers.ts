@@ -7,7 +7,7 @@
  */
 import { id } from '@/lib/ids';
 import { rules } from '@/config/rules';
-import { addMinutesIso } from '@/lib/time';
+import { addMinutesIso, fmtDate, fmtTime } from '@/lib/time';
 import { selectCurrentStatus } from '@/store/selectors/amenities';
 import { resourceKey as makeResourceKey } from '@/domain/booking/slots';
 import { planOffer } from '@/domain/booking/waitlistOffer';
@@ -56,13 +56,19 @@ export function assembleValidateInput(
   };
 }
 
-/** Writes a Notification + a one-way WaMessage — enough to show offers/confirmations (PRD §7, P5 builds the full matrix). */
+/**
+ * Writes a Notification + a one-way WaMessage (PRD §7's "confirmation sent
+ * by app push and WhatsApp"). Pass `buttons` for a quick-reply message
+ * (PRD §8.7's "Reply 1 to book · 2 to pass") — the WhatsApp Thread screen
+ * (P5) renders them and runs the embedded command on tap.
+ */
 export function notify(
   ctx: CommandCtx,
   residentId: string,
   title: string,
   body: string,
   deepLink: string,
+  buttons?: { id: string; label: string; action: { name: string; args: unknown } }[],
 ): void {
   const notifId = id('notif');
   ctx.state.notifications[notifId] = {
@@ -86,8 +92,9 @@ export function notify(
     threadResidentId: residentId,
     dir: 'out',
     at: ctx.now,
-    kind: 'text',
+    kind: buttons && buttons.length > 0 ? 'template' : 'text',
     text: `${title}\n${body}`,
+    buttons,
     ticks: 'sent',
   };
 }
@@ -119,8 +126,20 @@ export function advanceWaitlistForResource(ctx: CommandCtx, start: string): Job[
       ctx,
       entry.residentId,
       'Padel slot available',
-      `A padel slot you waitlisted for is free. Accept by ${plan.expiresAt < start ? 'the offer deadline' : 'start time'} to confirm.`,
+      `Court free ${fmtDate(start, 'EEE')} ${fmtTime(start)}. Reply 1 to book · 2 to pass.`,
       'amali://resident/amenity-detail?key=padel',
+      [
+        {
+          id: 'book',
+          label: '1',
+          action: { name: 'waitlist.accept', args: { waitlistEntryId: entry.id } },
+        },
+        {
+          id: 'pass',
+          label: '2',
+          action: { name: 'waitlist.withdraw', args: { waitlistEntryId: entry.id } },
+        },
+      ],
     );
     jobs.push({
       id: `wl-offer-expire:${entry.id}:${plan.expiresAt}`,

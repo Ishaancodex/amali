@@ -6,6 +6,7 @@
 import type { AppState } from '@/store/types';
 import type { Actor } from '@/types/common';
 import type { ConsoleRole, Role } from '@/types/demo';
+import type { AmenityKey } from '@/types/amenity';
 import type { Capability as CapabilityArea } from './capabilities';
 
 export interface ScenarioDeviceSetup {
@@ -32,6 +33,8 @@ export interface ScenarioScriptEntry {
    */
   input: unknown | ((s: AppState) => unknown);
   actor: Actor;
+  /** For an 'assigned'-scoped capability (e.g. an amenity supervisor) — the amenities this actor is assigned to, same as `dispatch()`'s own `opts.assignedAmenities`. */
+  assignedAmenities?: AmenityKey[];
 }
 
 export interface ScenarioStep {

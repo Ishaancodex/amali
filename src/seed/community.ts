@@ -4,11 +4,27 @@
  * are layered on top afterwards, replacing the placeholder resident on
  * their reserved unit.
  */
-import { rng, rngBool, rngInt, rngPick, type Rng } from '@/lib/random';
+import { rng, rngBool, rngInt, rngPick, rngShuffle, type Rng } from '@/lib/random';
 import { seededId } from '@/lib/random';
 import { FIRST_NAMES, LAST_NAMES } from './namePools';
 import { UNIT_IDS } from './personaIds';
 import type { Unit, Resident, ResidentType } from '@/types/community';
+import type { AmenityKey } from '@/types/amenity';
+
+const OPT_IN_TOPICS: readonly AmenityKey[] = [
+  'pool',
+  'gym',
+  'padel',
+  'screening',
+  'music',
+  'dining',
+];
+
+/** A resident opts into 0-2 amenity update topics (PRD §8.7's "Opted in to Pool updates" audience). */
+function topicOptInsFor(r: Rng): AmenityKey[] {
+  const count = rngInt(r, 0, 2);
+  return rngShuffle(r, OPT_IN_TOPICS).slice(0, count);
+}
 
 const NOW_PLACEHOLDER = '2026-01-01T00:00:00.000Z'; // createdAt for seed-generated rows
 
@@ -46,12 +62,7 @@ function emailFor(first: string, last: string, r: Rng): string {
   return `${slug}${rngInt(r, 1, 99)}@example.com`;
 }
 
-function generateResident(
-  r: Rng,
-  now: string,
-  unitId: string,
-  type: ResidentType,
-): Resident {
+function generateResident(r: Rng, now: string, unitId: string, type: ResidentType): Resident {
   const first = rngPick(r, FIRST_NAMES);
   const last = rngPick(r, LAST_NAMES);
   return {
@@ -69,6 +80,7 @@ function generateResident(
       whatsappOptIn: rngBool(r, 0.85),
       appInstalled: rngBool(r, 0.95),
     },
+    topicOptIns: topicOptInsFor(r),
     locale: 'en',
     walletRole: type === 'household' ? 'spender' : 'primary',
   };
@@ -122,7 +134,11 @@ function addPodiumVillas(now: string, units: Record<string, Unit>): void {
 
 /** Ensures the 6 fixed persona unit codes exist, even if the grid above didn't generate them. */
 function ensurePersonaUnits(now: string, units: Record<string, Unit>): void {
-  const defs: { id: string; kind: Unit['kind']; extra: Partial<Pick<Unit, 'tower' | 'floor' | 'cluster'>> }[] = [
+  const defs: {
+    id: string;
+    kind: Unit['kind'];
+    extra: Partial<Pick<Unit, 'tower' | 'floor' | 'cluster'>>;
+  }[] = [
     { id: UNIT_IDS.layla, kind: 'apartment', extra: { tower: 'east', floor: 18 } },
     { id: UNIT_IDS.james, kind: 'apartment', extra: { tower: 'west', floor: 22 } },
     { id: UNIT_IDS.ahmed, kind: 'apartment', extra: { tower: 'east', floor: 7 } },

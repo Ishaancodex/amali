@@ -14,11 +14,13 @@ import {
 } from '@/ui/icons';
 import { QuickActionTile } from '@/ui/QuickActionTile';
 import { Skeleton } from '@/ui/Skeleton';
+import { Banner } from '@/ui/Banner';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import { useSimulatedQuery } from '@/lib/useSimulatedQuery';
 import { useNav } from '@/navigation/useNav';
 import { selectCurrentStatus } from '@/store/selectors/amenities';
+import { selectActiveBannersForResident } from '@/store/selectors/comms';
 import type { DeviceSlotId } from '@/types/demo';
 import { Hero } from './Hero';
 import { TodayStrip } from './TodayStrip';
@@ -29,8 +31,9 @@ export function HomeScreen({ slot }: { slot: DeviceSlotId }) {
   const resident = useStore((s) => s.residents[actorId]);
   const amenities = useStore((s) => s.amenities);
   const amenityStatus = useStore((s) => s.amenityStatus);
+  const announcements = useStore((s) => s.announcements);
   const pushToast = useUiStore((s) => s.pushToast);
-  const { push } = useNav(slot);
+  const { push, openDeepLink } = useNav(slot);
 
   const { status, data } = useSimulatedQuery(`home:${actorId}`, () => {
     const list = Object.values(amenities);
@@ -41,6 +44,8 @@ export function HomeScreen({ slot }: { slot: DeviceSlotId }) {
   });
 
   if (!resident) return null;
+
+  const activeBanners = selectActiveBannersForResident(announcements, resident.id, now);
 
   function openAmenity(key: string) {
     push('amenity-detail', { key });
@@ -53,6 +58,24 @@ export function HomeScreen({ slot }: { slot: DeviceSlotId }) {
         now={now}
         onSos={() => pushToast(slot, 'SOS is a demo prop — no real alert sent.', 'neutral')}
       />
+
+      {activeBanners.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {activeBanners.map((a) => (
+            <Banner
+              key={a.id}
+              style={a.banner!.style}
+              cta={
+                a.banner?.cta
+                  ? { label: 'View', onClick: () => openDeepLink(a.banner!.cta!) }
+                  : undefined
+              }
+            >
+              {a.body}
+            </Banner>
+          ))}
+        </div>
+      )}
 
       <section className="flex flex-col gap-2">
         <h2 className="text-label-1 text-text-title px-4">Today at Amali</h2>

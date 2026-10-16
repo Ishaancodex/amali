@@ -5,3 +5,4 @@
  */
 import './jobs/booking';
 import './jobs/events';
+import './jobs/comms';

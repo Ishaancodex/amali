@@ -56,6 +56,12 @@ import {
   Languages,
   UserPlus,
   Shield,
+  Check,
+  CheckCheck,
+  MessageCircle,
+  Megaphone,
+  Eye,
+  Send,
 } from 'lucide-react';
 
 export function Icon({ icon: IconComponent, ...props }: { icon: LucideIcon } & LucideProps) {
@@ -111,5 +117,11 @@ export {
   Languages,
   UserPlus,
   Shield,
+  Check,
+  CheckCheck,
+  MessageCircle,
+  Megaphone,
+  Eye,
+  Send,
 };
 export type { LucideIcon };

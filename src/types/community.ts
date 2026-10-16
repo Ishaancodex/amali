@@ -37,6 +37,8 @@ export interface Resident extends BaseEntity {
   phone: string;
   email: string;
   channels: ResidentChannels;
+  /** Amenity topics this resident has opted into updates for (PRD §8.7 "Opted in to Pool updates"). */
+  topicOptIns?: AmenityKey[];
   locale: 'en' | 'ar';
   walletRole: WalletRole;
 }

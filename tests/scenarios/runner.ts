@@ -40,7 +40,9 @@ export function runScenario(scenario: Scenario): void {
             )
           : entry.input;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- script entries are typed as data (CommandName isn't known until runtime here)
-      const result = useStore.getState().dispatch(entry.command as any, input as any, entry.actor);
+      const result = useStore.getState().dispatch(entry.command as any, input as any, entry.actor, {
+        assignedAmenities: entry.assignedAmenities,
+      });
       if (!result.ok) {
         throw new Error(
           `Scenario "${scenario.id}", step "${step.title}": ${entry.command} failed — ${result.error.code}: ${result.error.message}`,

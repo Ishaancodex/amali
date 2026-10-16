@@ -12,3 +12,6 @@ import './blackout';
 import './events';
 import './rsvp';
 import './eventWaitlist';
+import './announcements';
+import './amenityOps';
+import './wa';
