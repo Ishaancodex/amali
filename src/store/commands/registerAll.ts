@@ -9,3 +9,6 @@ import './booking';
 import './bookingOps';
 import './waitlist';
 import './blackout';
+import './events';
+import './rsvp';
+import './eventWaitlist';

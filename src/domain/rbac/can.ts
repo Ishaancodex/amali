@@ -15,8 +15,11 @@ export interface CanParams {
   assignedAmenities?: AmenityKey[];
 }
 
-export function grantFor(consoleRole: ConsoleRole, capability: Capability): CapabilityGrant | undefined {
-  return rbacMatrix[consoleRole][capability];
+export function grantFor(
+  consoleRole: ConsoleRole,
+  capability: Capability,
+): CapabilityGrant | undefined {
+  return rbacMatrix[consoleRole]?.[capability];
 }
 
 /** True if `consoleRole` may perform `capability`, scoped to `amenity` when the grant is 'assigned'. */

@@ -9,6 +9,10 @@ export type JobType =
   | 'waitlist.offerExpire'
   | 'booking.reminder'
   | 'booking.noShowSweep'
+  // P4 — distinct from the padel 'hold.expire'/'waitlist.offerExpire' above: `schedulerEngine.on`
+  // registers one handler per JobType, so a same-shaped-but-different-domain job needs its own type.
+  | 'rsvp.holdExpire'
+  | 'eventWaitlist.offerExpire'
   | 'event.reminder'
   | 'event.regClose'
   | 'showtime.complete'
@@ -58,7 +62,9 @@ export class JobQueue {
   due(now: string): Job[] {
     return Array.from(this.jobs.values())
       .filter((j) => !j.done && j.runAt <= now)
-      .sort((a, b) => (a.runAt === b.runAt ? a.id.localeCompare(b.id) : a.runAt.localeCompare(b.runAt)));
+      .sort((a, b) =>
+        a.runAt === b.runAt ? a.id.localeCompare(b.id) : a.runAt.localeCompare(b.runAt),
+      );
   }
 
   markDone(id: string): void {

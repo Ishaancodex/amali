@@ -138,6 +138,15 @@ export function AmenityDetailScreen({
             >
               {accessBlocked ? 'Booking unavailable' : 'Book'}
             </Button>
+          ) : amenityKey === 'screening' || amenityKey === 'music' ? (
+            <Button
+              variant="primary"
+              fullWidth
+              disabled={accessBlocked}
+              onClick={() => push('whats-on')}
+            >
+              {accessBlocked ? 'Booking unavailable' : "See what's on"}
+            </Button>
           ) : (
             amenityKey !== 'pool' &&
             amenityKey !== 'gym' && (

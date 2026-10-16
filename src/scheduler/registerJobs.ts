@@ -4,3 +4,4 @@
  * from `store/bootstrap.ts`, alongside `store/commands/registerAll.ts`.
  */
 import './jobs/booking';
+import './jobs/events';

@@ -1,8 +1,11 @@
 /**
- * The booking engine's shared error vocabulary (PRD §7 — the 11-check
- * table). `CommandError.code` (store/commands/types.ts) is one of these
- * for any booking-domain rejection. Messages are templates; `params` fills
- * in the specifics (a court closing time, a quota count, an amount).
+ * The booking-domain shared error vocabulary — originally PRD §7's padel
+ * 11-check table, extended in P4 with event/RSVP codes (PRD §8.2) that
+ * reuse the same shape and the same AGE_RESTRICTED/GUEST_LIMIT/
+ * INSUFFICIENT_BALANCE codes where the rule is identical in spirit.
+ * `CommandError.code` (store/commands/types.ts) is one of these for any
+ * booking-domain rejection. Messages are templates; `params` fills in the
+ * specifics (a court closing time, a quota count, an amount).
  */
 
 export type RuleCode =
@@ -19,7 +22,14 @@ export type RuleCode =
   | 'QUOTA_EXCEEDED'
   | 'AGE_RESTRICTED'
   | 'GUEST_LIMIT'
-  | 'INSUFFICIENT_BALANCE';
+  | 'INSUFFICIENT_BALANCE'
+  // P4 — events/RSVP (PRD §8.2)
+  | 'REGISTRATION_CLOSED'
+  | 'SHOWTIME_FULL'
+  | 'SHOWTIME_HELD'
+  | 'SEAT_TAKEN'
+  | 'SEAT_COUNT_MISMATCH'
+  | 'VENUE_CONFLICT';
 
 export interface RuleRejection {
   ok: false;

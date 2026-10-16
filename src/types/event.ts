@@ -8,12 +8,7 @@ export type EventVenue = 'screening' | 'music' | 'pool' | 'padel';
 export type EventType = 'movie' | 'live_music' | 'workshop' | 'class' | 'clinic';
 export type AgeRating = 'G' | 'PG' | 'PG-13' | '18+';
 export type AttendeeCategory = 'resident' | 'household' | 'guest_adult' | 'guest_child';
-export type EventLifecycle =
-  | 'draft'
-  | 'scheduled'
-  | 'published'
-  | 'cancelled'
-  | 'completed';
+export type EventLifecycle = 'draft' | 'scheduled' | 'published' | 'cancelled' | 'completed';
 
 export interface ProgrammeEvent extends BaseEntity {
   title: string;
@@ -59,7 +54,7 @@ export interface RsvpAttendee {
   mode?: AttendanceMode;
 }
 
-export type RsvpState = 'confirmed' | 'cancelled' | 'late_cancelled';
+export type RsvpState = 'held' | 'confirmed' | 'cancelled' | 'late_cancelled';
 
 export interface Rsvp extends BaseEntity {
   showtimeId: string;

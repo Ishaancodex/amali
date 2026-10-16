@@ -9,6 +9,7 @@ export type Capability =
   | 'overview_dashboard'
   | 'amenity_status_hours.change'
   | 'blackout.create'
+  | 'event.manage'
   | 'booking_rules.edit'
   | 'bookings_waitlists.view'
   | 'booking.on_behalf'
@@ -51,6 +52,7 @@ export const rbacMatrix: RbacMatrix = {
     overview_dashboard: all,
     'amenity_status_hours.change': all,
     'blackout.create': all,
+    'event.manage': all,
     'booking_rules.edit': all,
     'bookings_waitlists.view': all,
     'booking.on_behalf': allLogged,
@@ -75,6 +77,7 @@ export const rbacMatrix: RbacMatrix = {
     overview_dashboard: assigned,
     'amenity_status_hours.change': assigned,
     'blackout.create': assigned,
+    'event.manage': assigned,
     'bookings_waitlists.view': assigned,
     'booking.on_behalf': assignedLogged,
     'suspension.lift': assignedLogged,
