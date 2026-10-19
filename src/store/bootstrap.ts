@@ -19,9 +19,23 @@ export function hydrateFromSeed(seed?: string, now?: string): void {
   // store/commands/dispatch.ts) — a reset must clear both, or stale jobs from the old seed
   // (referencing bookings/waitlist entries that no longer exist) could still fire later.
   schedulerEngine.queue.clear();
+  // The seed can schedule jobs too (e.g. seeded reservations' reminders) — they only fire once
+  // they're in the live queue.
+  for (const job of Object.values(nextState.jobs)) schedulerEngine.queue.enqueue({ ...job });
 }
 
 /** True if the store looks un-seeded (e.g. right after a version bump wiped persisted state). */
 export function isStoreEmpty(): boolean {
   return Object.keys(useStore.getState().units).length === 0;
+}
+
+/**
+ * After a reload the store comes back from localStorage, but the live
+ * scheduler queue starts empty — re-enqueue every job not yet run, or
+ * pending holds, reminders and no-show flags would silently never fire.
+ */
+export function restorePersistedJobs(): void {
+  for (const job of Object.values(useStore.getState().jobs)) {
+    if (!job.done) schedulerEngine.queue.enqueue({ ...job });
+  }
 }

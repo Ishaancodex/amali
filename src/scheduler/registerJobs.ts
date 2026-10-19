@@ -8,3 +8,4 @@ import './jobs/events';
 import './jobs/comms';
 import './jobs/ops';
 import './jobs/creche';
+import './jobs/dining';

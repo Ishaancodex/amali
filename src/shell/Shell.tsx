@@ -15,7 +15,7 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, MotionConfig } from 'motion/react';
 import { useStore } from '@/store';
-import { hydrateFromSeed, isStoreEmpty } from '@/store/bootstrap';
+import { hydrateFromSeed, isStoreEmpty, restorePersistedJobs } from '@/store/bootstrap';
 import { startSync } from '@/store/sync';
 import { DeviceSlot } from './DeviceSlot';
 import { NotesPanel } from './NotesPanel';
@@ -35,6 +35,7 @@ export function Shell() {
 
   useEffect(() => {
     if (isStoreEmpty()) hydrateFromSeed();
+    else restorePersistedJobs();
     return startSync();
   }, []);
 

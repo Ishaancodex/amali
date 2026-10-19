@@ -59,7 +59,7 @@ export function ChildCheckCard({
   return (
     <div className="flex h-full flex-col">
       <TopBar title={inRoom ? 'Check out' : 'Check in'} onBack={onBack} />
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pb-6">
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pb-6 [&>*]:shrink-0">
         <div className="flex items-center gap-4 pt-2">
           <ChildAvatar initials={child.photo} size="lg" />
           <div>

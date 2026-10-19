@@ -111,7 +111,7 @@ export function LogIncidentScreen({
   return (
     <div className="flex h-full flex-col">
       <TopBar title="Log incident" onBack={pop} />
-      <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6">
+      <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6 [&>*]:shrink-0">
         <section className="flex flex-col gap-2 pt-2">
           <h2 className="text-label-1 text-text-title">Type</h2>
           <div className="flex flex-wrap gap-2">

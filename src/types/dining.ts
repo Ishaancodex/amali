@@ -32,6 +32,13 @@ export interface ReservationBill {
   totalFils: number;
   settledAt: ISODateTime;
   method: 'wallet' | 'unit_account';
+  /** PDR only: the shortfall to the minimum spend, charged as its own line. */
+  minimumSpendTopUpFils?: number;
+  depositAppliedFils?: number;
+  /** What was charged after the deposit — to the wallet, or to the unit account when the wallet was short. */
+  chargedFils: number;
+  /** Set when the wallet couldn't cover it and it went to the unit account (PRD §8.4 edge case). */
+  flagged?: string;
 }
 
 export interface Reservation extends BaseEntity {
@@ -52,4 +59,16 @@ export interface Reservation extends BaseEntity {
   depositHoldId?: string;
   state: ReservationState;
   bill?: ReservationBill;
+  accessibility?: string;
+  /** Host-side extras (PRD §8.4 F&B view). */
+  notes?: string;
+  walkIn?: boolean;
+  /** Set by the +30 min job; the host then confirms the no-show. */
+  noShowFlaggedAt?: ISODateTime;
+  billRequestedAt?: ISODateTime;
+  seatedAt?: ISODateTime;
+  /** "Running late?" — minutes the resident told the host. */
+  runningLateMinutes?: number;
+  /** The decline/approve message for a large-party request. */
+  managerMessage?: string;
 }

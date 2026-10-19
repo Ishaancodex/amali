@@ -63,7 +63,7 @@ export function RegisterChildScreen({ slot }: { slot: DeviceSlotId }) {
   return (
     <div className="flex h-full flex-col">
       <TopBar title="Register a child" onBack={pop} />
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pt-2 pb-6">
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pt-2 pb-6 [&>*]:shrink-0">
         <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} />
         <Input
           label="Date of birth"

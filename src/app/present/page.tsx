@@ -8,7 +8,7 @@
 import { Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useStore } from '@/store';
-import { hydrateFromSeed, isStoreEmpty } from '@/store/bootstrap';
+import { hydrateFromSeed, isStoreEmpty, restorePersistedJobs } from '@/store/bootstrap';
 import { startSync } from '@/store/sync';
 import { DeviceSlot } from '@/shell/DeviceSlot';
 import { DEFAULT_ACTOR_FOR_ROLE } from '@/shell/TopBar/RolePill';
@@ -29,6 +29,7 @@ function PresentContent() {
 
   useEffect(() => {
     if (isStoreEmpty()) hydrateFromSeed();
+    else restorePersistedJobs();
     return startSync();
   }, []);
 

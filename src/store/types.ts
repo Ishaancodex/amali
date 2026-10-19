@@ -52,6 +52,7 @@ export interface DiningState {
 export interface WalletState {
   wallets: Record<string, T.Wallet>; // keyed by unitId
   ledger: Record<string, T.LedgerEntry>;
+  walletHolds: Record<string, T.WalletHold>;
 }
 
 export interface OpsState {
@@ -157,6 +158,7 @@ export const APP_STATE_KEYS = [
   'reservations',
   'wallets',
   'ledger',
+  'walletHolds',
   'checklistTemplates',
   'checklistRuns',
   'cleaningLogs',

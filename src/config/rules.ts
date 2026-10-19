@@ -130,6 +130,8 @@ const rawRules: Rules = {
         depositRequiredFils: 5000, // AED 50 pp on next reservations
         depositAppliesNextReservations: 3,
       },
+      /** "Limited" shows on a time chip when less than this share of covers is left. */
+      limitedBelowFraction: 0.25,
     },
     pdr: {
       leadTimeHours: 48,
@@ -146,7 +148,16 @@ const rawRules: Rules = {
       pricePerPersonFils: 35000, // AED 350
       depositPerPersonFils: 10000, // AED 100
       partySize: { min: 1, max: 10 },
+      seatingMinutes: 120,
     },
+    bookingWindowDays: 30,
+    reminderHoursBefore: 3,
+    /** Party-size cuts after the deposit is held are refunded only this far ahead. */
+    depositRefundCutoffHours: 24,
+    /** Floor plan: "Reserved soon" within this many minutes; "Turning" this long after a bill settles. */
+    floor: { reservedSoonMinutes: 30, turningMinutes: 15 },
+    /** Mock Ramadan (PRD §8.4 edge case, §8.6): Iftar at sunset replaces Lunch. */
+    ramadan: { start: '2027-02-08', end: '2027-03-09', iftarAt: '18:15', iftarMinutes: 120 },
   },
 
   // PRD §8.5 — Adult Pool

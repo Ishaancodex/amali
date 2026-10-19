@@ -204,3 +204,14 @@ export const deviceFrame = {
 } as const;
 
 export type DeviceKind = keyof typeof deviceFrame;
+
+// ---------------------------------------------------------------------------
+// F&B timeline geometry, PRD §8.4 (tables × 15-minute columns, CSS px)
+// ---------------------------------------------------------------------------
+
+export const fnbTimeline = {
+  colWidth: 44,
+  rowHeight: 44,
+  labelWidth: 76,
+  blockInset: 4,
+} as const;

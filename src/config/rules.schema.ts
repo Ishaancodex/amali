@@ -8,6 +8,7 @@ import { z } from 'zod';
 const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'expected HH:mm');
 const filsAmount = z.number().int().nonnegative();
 const minutes = z.number().int().positive();
+const dateKey = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'expected YYYY-MM-DD');
 const hours = z.number().positive();
 /** Restaurant/Teppanyaki have no minimum lead time beyond the slot grid (PRD §8.4). */
 const nonnegativeHours = z.number().nonnegative();
@@ -130,6 +131,7 @@ const RestaurantRulesSchema = DiningVenueBaseSchema.extend({
     depositRequiredFils: filsAmount,
     depositAppliesNextReservations: z.number().int().positive(),
   }),
+  limitedBelowFraction: z.number().gt(0).lt(1),
 });
 
 const PrivateDiningRulesSchema = DiningVenueBaseSchema.extend({
@@ -144,12 +146,18 @@ const TeppanyakiRulesSchema = DiningVenueBaseSchema.extend({
   pricePerPersonFils: filsAmount,
   depositPerPersonFils: filsAmount,
   partySize: z.object({ min: z.number().int().positive(), max: z.number().int().positive() }),
+  seatingMinutes: minutes,
 });
 
 const DiningRulesSchema = z.object({
   restaurant: RestaurantRulesSchema,
   pdr: PrivateDiningRulesSchema,
   teppanyaki: TeppanyakiRulesSchema,
+  bookingWindowDays: z.number().int().positive(),
+  reminderHoursBefore: hours,
+  depositRefundCutoffHours: hours,
+  floor: z.object({ reservedSoonMinutes: minutes, turningMinutes: minutes }),
+  ramadan: z.object({ start: dateKey, end: dateKey, iftarAt: hhmm, iftarMinutes: minutes }),
 });
 
 const WaterQualityRangeSchema = z.object({ min: z.number(), max: z.number() });

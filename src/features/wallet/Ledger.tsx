@@ -51,13 +51,17 @@ export function Ledger({ entries }: { entries: LedgerEntry[] }) {
               <p className="text-label-2 text-text-body truncate">
                 {entry.label || kindLabel(entry.kind)}
               </p>
-              <p className="text-body-3 text-text-muted">{fmtDateTime(entry.at)}</p>
+              <p className="text-body-3 text-text-muted">
+                {fmtDateTime(entry.at)}
+                {entry.kind === 'hold' ? ` · ${kindLabel('hold')}` : ''}
+              </p>
             </div>
             <span
               className={`text-label-2 tabular-nums ${isCredit ? 'text-success' : 'text-text-body'}`}
             >
-              {isCredit ? '+' : '-'}
-              {fmtAed(entry.fils)}
+              {isCredit ? '+' : '−'}
+              {/* Charges are stored negative — show the magnitude next to the sign. */}
+              {fmtAed(Math.abs(entry.fils))}
             </span>
           </li>
         );

@@ -121,3 +121,19 @@ Creche end to end — the Creche staff device gets its first real surface (repla
 - **Format a `YYYY-MM-DD` key with `fmtDateKey`**, not `fmtDate` — a date-only string is parsed in the browser's zone and can show the day before.
 
 Deliberate scope cuts: no lease-end archive of a child's registration, no photo upload (initials, as everywhere), no separate "stop check-ins" toggle (the over-ratio block is automatic), rebalance respects band ratios but not the room cap, facility incidents convert to work orders from the console. No Playwright e2e specs (consistent with every phase so far).
+
+## Phase P8 status (done)
+
+Dining and wallet integration — the F&B tablet gets its first real surface and the resident app gains reservations. Wallet holds in `domain/wallet/holds.ts` (+ `walletHolds` state); `domain/dining/` (pure): `periods.ts`, `tables.ts`, `validate.ts`, `policy.ts`, `service.ts`. Commands: `dining.ts` (reserve/cancel/runningLate/confirmAttendance), `diningPartySize.ts`, `diningRequests.ts` (manager), `diningHost.ts` (move/seat/walk-in/no-show/bill/note), `diningSettle.ts` (settle + the reminder/auto-flag job commands); `diningJobs.ts` is shared with the seed. S5 (`scenarios/s5-dining.ts`) passes headless end to end. 352 tests passing.
+
+**Worth knowing before touching money, jobs or scenarios:**
+
+- **The wallet invariant is `available = balance − Σ active holds ≥ 0`.** A deposit is a hold (balance untouched); only `placeHold` creates one and it refuses when it doesn't fit. Settlement captures the applied deposit and charges the rest to the wallet only if what's available covers it — otherwise the unit account, flagged. `tests/unit/wallet-holds.test.ts` property-tests this; keep any new money path inside these functions.
+- **Ledger `fils` are signed** (charges negative). Display the magnitude next to a sign — the Ledger used to print "--AED".
+- **Jobs now survive reloads and step jumps.** `hydrateFromSeed` enqueues the seed's jobs, the shell re-enqueues persisted `state.jobs` on load (`restorePersistedJobs`), "Take me there" runs due jobs after a clock jump, and the leader runs anything already due when it takes over. Before P8 none of these happened — a job only fired if the live clock ticked past it in the same page session.
+- **Step `fixtures` apply before the clock moves**, so due jobs see them (S5 seats the evening's earlier parties before the 21:31 auto-flag would otherwise flag them all).
+- **Scenarios should start on the default demo day (Wed 14 Oct)** unless they reseed: the menu moves the clock to `startAt` but doesn't rebuild the seed, so "today's" seeded data is the default day's.
+- **The device frame is CSS-scaled** — drag offsets are screen pixels; hit-test drop targets with `getBoundingClientRect` (see the timeline).
+- **A flex-column scroller lets its children shrink** — add `[&>*]:shrink-0` or buttons get squashed.
+
+Deliberate scope cuts: no split-seating/waitlist booking flow for a full Teppanyaki seating (the rejection names both options), no VIP icon (no VIP data), 11–12-person requests confirmed without tables for the manager to arrange, walk-ins without a unit settle at the till, no Playwright e2e specs.

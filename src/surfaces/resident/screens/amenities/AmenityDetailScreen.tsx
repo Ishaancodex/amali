@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * Amenity detail (PRD §6.1, §8). Padel/Screening/Music/Creche book for real;
- * Dining shows rules + a "Book" stub until P8; Pool/Gym are
+ * Amenity detail (PRD §6.1, §8). Padel/Screening/Music/Creche/Dining book
+ * for real; Pool/Gym are
  * read-only status + live occupancy, which is their permanent final form.
  */
 import { useState } from 'react';
@@ -16,10 +16,10 @@ import { OccupancyRing } from '@/features/status/OccupancyRing';
 import { AMENITY_ICON } from '@/features/status/amenityIcons';
 import { PadelStatusCard } from './padel/PadelStatusCard';
 import { CrecheParentCard } from './creche/CrecheParentCard';
+import { DiningStatusCard } from './dining/DiningStatusCard';
 import { estimateOccupancy } from '@/domain/ops/occupancyEstimate';
 import { buildOccupancyEstimate } from '@/domain/ops/occupancy';
 import { useStore } from '@/store';
-import { useUiStore } from '@/store/uiStore';
 import { useSimulatedQuery } from '@/lib/useSimulatedQuery';
 import { useNav } from '@/navigation/useNav';
 import { selectCurrentStatusEntry } from '@/store/selectors/amenities';
@@ -57,7 +57,6 @@ export function AmenityDetailScreen({
 }) {
   const amenityKey = amenityKeyProp as AmenityKey;
   const { pop, push } = useNav(slot);
-  const pushToast = useUiStore((s) => s.pushToast);
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const resident = useStore((s) => s.residents[actorId]);
   const unit = useStore((s) => (resident ? s.units[resident.unitId] : undefined));
@@ -145,6 +144,7 @@ export function AmenityDetailScreen({
 
           {amenityKey === 'padel' && <PadelStatusCard slot={slot} />}
           {amenityKey === 'creche' && <CrecheParentCard slot={slot} />}
+          {amenityKey === 'dining' && <DiningStatusCard slot={slot} />}
 
           {amenityKey === 'padel' ? (
             <Button
@@ -178,21 +178,16 @@ export function AmenityDetailScreen({
             >
               {accessBlocked ? 'Booking unavailable' : "See what's on"}
             </Button>
-          ) : (
-            amenityKey !== 'pool' &&
-            amenityKey !== 'gym' && (
-              <Button
-                variant="primary"
-                fullWidth
-                disabled={accessBlocked}
-                onClick={() =>
-                  pushToast(slot, 'Booking opens in a later phase (TRD §13).', 'neutral')
-                }
-              >
-                {accessBlocked ? 'Booking unavailable' : 'Book'}
-              </Button>
-            )
-          )}
+          ) : amenityKey === 'dining' ? (
+            <Button
+              variant="primary"
+              fullWidth
+              disabled={accessBlocked}
+              onClick={() => push('dining-book')}
+            >
+              {accessBlocked ? 'Booking unavailable' : 'Reserve a table'}
+            </Button>
+          ) : null}
         </div>
       </div>
     </div>

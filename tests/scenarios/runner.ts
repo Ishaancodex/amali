@@ -14,6 +14,8 @@ import type { Scenario } from '@/scenarios/types';
 export function runScenario(scenario: Scenario): void {
   useStore.setState(buildSeed('amali-2026', scenario.startAt));
   schedulerEngine.queue.clear();
+  for (const job of Object.values(useStore.getState().jobs))
+    schedulerEngine.queue.enqueue({ ...job });
 
   if (scenario.fixtures) {
     useStore.setState((draft) => {
@@ -22,6 +24,13 @@ export function runScenario(scenario: Scenario): void {
   }
 
   for (const step of scenario.steps) {
+    // Fixtures first: they describe the state as of the step's time, before any due jobs fire.
+    if (step.setup?.fixtures) {
+      const fixtures = step.setup.fixtures;
+      useStore.setState((draft) => {
+        fixtures(draft);
+      });
+    }
     if (step.setup?.clock) {
       const clock = step.setup.clock;
       if (typeof clock === 'string') {
@@ -30,12 +39,6 @@ export function runScenario(scenario: Scenario): void {
         });
       }
       schedulerEngine.runDue(useStore.getState().demo.clock.now);
-    }
-    if (step.setup?.fixtures) {
-      const fixtures = step.setup.fixtures;
-      useStore.setState((draft) => {
-        fixtures(draft);
-      });
     }
 
     for (const entry of step.script ?? []) {

@@ -21,7 +21,8 @@ export interface ScenarioStepSetup {
   dualView?: boolean;
   devices: Partial<Record<'A' | 'B', ScenarioDeviceSetup>>;
   /**
-   * State the presenter jumps into at this step, applied after the clock
+   * State the presenter jumps into at this step, applied before the clock
+   * moves (so due jobs see it)
    * (e.g. S4's other 11 children already in the room at 09:04). Must be
    * idempotent — "Take me there" can be clicked more than once.
    */

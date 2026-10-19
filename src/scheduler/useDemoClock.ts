@@ -26,6 +26,12 @@ export function useDemoClock() {
 
   const lastFrameRef = useRef<number | null>(null);
 
+  // On load (or on taking over as leader) run anything already due — restored jobs whose time
+  // passed while the page was closed, with the clock paused, would otherwise wait for a tick.
+  useEffect(() => {
+    if (isLeader) runDueAndSync(useStore.getState().demo.clock.now);
+  }, [isLeader]);
+
   useEffect(() => {
     if (mode !== 'live' || !isLeader) {
       lastFrameRef.current = null;

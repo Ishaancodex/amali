@@ -37,7 +37,7 @@ export function ChildDetailScreen({ slot, childId }: { slot: DeviceSlotId; child
   return (
     <div className="flex h-full flex-col">
       <TopBar title={child.name.split(' ')[0]!} onBack={pop} />
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6">
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6 [&>*]:shrink-0">
         <div className="flex items-center gap-4 pt-2">
           <ChildAvatar initials={child.photo} size="lg" />
           <div>

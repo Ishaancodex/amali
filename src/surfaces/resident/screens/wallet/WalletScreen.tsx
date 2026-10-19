@@ -10,6 +10,8 @@ import { BalanceChip } from '@/features/wallet/BalanceChip';
 import { TopUpSheet } from '@/features/wallet/TopUpSheet';
 import { Ledger } from '@/features/wallet/Ledger';
 import { isLowBalance } from '@/domain/wallet/ledger';
+import { activeHoldsFils } from '@/domain/wallet/holds';
+import { fmtAed } from '@/lib/money';
 import { useStore } from '@/store';
 import { useSimulatedQuery } from '@/lib/useSimulatedQuery';
 import { useNav } from '@/navigation/useNav';
@@ -22,6 +24,7 @@ export function WalletScreen({ slot }: { slot: DeviceSlotId }) {
   const resident = useStore((s) => s.residents[actorId]);
   const wallet = useStore((s) => (resident ? s.wallets[resident.unitId] : undefined));
   const ledgerRecord = useStore((s) => s.ledger);
+  const holdsRecord = useStore((s) => s.walletHolds);
   const ledger = resident
     ? Object.values(ledgerRecord).filter((e) => e.unitId === resident.unitId)
     : [];
@@ -34,6 +37,8 @@ export function WalletScreen({ slot }: { slot: DeviceSlotId }) {
   if (!resident) return null;
 
   const canTopUp = resident.walletRole === 'primary';
+  // Deposits on hold stay in the balance but can't be spent (PRD §8.4).
+  const onHold = activeHoldsFils(Object.values(holdsRecord), resident.unitId);
 
   return (
     <div className="flex h-full flex-col">
@@ -45,6 +50,11 @@ export function WalletScreen({ slot }: { slot: DeviceSlotId }) {
             <Skeleton className="h-9 w-32" />
           ) : (
             <BalanceChip balanceFils={data.balanceFils} />
+          )}
+          {onHold > 0 && (
+            <p className="text-body-3 text-text-muted">
+              {fmtAed(onHold)} on hold · {fmtAed((wallet?.balanceFils ?? 0) - onHold)} available
+            </p>
           )}
           {canTopUp ? (
             <Button variant="primary" onClick={() => setSheetOpen(true)}>

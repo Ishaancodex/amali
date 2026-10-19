@@ -29,3 +29,8 @@ import './crecheRegistration';
 import './crecheRoom';
 import './crecheCheckOut';
 import './crecheCare';
+import './dining';
+import './diningPartySize';
+import './diningHost';
+import './diningRequests';
+import './diningSettle';

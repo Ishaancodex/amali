@@ -18,6 +18,7 @@ import { buildChecklistTemplates } from './checklistTemplates';
 import { buildShifts } from './shifts';
 import { buildWaterReadings } from './waterReadings';
 import { buildCreche } from './creche';
+import { buildDining } from './dining';
 
 export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
   const demo = defaultDemoState(now, seed);
@@ -34,6 +35,7 @@ export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
   }
   const residents = { ...community.residents, ...personas.residents };
   const creche = buildCreche(seed, seedNow, residents);
+  const dining = buildDining(seed, seedNow, residents, personas.wallets);
 
   return {
     units,
@@ -64,11 +66,12 @@ export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
     crecheBookings: creche.crecheBookings,
     bandAssignments: creche.bandAssignments,
 
-    tables: {},
-    reservations: {},
+    tables: dining.tables,
+    reservations: dining.reservations,
 
-    wallets: personas.wallets,
+    wallets: { ...dining.wallets, ...personas.wallets },
     ledger: {},
+    walletHolds: dining.walletHolds,
 
     checklistTemplates: buildChecklistTemplates(seedNow),
     checklistRuns: {},
@@ -86,7 +89,7 @@ export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
 
     notifications: {},
     auditLog: [],
-    jobs: {},
+    jobs: dining.jobs,
 
     demo,
   };

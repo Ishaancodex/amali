@@ -6,6 +6,8 @@
  */
 import { useStore } from '@/store';
 import { parseDeepLink } from '@/navigation/deepLinks';
+import { isLeader } from '@/store/sync';
+import { runDueAndSync } from '@/scheduler/runDueAndSync';
 import type { ClockJump } from '@/scheduler/clock';
 import type { ScenarioStepSetup } from '@/scenarios/types';
 
@@ -13,18 +15,21 @@ export function applyStepSetup(setup?: ScenarioStepSetup): void {
   if (!setup) return;
   const store = useStore.getState();
 
+  if (setup.fixtures) {
+    const fixtures = setup.fixtures;
+    useStore.setState((draft) => {
+      fixtures(draft);
+    });
+  }
   if (setup.clock) {
     if (typeof setup.clock === 'string') {
       store.setClockNow(setup.clock);
     } else {
       store.jumpClock(setup.clock.jump as ClockJump);
     }
-  }
-  if (setup.fixtures) {
-    const fixtures = setup.fixtures;
-    useStore.setState((draft) => {
-      fixtures(draft);
-    });
+    // A step's clock jump fires whatever fell due on the way (an auto-flag, a late pickup) —
+    // same as the headless runner. Only the leader tab runs jobs.
+    if (isLeader()) runDueAndSync(useStore.getState().demo.clock.now);
   }
   if (setup.dualView !== undefined) {
     store.setDualView(setup.dualView);
