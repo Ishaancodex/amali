@@ -7,3 +7,4 @@ import './jobs/booking';
 import './jobs/events';
 import './jobs/comms';
 import './jobs/ops';
+import './jobs/creche';

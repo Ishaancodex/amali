@@ -73,6 +73,9 @@ export function buildPersonas(now: string): PersonaBuild {
     name: 'Omar Al Mansoori',
     dob: '2022-03-10',
     photo: 'OM',
+    // PRD §15 S4 step 2: "allergy flag → check in".
+    allergies: { text: 'Peanuts and tree nuts — EpiPen in bag', severe: true },
+    dietary: 'Nut-free',
     photoConsent: true,
     guardianIds: ['guardian_layla', 'guardian_khalid'],
     emergencyContact: { name: 'Layla Al Mansoori', phone: '+971 50 123 4567' },

@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * Amenity detail (PRD §6.1, §8). Padel/Screening/Music/Creche/Dining show
- * rules + a "Book" stub (the booking flows land P3-P8); Pool/Gym are
+ * Amenity detail (PRD §6.1, §8). Padel/Screening/Music/Creche book for real;
+ * Dining shows rules + a "Book" stub until P8; Pool/Gym are
  * read-only status + live occupancy, which is their permanent final form.
  */
 import { useState } from 'react';
@@ -15,6 +15,7 @@ import { AmenityStatusTag } from '@/features/status/AmenityStatusTag';
 import { OccupancyRing } from '@/features/status/OccupancyRing';
 import { AMENITY_ICON } from '@/features/status/amenityIcons';
 import { PadelStatusCard } from './padel/PadelStatusCard';
+import { CrecheParentCard } from './creche/CrecheParentCard';
 import { estimateOccupancy } from '@/domain/ops/occupancyEstimate';
 import { buildOccupancyEstimate } from '@/domain/ops/occupancy';
 import { useStore } from '@/store';
@@ -143,6 +144,7 @@ export function AmenityDetailScreen({
           )}
 
           {amenityKey === 'padel' && <PadelStatusCard slot={slot} />}
+          {amenityKey === 'creche' && <CrecheParentCard slot={slot} />}
 
           {amenityKey === 'padel' ? (
             <Button
@@ -153,6 +155,20 @@ export function AmenityDetailScreen({
             >
               {accessBlocked ? 'Booking unavailable' : 'Book'}
             </Button>
+          ) : amenityKey === 'creche' ? (
+            <div className="flex gap-2">
+              <Button variant="secondary" fullWidth onClick={() => push('creche-pass')}>
+                Drop-off pass
+              </Button>
+              <Button
+                variant="primary"
+                fullWidth
+                disabled={accessBlocked}
+                onClick={() => push('creche-book')}
+              >
+                {accessBlocked ? 'Booking unavailable' : 'Book'}
+              </Button>
+            </div>
           ) : amenityKey === 'screening' || amenityKey === 'music' ? (
             <Button
               variant="primary"

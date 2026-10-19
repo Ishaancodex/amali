@@ -65,6 +65,11 @@ import {
   Camera,
   ClipboardCheck,
   ScrollText,
+  LogIn,
+  UserCheck,
+  ClipboardList,
+  Timer,
+  LayoutGrid,
 } from 'lucide-react';
 
 export function Icon({ icon: IconComponent, ...props }: { icon: LucideIcon } & LucideProps) {
@@ -129,5 +134,10 @@ export {
   Camera,
   ClipboardCheck,
   ScrollText,
+  LogIn,
+  UserCheck,
+  ClipboardList,
+  Timer,
+  LayoutGrid,
 };
 export type { LucideIcon };

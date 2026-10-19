@@ -37,11 +37,11 @@ export function IslandNotification({ slot }: { slot: DeviceSlotId }) {
   useEffect(() => {
     if (queue.length === 0) return;
     const timer = setTimeout(() => {
-      setQueue((q) => {
-        const [first, ...rest] = q;
-        if (first) markRead(first);
-        return rest;
-      });
+      // The store write stays out of the `setQueue` updater: React runs updaters during render,
+      // and updating the store there warns "Cannot update a component while rendering".
+      const [first] = queue;
+      if (first) markRead(first);
+      setQueue((q) => q.filter((id) => id !== first));
     }, AUTO_COLLAPSE_MS);
     return () => clearTimeout(timer);
   }, [queue, markRead]);

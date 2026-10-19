@@ -49,7 +49,9 @@ export function DeviceFrame({
   return (
     <div
       ref={containerRef}
-      className="flex h-full w-full items-start justify-center overflow-hidden"
+      // `overflow-clip`, not `hidden`: a hidden box can still be scrolled by the browser to reveal
+      // a focused input near the bottom of a device, which shifts the whole frame up.
+      className="flex h-full w-full items-start justify-center overflow-clip"
     >
       <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
         {kind === 'phone' && (

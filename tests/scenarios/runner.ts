@@ -31,6 +31,12 @@ export function runScenario(scenario: Scenario): void {
       }
       schedulerEngine.runDue(useStore.getState().demo.clock.now);
     }
+    if (step.setup?.fixtures) {
+      const fixtures = step.setup.fixtures;
+      useStore.setState((draft) => {
+        fixtures(draft);
+      });
+    }
 
     for (const entry of step.script ?? []) {
       const input =

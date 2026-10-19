@@ -4,10 +4,12 @@
 import { TopBar } from '@/ui/TopBar';
 import { Card } from '@/ui/Card';
 import { BalanceChip } from '@/features/wallet/BalanceChip';
-import { Users, Baby, Wallet as WalletIcon, UserPlus, Shield } from '@/ui/icons';
+import { Users, Baby, Wallet as WalletIcon, UserPlus, Shield, ChevronRight } from '@/ui/icons';
+import { ChildAvatar } from '@/features/creche/ChildAvatar';
+import { ageOnDate } from '@/domain/creche/bands';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
-import { fmtDate } from '@/lib/time';
+import { dubaiDateKey, fmtDate } from '@/lib/time';
 import type { DeviceSlotId } from '@/types/demo';
 
 function SectionHeader({ icon: Icon, label }: { icon: typeof Users; label: string }) {
@@ -35,6 +37,7 @@ export function MyUnitScreen({ slot }: { slot: DeviceSlotId }) {
     ? Object.values(childrenRecord).filter((c) => c.unitId === resident.unitId)
     : [];
   const guardians = useStore((s) => s.guardians);
+  const now = useStore((s) => s.demo.clock.now);
   const wallet = useStore((s) => (resident ? s.wallets[resident.unitId] : undefined));
   const rightsHolder = useStore((s) =>
     unit ? s.residents[unit.amenityRightsHolderId] : undefined,
@@ -67,25 +70,41 @@ export function MyUnitScreen({ slot }: { slot: DeviceSlotId }) {
         </div>
 
         <SectionHeader icon={Baby} label="Children & guardians" />
-        {children.length === 0 ? (
-          <p className="text-body-3 text-text-muted px-4">No children registered to this unit.</p>
-        ) : (
-          <div className="flex flex-col gap-2 px-4">
-            {children.map((child) => (
-              <Card key={child.id}>
-                <p className="text-label-2 text-text-body">{child.name}</p>
-                <p className="text-body-3 text-text-muted">Born {fmtDate(child.dob)}</p>
-                <p className="text-body-3 text-text-muted mt-1">
-                  Guardians:{' '}
-                  {child.guardianIds
-                    .map((gId) => guardians[gId]?.name)
-                    .filter(Boolean)
-                    .join(', ')}
-                </p>
+        <div className="flex flex-col gap-2 px-4">
+          {children.length === 0 && (
+            <p className="text-body-3 text-text-muted">No children registered to this unit.</p>
+          )}
+          {children.map((child) => (
+            <button
+              key={child.id}
+              type="button"
+              className="text-start"
+              onClick={() => push('child-detail', { id: child.id })}
+            >
+              <Card className="flex items-center gap-3">
+                <ChildAvatar initials={child.photo} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-label-2 text-text-body">{child.name}</p>
+                  <p className="text-body-3 text-text-muted">
+                    {ageOnDate(child.dob, dubaiDateKey(now))} yrs · Guardians:{' '}
+                    {child.guardianIds
+                      .map((gId) => guardians[gId]?.name.split(' ')[0])
+                      .filter(Boolean)
+                      .join(', ')}
+                  </p>
+                </div>
+                <ChevronRight className="text-text-muted h-4 w-4" strokeWidth={1.5} />
               </Card>
-            ))}
-          </div>
-        )}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => push('child-register')}
+            className="text-label-3 text-brand self-start py-1"
+          >
+            + Register a child
+          </button>
+        </div>
 
         <SectionHeader icon={WalletIcon} label="Wallet" />
         <div className="px-4">

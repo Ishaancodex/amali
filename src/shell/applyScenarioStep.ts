@@ -20,6 +20,12 @@ export function applyStepSetup(setup?: ScenarioStepSetup): void {
       store.jumpClock(setup.clock.jump as ClockJump);
     }
   }
+  if (setup.fixtures) {
+    const fixtures = setup.fixtures;
+    useStore.setState((draft) => {
+      fixtures(draft);
+    });
+  }
   if (setup.dualView !== undefined) {
     store.setDualView(setup.dualView);
   }

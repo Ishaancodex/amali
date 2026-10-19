@@ -9,7 +9,13 @@ import type { LucideIcon } from './icons';
 import { useNav } from '@/navigation/useNav';
 import type { DeviceSlotId } from '@/types/demo';
 
-const TABS: { route: string; label: string; icon: LucideIcon }[] = [
+export interface BottomNavTab {
+  route: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+const RESIDENT_TABS: BottomNavTab[] = [
   { route: 'home', label: 'Home', icon: Home },
   { route: 'my-unit', label: 'My Unit', icon: Building2 },
   { route: 'search', label: 'Search', icon: Search },
@@ -17,13 +23,20 @@ const TABS: { route: string; label: string; icon: LucideIcon }[] = [
   { route: 'profile', label: 'Profile', icon: User },
 ];
 
-export function BottomNav({ slot }: { slot: DeviceSlotId }) {
+/** Defaults to the resident tabs; staff surfaces (Creche) pass their own. */
+export function BottomNav({
+  slot,
+  tabs = RESIDENT_TABS,
+}: {
+  slot: DeviceSlotId;
+  tabs?: BottomNavTab[];
+}) {
   const { current, resetTo } = useNav(slot);
   const activeRoute = current?.route;
 
   return (
     <nav className="border-border-card bg-surface shadow-bar flex shrink-0 justify-around border-t-[0.5px] pt-2 pb-2">
-      {TABS.map(({ route, label, icon: TabIcon }) => {
+      {tabs.map(({ route, label, icon: TabIcon }) => {
         const active = activeRoute === route;
         return (
           <button

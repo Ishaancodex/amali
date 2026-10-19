@@ -98,6 +98,8 @@ const CrecheRulesSchema = z.object({
     feePer15MinFils: filsAmount,
     reminderMinutesBefore: minutes,
   }),
+  endOfDaySweepAt: hhmm,
+  checkInOpensMinutesBefore: minutes,
 });
 
 const DiningVenueBaseSchema = z.object({

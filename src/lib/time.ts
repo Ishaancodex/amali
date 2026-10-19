@@ -138,3 +138,8 @@ export function dubaiDateTimeToIso(dateKey: string, hhmm: string): string {
 export function rangesOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
   return isBeforeIso(aStart, bEnd) && isBeforeIso(bStart, aEnd);
 }
+
+/** Formats a `YYYY-MM-DD` date key (e.g. a date of birth) without a timezone shifting it a day. */
+export function fmtDateKey(dateKey: string, pattern = 'd MMM yyyy'): string {
+  return fmtDate(dubaiDateTimeToIso(dateKey, '12:00'), pattern);
+}

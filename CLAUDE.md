@@ -106,3 +106,18 @@ Pool & Gym operations, work orders, rosters and vendors — Guard gets its first
 - **A work order's resolve clock freezes at `sla.resolvedAt`**, not `updatedAt` (closing later would otherwise move it). Anything scoring SLA after the fact (vendor performance, list tags) passes `resolvedAt` as `frozenAt`.
 
 Deliberate scope cuts: no cleaning-log, hours-editor/exceptions or Kanban UI (the commands exist); no checklist/work-order photos; `workOrder.*` isn't amenity-scoped for an assigned supervisor at the dispatch layer (`resolveAmenity` only sees the input); the lifeguard-gap _notification_ fires from `roster.markSick` only, though the Ops home's live banner catches every cause. No Playwright e2e specs (consistent with every phase so far).
+
+## Phase P7 status (done)
+
+Creche end to end — the Creche staff device gets its first real surface (replacing P1's placeholder) and the resident app gains the Kids' Club. `domain/creche/` (pure): `bands.ts`, `capacity.ts` (`staffOnBand`, `bandLoad`, `planRebalance`), `validate.ts` (`validateCrecheBooking`, `validateCheckIn`), `guardians.ts`, `fees.ts`, `sessionIds.ts`. Commands: `creche.book`/`.cancel` (`creche.ts`), `creche.registerChild`/`.addGuardian`/`.decideGuardian` (`crecheRegistration.ts`), `creche.checkIn`/`.setActivity`/`.addCover` (`crecheRoom.ts`), `creche.requestCollectorApproval`/`.decideApproval`/`.checkOut` (`crecheCheckOut.ts`), `creche.logIncident`/`.acknowledgeIncident`/`.resolveSweep` + the pickup-reminder/late-pickup/end-of-day-sweep job commands (`crecheCare.ts`). Read models in `store/selectors/creche.ts`. S4 (`scenarios/s4-creche.ts`) passes headless end to end. 308 tests passing.
+
+**Worth knowing before touching creche, scenarios or shared UI:**
+
+- **Creche capacity is never stored.** It's `bandAssignments` for the date minus carers whose creche shift overlapping the session is `sick` — read live by `staffOnBand`. Any roster change that affects it must call `rebalanceCrecheDate` (`roster.markSick`, `roster.assignBand` and `creche.addCover` do), which moves not-yet-arrived bookings to/from the waitlist.
+- **Creche staff commands are ungated at dispatch** (`creche_lead`/`creche_carer` aren't `ConsoleRole`s, so a `capability` would always refuse them) — they check `crecheRole(ctx)` in `run()` instead, lead-only where the PRD says so.
+- **Scenario steps can carry `setup.fixtures`** — idempotent state the presenter jumps into, applied by both the headless runner and "Take me there". Picking a scenario now also sets the clock to its `startAt`.
+- **`cn()` knows the type tokens.** Before P7, tailwind-merge treated `text-label-3`/`text-body-2`/… as colours and dropped whichever of a type token and a `text-<colour>` came first. If you add a type token to `tokens.css`, add it to `lib/cn.ts` too.
+- **A `?? []` fallback inside a Zustand selector is the P2 footgun again** — use a module-level constant (`ToastHost`, `useNav` were fixed for this; dual view with an empty device B crashed).
+- **Format a `YYYY-MM-DD` key with `fmtDateKey`**, not `fmtDate` — a date-only string is parsed in the browser's zone and can show the day before.
+
+Deliberate scope cuts: no lease-end archive of a child's registration, no photo upload (initials, as everywhere), no separate "stop check-ins" toggle (the over-ratio block is automatic), rebalance respects band ratios but not the room cap, facility incidents convert to work orders from the console. No Playwright e2e specs (consistent with every phase so far).

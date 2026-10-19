@@ -9,6 +9,7 @@ import { fmtTime } from '@/lib/time';
 import { effectiveHoursForDate } from '@/domain/booking/hours';
 import { findCoverageGaps } from '@/domain/ops/roster';
 import { selectCurrentStatus } from '../selectors/amenities';
+import { rebalanceCrecheDate } from './crecheHelpers';
 import { defineCommand } from './registry';
 import type { CommandCtx, CommandResult } from './types';
 import type { AgeBand, BandAssignment } from '@/types/creche';
@@ -145,6 +146,8 @@ defineCommand<'roster.markSick'>(
       shift.state = 'sick';
       shift.updatedAt = ctx.now;
       alertLifeguardGap(ctx, shift);
+      // A sick carer lowers their band's capacity at once (PRD §8.3): rebalance that day's sessions.
+      if (shift.amenity === 'creche') rebalanceCrecheDate(ctx, shift.date);
 
       return {
         ok: true,
@@ -175,6 +178,7 @@ defineCommand<'roster.assignBand'>(
       } else {
         ctx.state.bandAssignments.push(assignment);
       }
+      rebalanceCrecheDate(ctx, input.date);
 
       return {
         ok: true,

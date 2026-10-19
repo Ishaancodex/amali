@@ -97,6 +97,10 @@ const rawRules: Rules = {
       feePer15MinFils: 5000, // AED 50 / 15 min
       reminderMinutesBefore: 15,
     },
+    /** The end-of-day sweep lists children still checked in (PRD §8.3 edge case). */
+    endOfDaySweepAt: '18:30',
+    /** Staff can check a child in this long before their session starts. */
+    checkInOpensMinutesBefore: 15,
   },
 
   // PRD §8.4 — Restaurant, Private Dining and Teppanyaki

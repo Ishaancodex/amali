@@ -5,7 +5,11 @@
 import type { Staff } from '@/types/community';
 import { STAFF_IDS } from './personaIds';
 
-function staff(now: string, id: string, overrides: Omit<Staff, 'id' | 'createdAt' | 'updatedAt'>): Staff {
+function staff(
+  now: string,
+  id: string,
+  overrides: Omit<Staff, 'id' | 'createdAt' | 'updatedAt'>,
+): Staff {
   return { id, createdAt: now, updatedAt: now, ...overrides };
 }
 
@@ -38,6 +42,18 @@ export function buildStaff(now: string): Record<string, Staff> {
     staff(now, STAFF_IDS.crecheAisha, {
       name: 'Aisha',
       avatar: 'AI',
+      role: 'creche_carer',
+      assignedAmenities: ['creche'],
+    }),
+    staff(now, STAFF_IDS.crecheFatima, {
+      name: 'Fatima',
+      avatar: 'FA',
+      role: 'creche_carer',
+      assignedAmenities: ['creche'],
+    }),
+    staff(now, STAFF_IDS.crecheNadia, {
+      name: 'Nadia',
+      avatar: 'NA',
       role: 'creche_carer',
       assignedAmenities: ['creche'],
     }),

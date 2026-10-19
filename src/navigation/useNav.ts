@@ -21,8 +21,11 @@ export interface UseNavResult {
   openDeepLink: (href: string) => void;
 }
 
+/** Stable fallback — a fresh `[]` from a Zustand selector re-renders forever. */
+const EMPTY_STACK: NavStackEntry[] = [];
+
 export function useNav(slot: DeviceSlotId): UseNavResult {
-  const stack = useStore((s) => s.demo.devices[slot]?.nav.stack ?? []);
+  const stack = useStore((s) => s.demo.devices[slot]?.nav.stack ?? EMPTY_STACK);
   const role = useStore((s) => s.demo.devices[slot]?.role);
   const push = useStore((s) => s.pushRoute);
   const pop = useStore((s) => s.popRoute);

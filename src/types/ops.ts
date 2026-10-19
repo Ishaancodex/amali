@@ -83,6 +83,12 @@ export interface Incident extends BaseEntity {
   raisedVia: IncidentSource;
   at: ISODateTime;
   childId?: string;
+  /** Creche only (PRD §8.3): the booking it happened during, witness and first aid. */
+  bookingId?: string;
+  witnessId?: string;
+  firstAid?: boolean;
+  /** When the parent was told — immediately for Medium/High, at check-out for Low. */
+  parentNotifiedAt?: ISODateTime;
   parentAck?: { at: ISODateTime; by: string };
   workOrderId?: string;
   mergedInto?: string;

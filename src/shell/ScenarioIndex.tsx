@@ -16,7 +16,9 @@ export function ScenarioIndex({ onSelect }: { onSelect?: () => void }) {
     const scenario = scenarios.find((s) => s.id === id);
     if (!scenario) return;
     setScenario(id, 0);
-    applyStepSetup(scenario.steps[0]?.setup);
+    // Start at the scenario's own time (what the headless runner seeds at) unless step 1 sets one.
+    const first = scenario.steps[0]?.setup;
+    applyStepSetup({ devices: {}, ...first, clock: first?.clock ?? scenario.startAt });
     onSelect?.();
   }
 

@@ -6,12 +6,16 @@
  * presentational and take their data via props (TRD layering rule).
  */
 import { AnimatePresence } from 'motion/react';
-import { useUiStore } from '@/store/uiStore';
+import { useUiStore, type ToastItem } from '@/store/uiStore';
 import { Toast } from '@/ui/Toast';
 import type { DeviceSlotId } from '@/types/demo';
 
+// A stable empty list: `?? []` inside the selector would hand Zustand a new array every render
+// for a slot with no toasts yet (e.g. device B in dual view) — an infinite re-render loop.
+const NO_TOASTS: readonly ToastItem[] = [];
+
 export function ToastHost({ slot }: { slot: DeviceSlotId }) {
-  const toasts = useUiStore((s) => s.toasts[slot] ?? []);
+  const toasts = useUiStore((s) => s.toasts[slot] ?? NO_TOASTS);
   const dismiss = useUiStore((s) => s.dismissToast);
 
   return (

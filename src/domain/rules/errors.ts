@@ -29,7 +29,15 @@ export type RuleCode =
   | 'SHOWTIME_HELD'
   | 'SEAT_TAKEN'
   | 'SEAT_COUNT_MISMATCH'
-  | 'VENUE_CONFLICT';
+  | 'VENUE_CONFLICT'
+  // P7 — creche (PRD §8.3)
+  | 'NOT_REGISTERED'
+  | 'GUARDIAN_NOT_AUTHORISED'
+  | 'NO_SESSION'
+  | 'RATIO_EXCEEDED'
+  | 'ROOM_FULL'
+  | 'ALLERGY_ACK_REQUIRED'
+  | 'ALREADY_BOOKED';
 
 export interface RuleRejection {
   ok: false;

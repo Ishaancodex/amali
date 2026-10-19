@@ -71,10 +71,15 @@ export function buildShifts(seed: string, now: string): Record<string, Shift> {
     add(shift(r, now, STAFF_IDS.guardImran, dateKey, '06:00', '14:00', 'padel'));
     add(shift(r, now, STAFF_IDS.guardJoseph, dateKey, '14:00', '23:00', 'padel'));
 
-    // Creche: Maria (Lead) covers both bands' morning session; Grace/Aisha split the bands for the afternoon.
-    add(shift(r, now, STAFF_IDS.crecheMaria, dateKey, '09:00', '12:00', 'creche', 'kids'));
-    add(shift(r, now, STAFF_IDS.crecheGrace, dateKey, '15:00', '18:00', 'creche', 'kids'));
-    add(shift(r, now, STAFF_IDS.crecheAisha, dateKey, '15:00', '18:00', 'creche', 'toddlers'));
+    // Creche: Maria (Lead) floats across the day; Grace and Aisha staff the Kids band, Fatima
+    // Toddlers, Nadia Juniors (PRD §15 S4 seed: "Kids band is staffed by Grace and Aisha").
+    // Band capacity itself comes from `bandAssignments` (seed/creche.ts) — a shift here only
+    // matters to capacity once it's marked sick.
+    add(shift(r, now, STAFF_IDS.crecheMaria, dateKey, '08:30', '18:30', 'creche'));
+    add(shift(r, now, STAFF_IDS.crecheGrace, dateKey, '08:45', '18:15', 'creche', 'kids'));
+    add(shift(r, now, STAFF_IDS.crecheAisha, dateKey, '08:45', '18:15', 'creche', 'kids'));
+    add(shift(r, now, STAFF_IDS.crecheFatima, dateKey, '08:45', '18:15', 'creche', 'toddlers'));
+    add(shift(r, now, STAFF_IDS.crecheNadia, dateKey, '08:45', '18:15', 'creche', 'juniors'));
   }
 
   return out;

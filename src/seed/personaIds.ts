@@ -34,6 +34,8 @@ export const STAFF_IDS = {
   crecheMaria: 'staff_maria',
   crecheGrace: 'staff_grace',
   crecheAisha: 'staff_aisha',
+  crecheFatima: 'staff_fatima',
+  crecheNadia: 'staff_nadia',
   fnbMarco: 'staff_marco',
   fnbKen: 'staff_ken',
   fnbElena: 'staff_elena',

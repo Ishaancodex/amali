@@ -1,7 +1,8 @@
 /**
  * Route → component map (TRD §6). Bottom-nav roots: home, my-unit, search,
  * activity, profile. Pushed from Home's quick actions: amenities,
- * amenity-detail, whats-on, wallet.
+ * amenity-detail, whats-on, wallet; creche-book/creche-pass from the
+ * Kids' Club page; child-detail/child-register from My Unit.
  */
 import type { RouteComponent } from '@/navigation/Navigator';
 import type { DeviceSlotId } from '@/types/demo';
@@ -16,6 +17,10 @@ import { WhatsOnScreen } from './screens/whats-on/WhatsOnScreen';
 import { EventDetailScreen } from './screens/whats-on/EventDetailScreen';
 import { WalletScreen } from './screens/wallet/WalletScreen';
 import { PadelBookScreen } from './screens/amenities/padel/PadelBookScreen';
+import { CrecheBookScreen } from './screens/amenities/creche/CrecheBookScreen';
+import { CrechePassScreen } from './screens/amenities/creche/CrechePassScreen';
+import { ChildDetailScreen } from './screens/my-unit/ChildDetailScreen';
+import { RegisterChildScreen } from './screens/my-unit/RegisterChildScreen';
 
 export function residentRoutes(slot: DeviceSlotId): Record<string, RouteComponent> {
   return {
@@ -36,5 +41,9 @@ export function residentRoutes(slot: DeviceSlotId): Record<string, RouteComponen
     ),
     wallet: () => <WalletScreen slot={slot} />,
     'padel-book': () => <PadelBookScreen slot={slot} />,
+    'creche-book': (params) => <CrecheBookScreen slot={slot} childId={params.child} />,
+    'creche-pass': () => <CrechePassScreen slot={slot} />,
+    'child-detail': (params) => <ChildDetailScreen slot={slot} childId={params.id ?? ''} />,
+    'child-register': () => <RegisterChildScreen slot={slot} />,
   };
 }

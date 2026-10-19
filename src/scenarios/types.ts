@@ -20,6 +20,12 @@ export interface ScenarioStepSetup {
   clock?: string | { jump: string };
   dualView?: boolean;
   devices: Partial<Record<'A' | 'B', ScenarioDeviceSetup>>;
+  /**
+   * State the presenter jumps into at this step, applied after the clock
+   * (e.g. S4's other 11 children already in the room at 09:04). Must be
+   * idempotent — "Take me there" can be clicked more than once.
+   */
+  fixtures?: (draft: AppState) => void;
 }
 
 export interface ScenarioScriptEntry {

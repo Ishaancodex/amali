@@ -24,3 +24,8 @@ import './incidents';
 import './workOrders';
 import './roster';
 import './notifications';
+import './creche';
+import './crecheRegistration';
+import './crecheRoom';
+import './crecheCheckOut';
+import './crecheCare';

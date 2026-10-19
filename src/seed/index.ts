@@ -17,6 +17,7 @@ import { buildAmenityStatus } from './amenityStatus';
 import { buildChecklistTemplates } from './checklistTemplates';
 import { buildShifts } from './shifts';
 import { buildWaterReadings } from './waterReadings';
+import { buildCreche } from './creche';
 
 export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
   const demo = defaultDemoState(now, seed);
@@ -32,12 +33,13 @@ export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
     units[unitId] = { ...units[unitId], ...overrides } as (typeof units)[string];
   }
   const residents = { ...community.residents, ...personas.residents };
+  const creche = buildCreche(seed, seedNow, residents);
 
   return {
     units,
     residents,
-    children: personas.children,
-    guardians: personas.guardians,
+    children: { ...creche.children, ...personas.children },
+    guardians: { ...creche.guardians, ...personas.guardians },
     staff: buildStaff(seedNow),
     vendors: buildVendors(seedNow),
 
@@ -58,9 +60,9 @@ export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
     rsvps: {},
     seasons: {},
 
-    crecheSessions: {},
-    crecheBookings: {},
-    bandAssignments: [],
+    crecheSessions: creche.crecheSessions,
+    crecheBookings: creche.crecheBookings,
+    bandAssignments: creche.bandAssignments,
 
     tables: {},
     reservations: {},

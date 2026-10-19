@@ -46,12 +46,7 @@ export interface CrecheSession extends BaseEntity {
 }
 
 export type CrecheBookingState =
-  | 'confirmed'
-  | 'waitlisted'
-  | 'checked_in'
-  | 'checked_out'
-  | 'cancelled'
-  | 'no_show';
+  'confirmed' | 'waitlisted' | 'checked_in' | 'checked_out' | 'cancelled' | 'no_show';
 
 export interface ApprovalRequest extends BaseEntity {
   collectorName: string;
@@ -80,12 +75,26 @@ export interface CrecheBooking extends BaseEntity {
   sessionId: string;
   childId: string;
   bookedBy: string;
+  /** The child's band when booked — what capacity is counted against (PRD §8.3: siblings each against their own band). */
+  band: AgeBand;
   state: CrecheBookingState;
   checkIn?: CrecheCheckIn;
   checkOut?: CrecheCheckOut;
   activity?: { label: string; at: ISODateTime }[];
+  /** An unauthorised collector waiting on the parent's one-time approval (PRD §8.3 step 5). */
+  pendingApproval?: ApprovalRequest;
+  /** Tenant session fee, charged at check-out on actual time (owners are free). */
+  feeFils?: number;
   lateFeeFils?: number;
+  /** Set by the late-pickup job when the parent was chased, so the board shows the "Late pickup" row. */
+  latePickupNotifiedAt?: ISODateTime;
+  /** Set by the end-of-day sweep: still checked in after the last session — the lead must resolve it. */
+  flaggedAtSweep?: ISODateTime;
 }
+
+/** PRD §8.3 incident types. */
+export type CrecheIncidentType =
+  'minor_injury' | 'illness' | 'behaviour' | 'allergy_reaction' | 'facility';
 
 /** Drives creche capacity for a band on a given day (PRD §8.3). */
 export interface BandAssignment {
