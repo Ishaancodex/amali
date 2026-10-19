@@ -14,7 +14,7 @@ import { PERSONA_IDS } from '@/seed/personaIds';
 import type { Role, StaffRole } from '@/types';
 
 const STAFF_ROLES_FOR: Partial<Record<Role, StaffRole[]>> = {
-  guard: ['guard'],
+  guard: ['guard', 'lifeguard', 'gym_attendant'],
   creche: ['creche_lead', 'creche_carer'],
   fnb: ['fnb_manager', 'host', 'chef'],
   console: ['community_manager', 'amenity_supervisor', 'call_centre'],

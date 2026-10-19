@@ -22,7 +22,7 @@ import { createCommsSlice } from './slices/comms';
 import { createNotificationsSlice } from './slices/notifications';
 import { createAuditSlice } from './slices/audit';
 import { createSchedulerSlice } from './slices/scheduler';
-import { createDemoSlice } from './slices/demo';
+import { createDemoSlice, STATE_VERSION } from './slices/demo';
 import { createDispatchSlice } from './commands/dispatch';
 import { migrate } from './migrate';
 
@@ -79,7 +79,7 @@ export const useStore = create<RootStore>()(
       })),
       {
         name: PERSIST_KEY,
-        version: 1,
+        version: STATE_VERSION,
         migrate,
         storage: {
           getItem: (name) => {

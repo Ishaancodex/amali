@@ -20,7 +20,9 @@ import type { DemoSliceState, StoreSlice } from '../types';
 // PRD §15 S1 — "Start: Wed 14 Oct, 17:30" → 13:30 UTC (Dubai is UTC+4, no DST).
 export const DEMO_START_ISO = '2026-10-14T13:30:00.000Z';
 export const SEED_NAME = 'amali-2026';
-export const STATE_VERSION = 1;
+// Bumped to 2 for P6: the seed gained checklist templates, shifts and water readings, so an
+// older persisted state (which has none) must re-seed rather than hydrate.
+export const STATE_VERSION = 2;
 
 function defaultDeviceA(): DeviceSession {
   return {

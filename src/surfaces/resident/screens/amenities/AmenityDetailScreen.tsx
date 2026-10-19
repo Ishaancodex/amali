@@ -16,11 +16,12 @@ import { OccupancyRing } from '@/features/status/OccupancyRing';
 import { AMENITY_ICON } from '@/features/status/amenityIcons';
 import { PadelStatusCard } from './padel/PadelStatusCard';
 import { estimateOccupancy } from '@/domain/ops/occupancyEstimate';
+import { buildOccupancyEstimate } from '@/domain/ops/occupancy';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import { useSimulatedQuery } from '@/lib/useSimulatedQuery';
 import { useNav } from '@/navigation/useNav';
-import { selectCurrentStatus } from '@/store/selectors/amenities';
+import { selectCurrentStatusEntry } from '@/store/selectors/amenities';
 import { rules } from '@/config/rules';
 import type { DeviceSlotId } from '@/types/demo';
 import type { AmenityKey } from '@/types/amenity';
@@ -66,10 +67,11 @@ export function AmenityDetailScreen({
   const exceptionsRecord = useStore((s) => s.exceptions);
   const exceptions = Object.values(exceptionsRecord).filter((e) => e.amenity === amenityKey);
   const now = useStore((s) => s.demo.clock.now);
+  const poolOccupancy = useStore((s) => s.occupancy.pool ?? 0);
   const [imageFailed, setImageFailed] = useState(false);
 
   const { status, data } = useSimulatedQuery(`amenity-detail:${amenityKey}`, () => ({
-    currentStatus: selectCurrentStatus({ amenityStatus }, amenityKey, now),
+    currentStatusEntry: selectCurrentStatusEntry({ amenityStatus }, amenityKey, now),
   }));
 
   if (!amenity) return null;
@@ -101,7 +103,14 @@ export function AmenityDetailScreen({
           {status === 'loading' ? (
             <Skeleton className="h-6 w-20" />
           ) : (
-            <AmenityStatusTag status={data.currentStatus} />
+            <div className="flex items-center gap-2">
+              <AmenityStatusTag status={data.currentStatusEntry?.status ?? 'open'} />
+              {data.currentStatusEntry?.reason && (
+                <span className="text-body-3 text-text-muted">
+                  {data.currentStatusEntry.reason}
+                </span>
+              )}
+            </div>
           )}
 
           {accessBlocked && unit?.leaseEnd && (
@@ -113,7 +122,13 @@ export function AmenityDetailScreen({
 
           <p className="text-body-2 text-text-muted">{rulesSummaryFor(amenityKey)}</p>
 
-          {(amenityKey === 'pool' || amenityKey === 'gym') && (
+          {amenityKey === 'pool' && (
+            <div>
+              <h2 className="text-label-1 text-text-title mb-2">Live occupancy</h2>
+              <OccupancyRing estimate={buildOccupancyEstimate(poolOccupancy, amenity.capacity)} />
+            </div>
+          )}
+          {amenityKey === 'gym' && (
             <div>
               <h2 className="text-label-1 text-text-title mb-2">Live occupancy</h2>
               <OccupancyRing estimate={estimateOccupancy(now, amenity.capacity)} />

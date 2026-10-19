@@ -8,4 +8,5 @@ export const createOpsSlice: StoreSlice<OpsState> = () => ({
   shifts: {},
   incidents: {},
   workOrders: {},
+  occupancy: {},
 });

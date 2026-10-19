@@ -62,6 +62,8 @@ export interface OpsState {
   shifts: Record<string, T.Shift>;
   incidents: Record<string, T.Incident>;
   workOrders: Record<string, T.WorkOrder>;
+  /** Live headcount, guard-adjusted (PRD §8.5 — pool only; the gym stays on the seeded demand curve). */
+  occupancy: Partial<Record<T.AmenityKey, number>>;
 }
 
 export interface CommsState {
@@ -162,6 +164,7 @@ export const APP_STATE_KEYS = [
   'shifts',
   'incidents',
   'workOrders',
+  'occupancy',
   'announcements',
   'deliveries',
   'waMessages',

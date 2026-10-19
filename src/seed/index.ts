@@ -14,6 +14,9 @@ import { buildVendors } from './vendors';
 import { buildAmenities } from './amenities';
 import { buildWeeklyHours } from './hours';
 import { buildAmenityStatus } from './amenityStatus';
+import { buildChecklistTemplates } from './checklistTemplates';
+import { buildShifts } from './shifts';
+import { buildWaterReadings } from './waterReadings';
 
 export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
   const demo = defaultDemoState(now, seed);
@@ -65,13 +68,14 @@ export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
     wallets: personas.wallets,
     ledger: {},
 
-    checklistTemplates: {},
+    checklistTemplates: buildChecklistTemplates(seedNow),
     checklistRuns: {},
     cleaningLogs: {},
-    waterReadings: {},
-    shifts: {},
+    waterReadings: buildWaterReadings(seed, seedNow),
+    shifts: buildShifts(seed, seedNow),
     incidents: {},
     workOrders: {},
+    occupancy: {},
 
     announcements: {},
     deliveries: {},

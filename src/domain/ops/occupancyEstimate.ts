@@ -1,24 +1,15 @@
 /**
- * Deterministic occupancy estimate for Pool/Gym, keyed off the demo clock
- * hour. This is a placeholder until P6 wires the real guard +/- counter
- * (PRD §8.5) — replace `estimateOccupancy` there; everything that reads it
- * (`OccupancyRing`) won't need to change.
+ * Deterministic occupancy estimate, from the seeded demand curve (PRD
+ * §8.5: "Gym: ... simulated: the counter drifts realistically using the
+ * seeded hourly curve"). P6 replaced the Pool's half of this placeholder
+ * with the real guard +/− counter (`domain/ops/occupancy.ts`) — the Gym
+ * stays on this curve, since card-tap counting isn't modelled.
  */
 import { toDubai } from '@/lib/time';
-import type { OccupancyBand } from '@/types/ops';
+import { occupancyBand } from './occupancy';
+import type { OccupancyEstimate } from './occupancy';
 
-export interface OccupancyEstimate {
-  count: number;
-  capacity: number;
-  fraction: number;
-  band: OccupancyBand;
-}
-
-function bandFor(fraction: number): OccupancyBand {
-  if (fraction < 0.35) return 'quiet';
-  if (fraction < 0.7) return 'moderate';
-  return 'busy';
-}
+export type { OccupancyEstimate };
 
 /** A smooth two-peak curve (morning + evening) across the day, in [0, 1]. */
 function demandCurve(hour: number, minutes: number): number {
@@ -36,5 +27,5 @@ export function estimateOccupancy(nowIso: string, capacity: number): OccupancyEs
     Math.min(0.95, demandCurve(dubai.getHours(), dubai.getMinutes())),
   );
   const count = Math.round(fraction * capacity);
-  return { count, capacity, fraction, band: bandFor(fraction) };
+  return { count, capacity, fraction, band: occupancyBand(fraction) };
 }

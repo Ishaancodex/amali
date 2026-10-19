@@ -102,6 +102,10 @@ export interface WorkOrderSla {
   pausedMs: number;
   pausedSince?: ISODateTime;
   respondedAt?: ISODateTime;
+  /** When it entered Resolved — freezes the resolve clock (closing later doesn't move it); cleared on reopen. */
+  resolvedAt?: ISODateTime;
+  /** Set once a breach notification has gone to the community manager, so the sweep doesn't re-notify every tick. */
+  breachNotifiedAt?: ISODateTime;
 }
 
 export interface WorkOrderTimelineEntry {

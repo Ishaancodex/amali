@@ -3,18 +3,38 @@
 /**
  * The console shell (TRD §9, PRD §8.10-§8.11): a left-rail nav + a
  * pushed-screen content area, mirroring the resident app's `Navigator`
- * pattern. Communications (P5) is the first real section — Overview,
- * Ops, Reports and the role sub-switch land with P6/P10.
+ * pattern. Communications (P5) and Operations (P6) are the first two real
+ * sections — Overview, Reports and the role sub-switch land with P10.
  */
 import { Navigator } from '@/navigation/Navigator';
 import { useNav } from '@/navigation/useNav';
-import { Megaphone } from '@/ui/icons';
+import { Megaphone, Wrench } from '@/ui/icons';
 import { useStore } from '@/store';
 import type { DeviceSlotId } from '@/types/demo';
 import { consoleRoutes } from './routes';
 import { useConsoleActor } from './useConsoleActor';
 
-const NAV_ITEMS = [{ route: 'home', label: 'Communications', icon: Megaphone }] as const;
+const OPS_ROUTES = new Set([
+  'ops',
+  'checklist',
+  'water',
+  'roster',
+  'incidents',
+  'work-orders',
+  'work-order-detail',
+  'vendors',
+  'audit-log',
+]);
+
+const NAV_ITEMS = [
+  {
+    route: 'home',
+    label: 'Communications',
+    icon: Megaphone,
+    matches: (r: string) => r === 'home' || r === 'composer' || r === 'announcement-detail',
+  },
+  { route: 'ops', label: 'Operations', icon: Wrench, matches: (r: string) => OPS_ROUTES.has(r) },
+] as const;
 
 export function ConsoleApp({ slot }: { slot: DeviceSlotId }) {
   const { current, resetTo } = useNav(slot);
@@ -31,7 +51,7 @@ export function ConsoleApp({ slot }: { slot: DeviceSlotId }) {
           </p>
         </div>
         {NAV_ITEMS.map((item) => {
-          const active = current?.route?.startsWith(item.route);
+          const active = !!current && item.matches(current.route);
           return (
             <button
               key={item.route}

@@ -62,6 +62,9 @@ import {
   Megaphone,
   Eye,
   Send,
+  Camera,
+  ClipboardCheck,
+  ScrollText,
 } from 'lucide-react';
 
 export function Icon({ icon: IconComponent, ...props }: { icon: LucideIcon } & LucideProps) {
@@ -123,5 +126,8 @@ export {
   Megaphone,
   Eye,
   Send,
+  Camera,
+  ClipboardCheck,
+  ScrollText,
 };
 export type { LucideIcon };
