@@ -21,7 +21,7 @@
     "images:map": "tsx scripts/map-amenity-images.ts",
     "tokens:css": "tsx scripts/tokens-to-css.ts",
     "check:tokens": "tsx scripts/check-tokens.ts",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install || echo 'lefthook: no git repository (e.g. a Vercel build), hooks skipped'"
   },
   "dependencies": {
     "@date-fns/tz": "^1.2.0",
