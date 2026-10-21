@@ -26,6 +26,7 @@ export type IdPrefix =
   | 'att' // rsvp attendee
   | 'season'
   | 'prog' // programme series
+  | 'rsched' // report schedule
   | 'crsess' // creche session
   | 'crbk' // creche booking
   | 'approval'

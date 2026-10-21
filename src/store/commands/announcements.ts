@@ -285,7 +285,9 @@ defineCommand<'comms.tickDeliveries'>({
         delivery.state = nextState;
         delivery.updatedAt = ctx.now;
       }
-      if (nextState !== 'read' && nextState !== 'failed') pending = true;
+      // Keep ticking only while this delivery still has a planned step ahead — one that was
+      // delivered and simply never read must not keep the sweep rescheduling forever.
+      if (Object.values(delivery.times).some((t) => !!t && t > ctx.now)) pending = true;
     }
 
     // Urgent SMS fallback (PRD §8.7): if WhatsApp isn't delivered within the configured window, log an SMS fallback.

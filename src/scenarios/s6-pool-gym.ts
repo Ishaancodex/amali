@@ -93,8 +93,9 @@ export const s6PoolGym: Scenario = {
         },
       ],
       expect: (s) => {
+        // Today's run — the seed's 90 days of history hold earlier ones for the same template.
         const run = Object.values(s.checklistRuns).find(
-          (r) => r.templateId === POOL_OPENING_TEMPLATE,
+          (r) => r.templateId === POOL_OPENING_TEMPLATE && r.createdAt === START,
         );
         if (!run) throw new Error('Expected the pool opening checklist to be submitted');
         const audit = s.auditLog.find(

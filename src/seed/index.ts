@@ -20,6 +20,7 @@ import { buildWaterReadings } from './waterReadings';
 import { buildCreche } from './creche';
 import { buildDining } from './dining';
 import { seedProgramme } from './programme';
+import { buildHistory } from './history';
 
 export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
   const demo = defaultDemoState(now, seed);
@@ -92,10 +93,12 @@ export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
     notifications: {},
     auditLog: [],
     jobs: dining.jobs,
+    reportSchedules: {},
 
     demo,
   };
   // The programme materialises into blackouts, statuses, showtimes and hours exceptions above.
   seedProgramme(state, seed, seedNow);
+  buildHistory(state, seed, seedNow);
   return state;
 }

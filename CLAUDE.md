@@ -153,3 +153,18 @@ The programme calendar — recurring series and seasons, in a new Console → Pr
 - **The default vitest timeout is 20s** — the heaviest tests are ~1.5s alone but run long when every file runs in parallel on a busy machine.
 
 Deliberate scope cuts: P8's Iftar still reads `rules.dining.ramadan` (same dates as the seeded Ramadan season), text-only season banners, seasons don't link events, programme edits aren't amenity-scoped at dispatch for an assigned supervisor, no Playwright e2e specs.
+
+## Phase P10 status (done)
+
+Reporting, Excel export and role-based access. `seed/history/` (90 days of history), `domain/reports/` (`kpis.ts` — the PRD formulas; `occupancy.ts` — the modelled headcount), `store/selectors/report*.ts` (the report, built on request and filtered by role), `features/reports/` (`workbook.ts` — ExcelJS; `charts.tsx`), `domain/rbac/pii.ts`, `config/consoleAccess.ts` (route → capability), commands in `store/commands/console.ts`. Console: Overview, Reports, Residents, Padel blackout, Roles & access, and the role sub-switch. S8 passes headless; 475 tests.
+
+**Worth knowing before touching reports, RBAC or the console:**
+
+- **The seed now carries 90 days of history** (~1.3 MB, ~120 ms to build). Any lookup that takes "the first record matching X" will find a historical one — match on today/`START` or an id. History only involves non-persona residents, so the personas' wallets and bookings are as the scenarios expect.
+- **Revenue is read from the ledger** by `ref.type` and label (`revenueSourceOf`). A new paid flow must write a `charge` with a `ref` (and a refund as `refund`), and keep different fee kinds on separate lines.
+- **Every console route needs an entry in `config/consoleAccess.ts`.** Navigation, the route guard and the role-switch redirect all read it; a route missing from the map is open to every role.
+- **On-behalf actions run the resident's own command** (`getCommandDef(...).run` with a resident actor) inside the staff command — so they obey the resident's rules — and replace the audit with one carrying the reason.
+- **What a role sees comes from the matrix, not the UI**: `reportScope`, `sheetsForRole` and `residentView` all derive from `rbacMatrix`; the PRD §8.11 table has a test per cell (`tests/unit/rbac-matrix.test.ts`).
+- **A comms delivery tick only reschedules while a delivery has a planned step ahead** — a delivered-but-unread message no longer keeps the sweep alive forever.
+
+Deliberate scope cuts: ExcelJS rather than SheetJS, scheduled reports are listed but never run, no Music Room history, the agent's "can request" a fee waiver isn't modelled, no Playwright e2e specs.

@@ -11,6 +11,7 @@ import type { DeviceSlotId } from '@/types/demo';
 import type { Actor } from '@/types/common';
 import type { ConsoleRole } from '@/types/demo';
 import type { AmenityKey } from '@/types/amenity';
+import { DEMO_SUPERVISOR_AMENITIES } from '@/store/selectors/report';
 
 const CONSOLE_ROLES: readonly ConsoleRole[] = [
   'community_manager',
@@ -38,9 +39,15 @@ export function useConsoleActor(slot: DeviceSlotId): ConsoleActor {
       ? (staffMember.role as ConsoleRole)
       : undefined);
 
+  // The demo's role switch can make any console user a supervisor; one with no assignment of their
+  // own gets the PRD's ("Assigned amenities (Pool, Gym, Padel)").
+  const assignedAmenities =
+    consoleRole === 'amenity_supervisor' && !staffMember.assignedAmenities?.length
+      ? DEMO_SUPERVISOR_AMENITIES
+      : staffMember.assignedAmenities;
   return {
     actor: { kind: 'staff', id: device.actorId, role: consoleRole },
     consoleRole,
-    assignedAmenities: staffMember.assignedAmenities,
+    assignedAmenities,
   };
 }

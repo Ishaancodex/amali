@@ -36,3 +36,4 @@ import './diningRequests';
 import './diningSettle';
 import './programme';
 import './season';
+import './console';

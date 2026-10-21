@@ -14,9 +14,43 @@ import { VendorsScreen } from './screens/VendorsScreen';
 import { AuditLogScreen } from './screens/AuditLogScreen';
 import { ProgrammeScreen } from './screens/ProgrammeScreen';
 import { SeriesEditorScreen } from './screens/SeriesEditorScreen';
+import { OverviewScreen } from './screens/OverviewScreen';
+import { ReportsScreen } from './screens/ReportsScreen';
+import { ResidentsScreen } from './screens/ResidentsScreen';
+import { BlackoutScreen } from './screens/BlackoutScreen';
+import { RolesScreen } from './screens/RolesScreen';
+import { NoPermission } from '@/ui/NoPermission';
+import { canOpenRoute } from '@/config/consoleAccess';
+import { useConsoleActor } from './useConsoleActor';
+
+/** PRD §8.11: a deep link into a page this role can't open shows the no-permission state. */
+function RouteGuard({
+  slot,
+  route,
+  children,
+}: {
+  slot: DeviceSlotId;
+  route: string;
+  children: React.ReactNode;
+}) {
+  const { consoleRole } = useConsoleActor(slot);
+  if (!canOpenRoute(consoleRole, route)) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <NoPermission askWho="a Community Manager" />
+      </div>
+    );
+  }
+  return <>{children}</>;
+}
 
 export function consoleRoutes(slot: DeviceSlotId): Record<string, RouteComponent> {
-  return {
+  const routes: Record<string, RouteComponent> = {
+    overview: () => <OverviewScreen slot={slot} />,
+    reports: () => <ReportsScreen slot={slot} />,
+    residents: () => <ResidentsScreen slot={slot} />,
+    blackout: () => <BlackoutScreen slot={slot} />,
+    roles: () => <RolesScreen />,
     home: () => <CommunicationsScreen slot={slot} />,
     composer: () => <ComposerScreen slot={slot} />,
     'announcement-detail': (params) => (
@@ -36,4 +70,14 @@ export function consoleRoutes(slot: DeviceSlotId): Record<string, RouteComponent
     programme: () => <ProgrammeScreen slot={slot} />,
     'programme-edit': (params) => <SeriesEditorScreen slot={slot} programmeId={params.id} />,
   };
+  return Object.fromEntries(
+    Object.entries(routes).map(([route, render]) => [
+      route,
+      (params: Record<string, string>) => (
+        <RouteGuard slot={slot} route={route}>
+          {render(params)}
+        </RouteGuard>
+      ),
+    ]),
+  );
 }

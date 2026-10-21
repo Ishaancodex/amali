@@ -181,12 +181,16 @@ defineCommand<'creche.checkOut'>({
       latePickup.graceMinutes,
       latePickup.feePer15MinFils,
     );
-    const total = feeFils + late;
-    if (total > 0) {
+    // Two lines, not one: the revenue report counts creche fees and late-pickup fees separately.
+    for (const [amountFils, label] of [
+      [feeFils, 'Kids’ Club session'],
+      [late, 'Kids’ Club late pickup'],
+    ] as const) {
+      if (amountFils <= 0) continue;
       const { wallet, entry } = applyCharge(ctx.state.wallets[child.unitId], {
         unitId: child.unitId,
-        amountFils: total,
-        label: late > 0 ? 'Kids’ Club (incl. late pickup)' : 'Kids’ Club session',
+        amountFils,
+        label,
         byResidentId: booking.bookedBy,
         ref: { type: 'crecheBooking', id: booking.id },
         now: ctx.now,

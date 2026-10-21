@@ -15,6 +15,7 @@ import {
   Wrench,
   Building2,
   ScrollText,
+  CalendarDays,
 } from '@/ui/icons';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
@@ -28,6 +29,7 @@ import { dubaiDateKey, dubaiDateTimeToIso, fmtTime } from '@/lib/time';
 import type { DeviceSlotId } from '@/types/demo';
 import type { AmenityKey, AmenityStatus } from '@/types/amenity';
 import { useConsoleActor } from '../useConsoleActor';
+import { canOpenRoute } from '@/config/consoleAccess';
 
 const STATUS_OPTIONS: Exclude<AmenityStatus, 'emergency'>[] = [
   'open',
@@ -47,7 +49,7 @@ export function OpsHomeScreen({ slot }: { slot: DeviceSlotId }) {
   const hours = useStore((s) => s.hours);
   const exceptions = useStore((s) => s.exceptions);
   const now = useStore((s) => s.demo.clock.now);
-  const { actor, assignedAmenities } = useConsoleActor(slot);
+  const { actor, consoleRole, assignedAmenities } = useConsoleActor(slot);
 
   const staffRoleById = new Map(Object.values(staff).map((s) => [s.id, s.role] as const));
   const todayKey = dubaiDateKey(now);
@@ -93,6 +95,7 @@ export function OpsHomeScreen({ slot }: { slot: DeviceSlotId }) {
     { route: 'incidents', label: 'Incidents', icon: CircleAlert },
     { route: 'work-orders', label: 'Work orders', icon: Wrench },
     { route: 'vendors', label: 'Vendors', icon: Building2 },
+    { route: 'blackout', label: 'Padel blackout', icon: CalendarDays },
     { route: 'audit-log', label: 'Audit log', icon: ScrollText },
   ] as const;
 
@@ -154,17 +157,19 @@ export function OpsHomeScreen({ slot }: { slot: DeviceSlotId }) {
           <section>
             <h2 className="text-label-1 text-text-title mb-2">Operations</h2>
             <div className="grid grid-cols-3 gap-3">
-              {quickLinks.map((l) => (
-                <button
-                  key={l.route}
-                  type="button"
-                  onClick={() => push(l.route)}
-                  className="rounded-card border-border-card bg-surface flex flex-col items-center gap-2 border-[0.5px] px-3 py-4"
-                >
-                  <l.icon className="text-brand h-5 w-5" strokeWidth={1.5} />
-                  <span className="text-label-3 text-text-body">{l.label}</span>
-                </button>
-              ))}
+              {quickLinks
+                .filter((l) => canOpenRoute(consoleRole, l.route))
+                .map((l) => (
+                  <button
+                    key={l.route}
+                    type="button"
+                    onClick={() => push(l.route)}
+                    className="rounded-card border-border-card bg-surface flex flex-col items-center gap-2 border-[0.5px] px-3 py-4"
+                  >
+                    <l.icon className="text-brand h-5 w-5" strokeWidth={1.5} />
+                    <span className="text-label-3 text-text-body">{l.label}</span>
+                  </button>
+                ))}
             </div>
           </section>
         </div>

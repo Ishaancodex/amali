@@ -35,3 +35,18 @@ export interface KpiSeriesPoint {
   date: string; // DateKey
   value: number;
 }
+
+/** "Every Monday at 08:00 by email" (PRD §8.10) — the email is simulated; it shows in the Scheduled list. */
+export interface ReportSchedule {
+  id: string;
+  createdAt: string;
+  name: string;
+  /** Rolling window in days the scheduled report covers. */
+  windowDays: number;
+  amenities: AmenityKey[];
+  weekday: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  time: string; // HH:mm
+  email: string;
+  createdBy: string;
+  role: string;
+}

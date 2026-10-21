@@ -28,6 +28,7 @@ export type Capability =
   | 'reports.export'
   | 'reports.export_revenue_sheet'
   | 'resident_pii.view_full'
+  | 'resident_pii.view_contact'
   | 'resident_pii.view_masked'
   | 'resident_pii.reveal'
   | 'roles_access.manage';
@@ -79,19 +80,19 @@ export const rbacMatrix: RbacMatrix = {
     'blackout.create': assigned,
     'event.manage': assigned,
     'bookings_waitlists.view': assigned,
-    'booking.on_behalf': assignedLogged,
+    'booking.on_behalf': allLogged,
     'suspension.lift': assignedLogged,
     'fee.waive': assignedLogged,
     'announcement.compose': assigned,
     'announcement.compose_urgent': all,
-    'ops.checklists_logs': assigned,
+    'ops.checklists_logs': all,
     'incident.raise': all,
-    'incident.manage': assigned,
-    'work_order.manage': assigned,
+    'incident.manage': all,
+    'work_order.manage': all,
     'roster.edit': assigned,
     'vendor_sla.view': all,
     'reports.export': assigned,
-    'resident_pii.view_masked': all,
+    'resident_pii.view_contact': all,
   },
   call_centre: {
     overview_dashboard: { scope: 'all' }, // statuses only — enforced by the UI, not the grant

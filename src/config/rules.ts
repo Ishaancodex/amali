@@ -211,6 +211,12 @@ const rawRules: Rules = {
   },
 
   // PRD §8.6 — Scheduling and programming
+  // PRD §8.10: "A short progress animation runs while the report builds (0.8–1.5s)"
+  reports: {
+    generateMs: 1100,
+    rangePresetsDays: [30, 90],
+  },
+
   programme: {
     forwardHorizonMonths: 12,
     /** PRD §8.6 edge case: a class on a public holiday shows "Skip" or "Keep". Mock UAE dates. */

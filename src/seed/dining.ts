@@ -154,7 +154,7 @@ export function buildDining(
           dubaiDateTimeToIso(dateKey, rngPick(r, times)),
           Math.min(t[1], rngInt(r, 2, 4)),
           [t[0]],
-          i === sitting - 1 && d % 3 === 0 ? 'no_show' : 'completed',
+          i === sitting - 1 && d === 6 ? 'no_show' : 'completed',
           {
             period,
             walkIn,

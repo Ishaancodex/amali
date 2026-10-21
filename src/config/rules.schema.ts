@@ -242,6 +242,10 @@ export const RulesSchema = z.object({
   gym: GymRulesSchema,
   ops: OpsRulesSchema,
   comms: CommsRulesSchema,
+  reports: z.object({
+    generateMs: z.number().int().min(800).max(1500),
+    rangePresetsDays: z.array(z.number().int().positive()),
+  }),
   programme: ProgrammeRulesSchema,
   seedHistory: SeedHistoryRulesSchema,
 });

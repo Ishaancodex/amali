@@ -86,6 +86,8 @@ export interface AuditState {
 export interface SchedulerState {
   /** Persisted mirror of the runtime `SchedulerEngine`'s job queue (TRD §8.1). */
   jobs: Record<string, Job>;
+  /** Saved report schedules (PRD §8.10) — "sent" by a simulated email. */
+  reportSchedules: Record<string, T.ReportSchedule>;
 }
 
 export interface DemoSliceState {
@@ -176,6 +178,7 @@ export const APP_STATE_KEYS = [
   'notifications',
   'auditLog',
   'jobs',
+  'reportSchedules',
   'demo',
 ] as const satisfies readonly (keyof AppState)[];
 
