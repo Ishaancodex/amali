@@ -8,7 +8,7 @@
  * following, or all.
  */
 import { id } from '@/lib/ids';
-import { dubaiDateKey, fmtDateTime } from '@/lib/time';
+import { dubaiDateKey } from '@/lib/time';
 import { reject } from '@/domain/rules/errors';
 import {
   editAll,

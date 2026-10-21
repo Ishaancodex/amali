@@ -137,3 +137,19 @@ Dining and wallet integration — the F&B tablet gets its first real surface and
 - **A flex-column scroller lets its children shrink** — add `[&>*]:shrink-0` or buttons get squashed.
 
 Deliberate scope cuts: no split-seating/waitlist booking flow for a full Teppanyaki seating (the rejection names both options), no VIP icon (no VIP data), 11–12-person requests confirmed without tables for the manager to arrange, walk-ins without a unit settle at the till, no Playwright e2e specs.
+
+## Phase P9 status (done)
+
+The programme calendar — recurring series and seasons, in a new Console → Programme section. `domain/programme/` (pure): `recurrence.ts`, `editScope.ts`, `conflicts.ts`. Commands: `programme.ts` (create / edit with scope / decideHoliday) + `programmeSave.ts` (the shared conflict-check-and-apply step) + `programmeHelpers.ts` (materialisation), `season.ts`. Read models in `store/selectors/programme.ts`. 367 tests passing; exit criteria in `tests/unit/programme.test.ts`.
+
+**Worth knowing before touching the programme, statuses or blackouts:**
+
+- **A series is materialised, not interpreted.** Its occurrences become ordinary `Blackout` / `StatusEntry` / `Showtime` records tagged `programmeId` (ids derived from the series id + the occurrence's original start), so every existing check already respects them. After changing a series, call `materialiseProgramme` — it replaces the future records and keeps showtimes (and RSVPs) that still match.
+- **Recurrence is Dubai wall-clock.** Expand through `expandOccurrences` (floating time); never feed real UTC instants straight to `rrule`, or a late-night class slips a weekday.
+- **Exdates and overrides are keyed by an occurrence's _original_ start.** An edit-all that re-times the series shifts exdates with it and drops overrides.
+- **`selectCurrentStatusEntry` ranks programme entries below manual ones** — a class's "Limited" only shows when the amenity is otherwise open.
+- **Seasons write per-date `exceptions` (with `seasonId`)**, so `effectiveHoursForDate` needs no season logic. Where seasons overlap, the later-starting one shades the calendar.
+- **`applyBlackoutHandling` (blackout.ts) and `cancelShowtime` (events.ts) are shared** — use them rather than re-implementing booking displacement or RSVP refunds.
+- **The default vitest timeout is 20s** — the heaviest tests are ~1.5s alone but run long when every file runs in parallel on a busy machine.
+
+Deliberate scope cuts: P8's Iftar still reads `rules.dining.ramadan` (same dates as the seeded Ramadan season), text-only season banners, seasons don't link events, programme edits aren't amenity-scoped at dispatch for an assigned supervisor, no Playwright e2e specs.
