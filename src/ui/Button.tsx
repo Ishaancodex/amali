@@ -17,7 +17,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary: 'bg-brand text-on-brand',
-  secondary: 'bg-brand-tint text-brand border border-brand',
+  secondary: 'bg-transparent text-text-title border border-border-card',
   tertiary: 'bg-transparent text-brand',
   destructive: 'bg-transparent text-danger border border-danger',
 };
@@ -48,7 +48,7 @@ export function Button({
       disabled={disabled || loading}
       aria-busy={loading}
       className={cn(
-        'rounded-button text-button inline-flex h-11 items-center justify-center gap-2 px-5 transition-transform active:scale-[0.97] disabled:opacity-40',
+        'font-wide text-label-3 inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 tracking-widest transition-transform active:scale-[0.98] disabled:opacity-40',
         VARIANT_CLASSES[variant],
         fullWidth && 'w-full',
         className,

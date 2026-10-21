@@ -23,7 +23,7 @@ export function TodayStrip({
   const t = useT();
   const amenityLabel = useAmenityLabel();
   return (
-    <div className="flex gap-2 overflow-x-auto px-4 pb-1">
+    <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2.5 overflow-x-auto px-4 pb-1">
       {amenities.map((amenity) => {
         const Icon = AMENITY_ICON[amenity.key];
         const status = statusByKey[amenity.key] ?? 'open';
@@ -32,13 +32,13 @@ export function TodayStrip({
             key={amenity.key}
             type="button"
             onClick={() => onOpen(amenity.key)}
-            className="rounded-tag border-border-card bg-surface flex shrink-0 items-center gap-2 border-[0.5px] py-2 ps-2.5 pe-3"
+            className="rounded-tile border-border-card bg-surface flex w-32 shrink-0 snap-start flex-col items-start gap-2 border-[0.5px] p-3.5 text-start transition-transform active:scale-[0.97]"
           >
-            <Icon className="text-brand h-4 w-4" strokeWidth={1.5} />
-            <span className="text-label-3 text-text-body">
+            <Icon className="text-brand h-5 w-5" strokeWidth={1.5} />
+            <span className="text-label-2 text-text-title">
               {amenityLabel(amenity.key, 'short')}
             </span>
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1.5">
               <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[status]}`} />
               <span className="text-body-3 text-text-muted">
                 {t(`resident.home.statusShort.${status}`)}

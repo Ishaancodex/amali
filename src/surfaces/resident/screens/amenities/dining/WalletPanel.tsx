@@ -52,7 +52,9 @@ export function WalletPanel({
   return (
     <Card className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
-        <span className="text-label-2 text-text-title">{t('resident.home.quick.wallet')}</span>
+        <span className="font-serif-display text-serif-section text-text-title">
+          {t('resident.home.quick.wallet')}
+        </span>
         <span className="text-body-3 text-text-muted">
           {t('dining.wallet.balance', {
             balance: fmt.aed(wallet?.balanceFils ?? 0),

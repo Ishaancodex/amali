@@ -2,7 +2,8 @@
 
 /** Occasion and special requests (PRD §8.4 step 4): dietary chips, free text, high chair, accessibility. */
 import { Input } from '@/ui/Input';
-import { Chip } from './Chip';
+import { Chip } from '@/ui/Chip';
+import { SectionHeading } from '@/ui/SectionHeading';
 import { useT } from '@/i18n/hooks';
 
 export interface Requests {
@@ -44,7 +45,7 @@ export function RequestsSection({
     });
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-label-1 text-text-title">{t('dining.requests.title')}</h2>
+      <SectionHeading title={t('dining.requests.title')} />
       <div className="flex flex-wrap gap-2">
         {Object.entries(OCCASIONS).map(([o, key]) => (
           <Chip

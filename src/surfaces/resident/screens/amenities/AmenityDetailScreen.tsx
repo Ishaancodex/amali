@@ -5,15 +5,15 @@
  * for real; Pool/Gym are
  * read-only status + live occupancy, which is their permanent final form.
  */
-import { useState } from 'react';
-import { TopBar } from '@/ui/TopBar';
+import { HeaderBand } from '@/ui/HeaderBand';
+import { BodySheet } from '@/ui/BodySheet';
+import { SectionHeading } from '@/ui/SectionHeading';
 import { Button } from '@/ui/Button';
 import { Banner } from '@/ui/Banner';
 import { Skeleton } from '@/ui/Skeleton';
 import { HoursTable } from '@/features/status/HoursTable';
 import { AmenityStatusTag } from '@/features/status/AmenityStatusTag';
 import { OccupancyRing } from '@/features/status/OccupancyRing';
-import { AMENITY_ICON } from '@/features/status/amenityIcons';
 import { PadelStatusCard } from './padel/PadelStatusCard';
 import { CrecheParentCard } from './creche/CrecheParentCard';
 import { DiningStatusCard } from './dining/DiningStatusCard';
@@ -64,9 +64,12 @@ function rulesSummaryFor(key: AmenityKey, t: T, aed: (fils: number) => string): 
 export function AmenityDetailScreen({
   slot,
   amenityKey: amenityKeyProp,
+  morph,
 }: {
   slot: DeviceSlotId;
   amenityKey: string;
+  /** Pushed from the list: the thumbnail travels into the hero. */
+  morph?: boolean;
 }) {
   const amenityKey = amenityKeyProp as AmenityKey;
   const t = useT();
@@ -84,7 +87,6 @@ export function AmenityDetailScreen({
   const exceptions = Object.values(exceptionsRecord).filter((e) => e.amenity === amenityKey);
   const now = useStore((s) => s.demo.clock.now);
   const poolOccupancy = useStore((s) => s.occupancy.pool ?? 0);
-  const [imageFailed, setImageFailed] = useState(false);
 
   const { status, data } = useSimulatedQuery(`amenity-detail:${amenityKey}`, () => ({
     currentStatusEntry: selectCurrentStatusEntry({ amenityStatus }, amenityKey, now),
@@ -92,31 +94,22 @@ export function AmenityDetailScreen({
 
   if (!amenity) return null;
 
-  const Icon = AMENITY_ICON[amenityKey];
   const accessBlocked = !!unit && !!resident && unit.amenityRightsHolderId !== resident.id;
 
   return (
-    <div className="flex h-full flex-col">
-      <TopBar title={amenityLabel(amenityKey)} onBack={pop} />
+    <div className="h-full overflow-y-auto">
       {/* Focusable so the page can be scrolled from the keyboard (axe scrollable-region-focusable). */}
-      <div className="flex-1 overflow-y-auto" tabIndex={0}>
-        <div className="relative h-48 w-full">
-          {imageFailed ? (
-            <div className="from-brand-tint to-gradient-placeholder-end flex h-full w-full items-center justify-center bg-gradient-to-br">
-              <Icon className="text-brand h-10 w-10" strokeWidth={1.5} />
-            </div>
-          ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={amenity.image}
-              alt=""
-              className="h-full w-full object-cover"
-              onError={() => setImageFailed(true)}
-            />
-          )}
-        </div>
-
-        <div className="flex flex-col gap-4 p-4">
+      <div tabIndex={0} className="outline-none">
+        <HeaderBand
+          tall
+          image={amenity.image}
+          imageLayoutId={morph ? `${slot}:amenity:${amenityKey}` : undefined}
+          imageKenBurns={!morph}
+          eyebrow={t('resident.amenityDetail.eyebrow')}
+          title={amenityLabel(amenityKey)}
+          onBack={pop}
+        />
+        <BodySheet className="gap-4">
           {status === 'loading' ? (
             <Skeleton className="h-6 w-20" />
           ) : (
@@ -142,26 +135,20 @@ export function AmenityDetailScreen({
 
           {amenityKey === 'pool' && (
             <div>
-              <h2 className="text-label-1 text-text-title mb-2">
-                {t('resident.amenityDetail.liveOccupancy')}
-              </h2>
+              <SectionHeading title={t('resident.amenityDetail.liveOccupancy')} />
               <OccupancyRing estimate={buildOccupancyEstimate(poolOccupancy, amenity.capacity)} />
             </div>
           )}
           {amenityKey === 'gym' && (
             <div>
-              <h2 className="text-label-1 text-text-title mb-2">
-                {t('resident.amenityDetail.liveOccupancy')}
-              </h2>
+              <SectionHeading title={t('resident.amenityDetail.liveOccupancy')} />
               <OccupancyRing estimate={estimateOccupancy(now, amenity.capacity)} />
             </div>
           )}
 
           {HOURS_TABLE_KEYS.includes(amenityKey) && (
             <div>
-              <h2 className="text-label-1 text-text-title mb-2">
-                {t('resident.amenityDetail.hoursThisWeek')}
-              </h2>
+              <SectionHeading title={t('resident.amenityDetail.hoursThisWeek')} />
               <HoursTable hours={hours} exceptions={exceptions} now={now} />
             </div>
           )}
@@ -216,7 +203,7 @@ export function AmenityDetailScreen({
                 : t('resident.amenityDetail.reserve')}
             </Button>
           ) : null}
-        </div>
+        </BodySheet>
       </div>
     </div>
   );

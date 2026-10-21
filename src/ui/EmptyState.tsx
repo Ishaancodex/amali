@@ -15,8 +15,8 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center gap-4 px-6 py-12 text-center">
-      <Icon className="text-brand h-10 w-10" strokeWidth={1.5} />
-      <p className="text-body-2 text-text-muted">{message}</p>
+      <Icon className="text-brand h-9 w-9" strokeWidth={1.25} />
+      <p className="font-serif-display text-serif-section text-text-title">{message}</p>
       {action && (
         <Button variant="secondary" onClick={action.onClick}>
           {action.label}

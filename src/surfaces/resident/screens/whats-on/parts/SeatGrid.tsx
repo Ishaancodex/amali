@@ -62,7 +62,7 @@ export function SeatGrid({
 
   return (
     <div role="grid" aria-label={t('events.seat.map')} className="flex flex-col gap-1.5">
-      <div className="bg-border-card text-body-3 text-text-muted mb-1 rounded-full py-0.5 text-center">
+      <div className="bg-ember text-on-ember font-wide text-eyebrow mb-2 rounded-full py-1 text-center">
         {t('events.seat.screen')}
       </div>
       {ROWS.map((row, r) => (
@@ -86,7 +86,7 @@ export function SeatGrid({
                   onClick={() => !isTaken && onToggle(id)}
                   onFocus={() => setFocus([r, c])}
                   onKeyDown={(e) => move(e, r, c)}
-                  className={`text-body-3 h-11 w-11 rounded-[6px] border text-center tabular-nums aria-disabled:cursor-not-allowed aria-disabled:opacity-30 ${
+                  className={`text-body-3 rounded-card-image h-11 w-11 border text-center tabular-nums aria-disabled:cursor-not-allowed aria-disabled:opacity-30 ${
                     isSelected
                       ? 'bg-brand text-on-brand border-brand'
                       : 'border-border-card text-text-body'

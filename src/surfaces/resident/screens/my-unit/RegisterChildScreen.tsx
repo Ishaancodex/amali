@@ -6,7 +6,7 @@
  * this unit; the household's residents become the default guardians.
  */
 import { useState } from 'react';
-import { TopBar } from '@/ui/TopBar';
+import { ScreenShell } from '@/ui/ScreenShell';
 import { Input } from '@/ui/Input';
 import { Button } from '@/ui/Button';
 import { Banner } from '@/ui/Banner';
@@ -64,66 +64,65 @@ export function RegisterChildScreen({ slot }: { slot: DeviceSlotId }) {
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <TopBar title={t('myUnit.registerTitle')} onBack={pop} />
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pt-2 pb-6 [&>*]:shrink-0">
-        <Input
-          label={t('myUnit.fullName')}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <Input
-          label={t('myUnit.dob')}
-          type="date"
-          value={dob}
-          onChange={(e) => setDob(e.target.value)}
-        />
-        {band && (
-          <p className={band.ok ? 'text-body-3 text-text-muted' : 'text-body-3 text-danger'}>
-            {band.ok
-              ? t('myUnit.bandAge', { band: t(`kids.band.${band.band}`), age: band.age })
-              : t(`kids.bandReason.${band.reason}`, { age: rules.creche.minAcceptedAge })}
-          </p>
-        )}
-        <Input
-          label={t('myUnit.allergies')}
-          value={allergy}
-          onChange={(e) => setAllergy(e.target.value)}
-          placeholder={t('myUnit.blankIfNone')}
-        />
-        {allergy.trim() && (
-          <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              className="accent-brand h-5 w-5"
-              checked={severe}
-              onChange={(e) => setSevere(e.target.checked)}
-            />
-            <span className="text-label-2 text-text-body">{t('myUnit.severe')}</span>
-          </label>
-        )}
-        <Input
-          label={t('myUnit.dietary')}
-          value={dietary}
-          onChange={(e) => setDietary(e.target.value)}
-        />
+    <ScreenShell
+      eyebrow={t('myUnit.children')}
+      title={t('myUnit.registerTitle')}
+      onBack={pop}
+      image="/amenities/creche.jpg"
+      bodyClassName="gap-4"
+    >
+      <Input label={t('myUnit.fullName')} value={name} onChange={(e) => setName(e.target.value)} />
+      <Input
+        label={t('myUnit.dob')}
+        type="date"
+        value={dob}
+        onChange={(e) => setDob(e.target.value)}
+      />
+      {band && (
+        <p className={band.ok ? 'text-body-3 text-text-muted' : 'text-body-3 text-danger'}>
+          {band.ok
+            ? t('myUnit.bandAge', { band: t(`kids.band.${band.band}`), age: band.age })
+            : t(`kids.bandReason.${band.reason}`, { age: rules.creche.minAcceptedAge })}
+        </p>
+      )}
+      <Input
+        label={t('myUnit.allergies')}
+        value={allergy}
+        onChange={(e) => setAllergy(e.target.value)}
+        placeholder={t('myUnit.blankIfNone')}
+      />
+      {allergy.trim() && (
         <label className="flex items-center gap-3">
           <input
             type="checkbox"
             className="accent-brand h-5 w-5"
-            checked={photoConsent}
-            onChange={(e) => setPhotoConsent(e.target.checked)}
+            checked={severe}
+            onChange={(e) => setSevere(e.target.checked)}
           />
-          <span className="text-label-2 text-text-body">{t('myUnit.photoConsent')}</span>
+          <span className="text-label-2 text-text-body">{t('myUnit.severe')}</span>
         </label>
-        <p className="text-body-3 text-text-muted">
-          {t('myUnit.registerNote', { unit: resident.unitId })}
-        </p>
-        {error && <Banner style="urgent">{error}</Banner>}
-        <Button fullWidth disabled={!name.trim() || !band?.ok} onClick={submit}>
-          {t('myUnit.register')}
-        </Button>
-      </div>
-    </div>
+      )}
+      <Input
+        label={t('myUnit.dietary')}
+        value={dietary}
+        onChange={(e) => setDietary(e.target.value)}
+      />
+      <label className="flex items-center gap-3">
+        <input
+          type="checkbox"
+          className="accent-brand h-5 w-5"
+          checked={photoConsent}
+          onChange={(e) => setPhotoConsent(e.target.checked)}
+        />
+        <span className="text-label-2 text-text-body">{t('myUnit.photoConsent')}</span>
+      </label>
+      <p className="text-body-3 text-text-muted">
+        {t('myUnit.registerNote', { unit: resident.unitId })}
+      </p>
+      {error && <Banner style="urgent">{error}</Banner>}
+      <Button fullWidth disabled={!name.trim() || !band?.ok} onClick={submit}>
+        {t('myUnit.register')}
+      </Button>
+    </ScreenShell>
   );
 }

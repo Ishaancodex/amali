@@ -34,7 +34,7 @@ export function FillChip({
       aria-label={label}
       onClick={onClick}
       className={cn(
-        'rounded-input border-border-card relative overflow-hidden border text-center disabled:cursor-not-allowed disabled:opacity-30',
+        'border-border-card relative overflow-hidden rounded-full border text-center disabled:cursor-not-allowed disabled:line-through disabled:opacity-40',
         selected ? 'text-on-brand' : 'text-text-body',
         className,
       )}

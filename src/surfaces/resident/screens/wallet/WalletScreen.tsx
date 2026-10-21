@@ -2,7 +2,8 @@
 
 /** Wallet (PRD §8.4): balance, top-up, ledger. */
 import { useState } from 'react';
-import { TopBar } from '@/ui/TopBar';
+import { ScreenShell } from '@/ui/ScreenShell';
+import { SectionHeading } from '@/ui/SectionHeading';
 import { Button } from '@/ui/Button';
 import { Banner } from '@/ui/Banner';
 import { Skeleton } from '@/ui/Skeleton';
@@ -43,52 +44,55 @@ export function WalletScreen({ slot }: { slot: DeviceSlotId }) {
   const onHold = activeHoldsFils(Object.values(holdsRecord), resident.unitId);
 
   return (
-    <div className="flex h-full flex-col">
-      <TopBar title={t('resident.home.quick.wallet')} onBack={pop} />
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col items-center gap-3 px-4 py-6">
-          <span className="text-body-2 text-text-muted">{t('wallet.balance')}</span>
-          {status === 'loading' ? (
-            <Skeleton className="h-9 w-32" />
-          ) : (
-            <BalanceChip balanceFils={data.balanceFils} />
-          )}
-          {onHold > 0 && (
-            <p className="text-body-3 text-text-muted">
-              {t('wallet.onHold', {
-                held: fmt.aed(onHold),
-                available: fmt.aed((wallet?.balanceFils ?? 0) - onHold),
-              })}
-            </p>
-          )}
-          {canTopUp ? (
-            <Button variant="primary" onClick={() => setSheetOpen(true)}>
-              {t('wallet.topUp')}
-            </Button>
-          ) : (
-            <p className="text-body-3 text-text-muted">{t('wallet.primaryOnly')}</p>
-          )}
-        </div>
-
-        {status === 'ready' && isLowBalance(data.balanceFils) && (
-          <div className="px-4 pb-2">
-            <Banner style="warning">{t('wallet.low')}</Banner>
+    <>
+      <ScreenShell
+        eyebrow={t('wallet.balance')}
+        title={t('resident.home.quick.wallet')}
+        onBack={pop}
+        image="/stock/wallet.jpg"
+        headerExtra={
+          <div className="mt-4 flex flex-col items-start gap-3">
+            {status === 'loading' ? (
+              <Skeleton className="h-9 w-32" />
+            ) : (
+              <BalanceChip balanceFils={data.balanceFils} large />
+            )}
+            {onHold > 0 && (
+              <p className="text-body-3 text-on-ember-muted">
+                {t('wallet.onHold', {
+                  held: fmt.aed(onHold),
+                  available: fmt.aed((wallet?.balanceFils ?? 0) - onHold),
+                })}
+              </p>
+            )}
           </div>
+        }
+      >
+        {canTopUp ? (
+          <Button variant="primary" fullWidth onClick={() => setSheetOpen(true)}>
+            {t('wallet.topUp')}
+          </Button>
+        ) : (
+          <p className="text-body-3 text-text-muted">{t('wallet.primaryOnly')}</p>
         )}
 
-        <div className="px-4 pb-6">
-          <h2 className="text-label-1 text-text-title mb-2">{t('resident.nav.activity')}</h2>
+        {status === 'ready' && isLowBalance(data.balanceFils) && (
+          <Banner style="warning">{t('wallet.low')}</Banner>
+        )}
+
+        <section>
+          <SectionHeading title={t('resident.nav.activity')} />
           {status === 'loading' ? (
             <div className="flex flex-col gap-2">
               {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-14" />
+                <Skeleton key={i} className="rounded-tile h-14" />
               ))}
             </div>
           ) : (
             <Ledger entries={data.entries} />
           )}
-        </div>
-      </div>
+        </section>
+      </ScreenShell>
 
       <TopUpSheet
         open={sheetOpen}
@@ -97,6 +101,6 @@ export function WalletScreen({ slot }: { slot: DeviceSlotId }) {
         actor={{ kind: 'resident', id: resident.id }}
         slot={slot}
       />
-    </div>
+    </>
   );
 }

@@ -5,8 +5,10 @@
  * Screening/Music/Creche/Dining are bookable from P3 onward — P2 shows
  * rules/status only. Pool/Gym are read-only here and always. */
 import { useState } from 'react';
-import { TopBar } from '@/ui/TopBar';
-import { AmenityCard } from '@/ui/AmenityCard';
+import { HeaderBand } from '@/ui/HeaderBand';
+import { BodySheet } from '@/ui/BodySheet';
+import { AmenityRow } from '@/ui/AmenityRow';
+import { AMENITY_ICON } from '@/features/status/amenityIcons';
 import { Skeleton } from '@/ui/Skeleton';
 import { EmptyState } from '@/ui/EmptyState';
 import { Search as SearchIcon } from '@/ui/icons';
@@ -14,7 +16,6 @@ import { useStore } from '@/store';
 import { useSimulatedQuery } from '@/lib/useSimulatedQuery';
 import { useNav } from '@/navigation/useNav';
 import { selectCurrentStatus } from '@/store/selectors/amenities';
-import { AMENITY_ICON } from '@/features/status/amenityIcons';
 import { rules } from '@/config/rules';
 import type { DeviceSlotId } from '@/types/demo';
 import type { AmenityKey } from '@/types/amenity';
@@ -79,9 +80,14 @@ export function AmenitiesListScreen({ slot }: { slot: DeviceSlotId }) {
   );
 
   return (
-    <div className="flex h-full flex-col">
-      <TopBar title={t('resident.home.quick.amenities')} onBack={pop} />
-      <div className="px-4 pb-3">
+    <div className="h-full overflow-y-auto">
+      <HeaderBand
+        eyebrow={t('resident.amenities.eyebrow')}
+        title={t('resident.home.quick.amenities')}
+        onBack={pop}
+        image="/stock/amenities.jpg"
+      />
+      <BodySheet className="gap-4">
         <div className="rounded-input border-border-card bg-surface flex items-center gap-2 border px-3 py-2.5">
           <SearchIcon className="text-text-muted h-4 w-4" strokeWidth={1.5} />
           <input
@@ -91,11 +97,9 @@ export function AmenitiesListScreen({ slot }: { slot: DeviceSlotId }) {
             className="text-body-2 text-text-body placeholder:text-text-placeholder w-full bg-transparent outline-none"
           />
         </div>
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-4 px-4 pb-6">
+        <div className="flex flex-col">
           {status === 'loading' ? (
-            Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[220px]" />)
+            Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="my-3 h-24" />)
           ) : filtered.length === 0 ? (
             <EmptyState icon={SearchIcon} message={t('resident.amenities.noMatch', { query })} />
           ) : (
@@ -103,23 +107,23 @@ export function AmenitiesListScreen({ slot }: { slot: DeviceSlotId }) {
               const amenityStatusValue = selectCurrentStatus({ amenityStatus }, amenity.key, now);
               const bookRoute = BOOK_ROUTE[amenity.key];
               return (
-                <AmenityCard
+                <AmenityRow
                   key={amenity.key}
-                  image={amenity.image}
                   icon={AMENITY_ICON[amenity.key]}
+                  layoutId={`${slot}:amenity:${amenity.key}`}
+                  image={amenity.image}
                   title={amenityLabel(amenity.key)}
                   hoursLine={hoursLineFor(amenity.key, t)}
                   priceLine={priceLineFor(amenity.key, t, fmt)}
                   status={amenityStatusValue}
-                  bookable={!!bookRoute}
-                  onOpen={() => push('amenity-detail', { key: amenity.key })}
+                  onOpen={() => push('amenity-detail', { key: amenity.key, transition: 'morph' })}
                   onBook={bookRoute ? () => push(bookRoute) : undefined}
                 />
               );
             })
           )}
         </div>
-      </div>
+      </BodySheet>
     </div>
   );
 }

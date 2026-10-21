@@ -23,7 +23,9 @@ export function Tablet({ now, dir, lang, themeClass, children }: TabletProps) {
         className={`bg-bg-page relative flex h-full w-full flex-col overflow-hidden rounded-[18px] ${themeClass ?? ''}`}
       >
         <StatusBar now={now} />
-        <div className="relative min-h-0 flex-1 overflow-hidden">{children}</div>
+        <div data-sheet-root className="relative min-h-0 flex-1 overflow-hidden">
+          {children}
+        </div>
       </div>
     </div>
   );

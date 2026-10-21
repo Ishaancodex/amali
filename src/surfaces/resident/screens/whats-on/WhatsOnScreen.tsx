@@ -7,10 +7,13 @@
  * asks for.
  */
 import { useMemo, useState } from 'react';
-import { TopBar } from '@/ui/TopBar';
+import { ScreenShell } from '@/ui/ScreenShell';
+import { SegmentedTabs } from '@/ui/SegmentedTabs';
+import { Rise } from '@/ui/Rise';
+import { Photo } from '@/ui/Photo';
+import { Eyebrow } from '@/ui/Eyebrow';
 import { EmptyState } from '@/ui/EmptyState';
 import { Skeleton } from '@/ui/Skeleton';
-import { Tag } from '@/ui/Tag';
 import { CalendarMonth } from '@/ui/Calendar/Month';
 import { CalendarYear } from '@/ui/Calendar/Year';
 import { seasonBands } from '@/store/selectors/programme';
@@ -64,91 +67,87 @@ export function WhatsOnScreen({ slot }: { slot: DeviceSlotId }) {
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <TopBar title={t('resident.home.quick.whatsOn')} onBack={pop} />
-      <div className="flex gap-1 px-4 pb-3">
-        {TABS.map((id) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setTab(id)}
-            aria-pressed={tab === id}
-            className={`rounded-tag text-label-3 px-3 py-1.5 transition-colors ${
-              tab === id ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand'
-            }`}
-          >
-            {t(`events.view.${id}`)}
-          </button>
-        ))}
-        {selectedDay && tab === 'list' && (
-          <button
-            type="button"
-            aria-label={t('events.clearDay')}
-            onClick={() => setSelectedDay(undefined)}
-            className="rounded-tag bg-surface border-border-card text-text-muted text-label-3 border px-3 py-1.5"
-          >
-            {fmt.dateKey(selectedDay, 'EEE d MMM')} ✕
-          </button>
-        )}
-      </div>
-      <div className="flex-1 overflow-y-auto px-4 pb-6">
-        {tab === 'list' &&
-          (status === 'loading' ? (
-            <div className="flex flex-col gap-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-24" />
-              ))}
-            </div>
-          ) : listed.length === 0 ? (
-            <EmptyState
-              icon={CalendarDays}
-              message={selectedDay ? t('events.nothingThisDay') : t('events.nothingThisWeek')}
-            />
-          ) : (
-            <div className="flex flex-col gap-3">
-              {listed.map((showtime) => {
-                const event = events[showtime.eventId];
-                if (!event) return null;
-                return (
+    <ScreenShell
+      eyebrow={t('resident.whatsOn.eyebrow')}
+      title={t('resident.home.quick.whatsOn')}
+      onBack={pop}
+      image="/stock/whats-on.jpg"
+      bodyClassName="gap-5"
+    >
+      <SegmentedTabs
+        items={TABS.map((id) => ({ id, label: t(`events.view.${id}`) }))}
+        value={tab}
+        onChange={setTab}
+      />
+      {selectedDay && tab === 'list' && (
+        <button
+          type="button"
+          aria-label={t('events.clearDay')}
+          onClick={() => setSelectedDay(undefined)}
+          className="rounded-tag bg-surface border-border-card text-text-muted text-label-3 self-start border px-3 py-1.5"
+        >
+          {fmt.dateKey(selectedDay, 'EEE d MMM')} ✕
+        </button>
+      )}
+      {tab === 'list' &&
+        (status === 'loading' ? (
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="rounded-tile h-24" />
+            ))}
+          </div>
+        ) : listed.length === 0 ? (
+          <EmptyState
+            icon={CalendarDays}
+            message={selectedDay ? t('events.nothingThisDay') : t('events.nothingThisWeek')}
+          />
+        ) : (
+          <div className="flex flex-col">
+            {listed.map((showtime, i) => {
+              const event = events[showtime.eventId];
+              if (!event) return null;
+              return (
+                <Rise key={showtime.id} i={i}>
                   <button
-                    key={showtime.id}
                     type="button"
                     onClick={() =>
                       push('event-detail', { eventId: event.id, showtimeId: showtime.id })
                     }
-                    className="rounded-card border-border-card bg-surface flex gap-3 border-[0.5px] p-3 text-start"
+                    className="border-border-card flex w-full items-center gap-4 border-b-[0.5px] py-3.5 text-start last:border-b-0"
                   >
-                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[10px]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={event.poster} alt="" className="h-full w-full object-cover" />
-                    </div>
+                    <Photo
+                      src={event.poster}
+                      className="rounded-card-image h-[4.5rem] w-16 shrink-0"
+                    />
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-label-2 text-text-title truncate">{event.title}</span>
-                        <Tag variant="brand">{t(`amenity.${event.venue}.short`)}</Tag>
-                      </div>
-                      <p className="text-body-3 text-text-muted mt-0.5">
+                      <Eyebrow className="text-brand block">
                         {fmt.date(showtime.start)} · {fmt.time(showtime.start)}–
                         {fmt.time(showtime.end)}
+                      </Eyebrow>
+                      <p className="font-serif-display text-serif-section text-text-title mt-1">
+                        {event.title}
+                      </p>
+                      <p className="text-body-3 text-text-muted mt-0.5">
+                        {t(`amenity.${event.venue}.name`)}
                       </p>
                     </div>
                   </button>
-                );
-              })}
-            </div>
-          ))}
-        {tab === 'month' && (
-          <CalendarMonth now={now} eventDatesByDay={dots} onSelectDay={selectDay} />
-        )}
-        {tab === 'year' && (
-          <CalendarYear
-            now={now}
-            eventDatesByDay={dots}
-            bands={seasonBands(seasons)}
-            onSelectDay={selectDay}
-          />
-        )}
-      </div>
-    </div>
+                </Rise>
+              );
+            })}
+          </div>
+        ))}
+      {tab === 'month' && (
+        <CalendarMonth now={now} eventDatesByDay={dots} onSelectDay={selectDay} />
+      )}
+      {tab === 'year' && (
+        <CalendarYear
+          now={now}
+          eventDatesByDay={dots}
+          bands={seasonBands(seasons)}
+          onSelectDay={selectDay}
+        />
+      )}
+    </ScreenShell>
   );
 }

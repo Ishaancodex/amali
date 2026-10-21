@@ -1,11 +1,11 @@
 'use client';
 
-/** Search (PRD §6.1): amenities, events, announcements. Events/announcements
- * have no data yet (P4/P5) — search matches amenities by name/location for now. */
+/** Search (PRD §6.1): amenities, events, announcements — matched by name/location. */
 import { useState } from 'react';
-import { TopBar } from '@/ui/TopBar';
+import { ScreenShell } from '@/ui/ScreenShell';
+import { Rise } from '@/ui/Rise';
 import { EmptyState } from '@/ui/EmptyState';
-import { Search as SearchIcon } from '@/ui/icons';
+import { Search as SearchIcon, ChevronRight } from '@/ui/icons';
 import { AMENITY_ICON } from '@/features/status/amenityIcons';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
@@ -30,49 +30,58 @@ export function SearchScreen({ slot }: { slot: DeviceSlotId }) {
         );
 
   return (
-    <div className="flex h-full flex-col">
-      <TopBar title={t('resident.nav.search')} />
-      <div className="px-4 pb-3">
-        <div className="rounded-input border-border-card bg-surface flex items-center gap-2 border px-3 py-2.5">
-          <SearchIcon className="text-text-muted h-4 w-4" strokeWidth={1.5} />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('resident.search.placeholder')}
-            className="text-body-2 text-text-body placeholder:text-text-placeholder w-full bg-transparent outline-none"
-          />
-        </div>
+    <ScreenShell
+      eyebrow={t('resident.search.eyebrow')}
+      title={t('resident.nav.search')}
+      image="/stock/search.jpg"
+    >
+      <div className="rounded-tile border-border-card bg-surface flex h-13 items-center gap-3 border px-4">
+        <SearchIcon className="text-text-muted h-4 w-4" strokeWidth={1.5} />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t('resident.search.placeholder')}
+          className="text-body-2 text-text-body placeholder:text-text-placeholder w-full bg-transparent outline-none"
+        />
       </div>
-      <div className="flex-1 overflow-y-auto px-4 pb-6">
-        {query.trim().length === 0 ? (
-          <EmptyState icon={SearchIcon} message={t('resident.search.hint')} />
-        ) : results.length === 0 ? (
-          <EmptyState icon={SearchIcon} message={t('resident.search.noResults', { query })} />
-        ) : (
-          <ul className="divide-border-card flex flex-col divide-y">
-            {results.map((a) => {
-              const Icon = AMENITY_ICON[a.key];
-              return (
-                <li key={a.key}>
+      {query.trim().length === 0 ? (
+        <EmptyState icon={SearchIcon} message={t('resident.search.hint')} />
+      ) : results.length === 0 ? (
+        <EmptyState icon={SearchIcon} message={t('resident.search.noResults', { query })} />
+      ) : (
+        <ul className="flex flex-col">
+          {results.map((a, i) => {
+            const Icon = AMENITY_ICON[a.key];
+            return (
+              <li key={a.key}>
+                <Rise i={i}>
                   <button
                     type="button"
                     onClick={() => push('amenity-detail', { key: a.key })}
-                    className="flex w-full items-center gap-3 py-3 text-start"
+                    className="border-border-card flex w-full items-center gap-4 border-b-[0.5px] py-3.5 text-start"
                   >
-                    <Icon className="text-brand h-5 w-5" strokeWidth={1.5} />
-                    <div>
-                      <p className="text-label-2 text-text-body">{amenityLabel(a.key)}</p>
-                      <p className="text-body-3 text-text-muted">
+                    <span className="bg-surface border-border-card text-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-[0.5px]">
+                      <Icon className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="font-serif-display text-serif-section text-text-title block">
+                        {amenityLabel(a.key)}
+                      </span>
+                      <span className="text-body-3 text-text-muted block">
                         {amenityLabel(a.key, 'location')}
-                      </p>
-                    </div>
+                      </span>
+                    </span>
+                    <ChevronRight
+                      className="text-text-muted h-4 w-4 rtl:-scale-x-100"
+                      strokeWidth={1.5}
+                    />
                   </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-    </div>
+                </Rise>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </ScreenShell>
   );
 }

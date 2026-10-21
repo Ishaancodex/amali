@@ -10,14 +10,14 @@ export function Input({ label, error, id, className, ...props }: InputProps) {
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={inputId} className="text-label-3 text-text-muted">
+        <label htmlFor={inputId} className="font-wide text-eyebrow text-text-muted">
           {label}
         </label>
       )}
       <input
         id={inputId}
         className={cn(
-          'rounded-input border-border-card bg-surface text-body-2 text-text-body placeholder:text-text-placeholder h-11 border px-3',
+          'rounded-tile border-border-card bg-surface text-body-2 text-text-body placeholder:text-text-placeholder h-12 border px-4',
           error && 'border-danger',
           className,
         )}

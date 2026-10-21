@@ -6,7 +6,7 @@
  * spelled out — and, once settled, the receipt.
  */
 import { useState } from 'react';
-import { TopBar } from '@/ui/TopBar';
+import { ScreenShell } from '@/ui/ScreenShell';
 import { Card } from '@/ui/Card';
 import { Tag } from '@/ui/Tag';
 import { Button } from '@/ui/Button';
@@ -20,7 +20,7 @@ import { rules } from '@/config/rules';
 import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import { forfeitsDeposit, isLateCancellation } from '@/domain/dining/policy';
 import type { DeviceSlotId } from '@/types/demo';
-import { Chip } from './Chip';
+import { Chip } from '@/ui/Chip';
 
 const STATE_TONE = {
   requested: 'warning',
@@ -58,10 +58,14 @@ export function ReservationDetailScreen({
 
   if (!r) {
     return (
-      <div className="flex h-full flex-col">
-        <TopBar title={t('dining.reservation')} onBack={pop} />
+      <ScreenShell
+        eyebrow={t('resident.home.quick.dining')}
+        title={t('dining.reservation')}
+        onBack={pop}
+        image="/amenities/dining.jpg"
+      >
         <EmptyState icon={UtensilsCrossed} message={t('dining.notFound')} />
-      </div>
+      </ScreenShell>
     );
   }
 
@@ -74,130 +78,132 @@ export function ReservationDetailScreen({
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <TopBar title={t(`dining.venue.${r.venue}`)} onBack={pop} />
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pt-2 pb-6 [&>*]:shrink-0">
-        <Card className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between">
-            <p className="text-title-l text-text-title">{fmt.dateTime(r.start)}</p>
-            <Tag variant={STATE_TONE[r.state]}>{t(`dining.state.${r.state}`)}</Tag>
-          </div>
-          <p className="text-body-2 text-text-body">
-            {t('dining.partyUntil', { count: r.partySize, time: fmt.time(r.end) })}
-            {zone && zone !== 'counter' && zone !== 'private'
-              ? ` · ${t(`dining.zone.${zone}`)}`
-              : ''}
+    <ScreenShell
+      eyebrow={t('dining.reservation')}
+      title={t(`dining.venue.${r.venue}`)}
+      onBack={pop}
+      image="/amenities/dining.jpg"
+      bodyClassName="gap-4"
+    >
+      <Card className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between">
+          <p className="font-serif-display text-serif-title text-text-title">
+            {fmt.dateTime(r.start)}
           </p>
-          {r.seatingPref && (
-            <p className="text-body-3 text-text-muted">
-              {t('dining.seatingRequested', { zone: t(`dining.zone.${r.seatingPref}`) })}
-              {zoneMissed ? ` ${t('dining.zoneMissed')}` : ''}
-            </p>
-          )}
-          {(r.occasion || r.dietary.length > 0 || r.requests) && (
-            <p className="text-body-3 text-text-muted">
-              {[r.occasion, ...r.dietary, r.requests].filter(Boolean).join(' · ')}
-            </p>
-          )}
-          {hold && (
-            <p className="text-body-3 text-text-muted">
-              {t('dining.depositState', {
-                amount: fmt.aed(hold.fils),
-                state: t(`dining.holdState.${hold.state}`),
-              })}
-            </p>
-          )}
-          {r.managerMessage && (
-            <p className="text-body-3 text-text-muted">
-              {t('dining.fromManager', { message: r.managerMessage })}
-            </p>
-          )}
-        </Card>
+          <Tag variant={STATE_TONE[r.state]}>{t(`dining.state.${r.state}`)}</Tag>
+        </div>
+        <p className="text-body-2 text-text-body">
+          {t('dining.partyUntil', { count: r.partySize, time: fmt.time(r.end) })}
+          {zone && zone !== 'counter' && zone !== 'private' ? ` · ${t(`dining.zone.${zone}`)}` : ''}
+        </p>
+        {r.seatingPref && (
+          <p className="text-body-3 text-text-muted">
+            {t('dining.seatingRequested', { zone: t(`dining.zone.${r.seatingPref}`) })}
+            {zoneMissed ? ` ${t('dining.zoneMissed')}` : ''}
+          </p>
+        )}
+        {(r.occasion || r.dietary.length > 0 || r.requests) && (
+          <p className="text-body-3 text-text-muted">
+            {[r.occasion, ...r.dietary, r.requests].filter(Boolean).join(' · ')}
+          </p>
+        )}
+        {hold && (
+          <p className="text-body-3 text-text-muted">
+            {t('dining.depositState', {
+              amount: fmt.aed(hold.fils),
+              state: t(`dining.holdState.${hold.state}`),
+            })}
+          </p>
+        )}
+        {r.managerMessage && (
+          <p className="text-body-3 text-text-muted">
+            {t('dining.fromManager', { message: r.managerMessage })}
+          </p>
+        )}
+      </Card>
 
-        {r.bill && (
-          <Card className="flex flex-col gap-1">
-            <p className="text-label-1 text-text-title">{t('dining.tag.receipt')}</p>
+      {r.bill && (
+        <Card className="flex flex-col gap-1">
+          <p className="font-serif-display text-serif-section text-text-title">
+            {t('dining.tag.receipt')}
+          </p>
+          <p className="text-body-2 text-text-body">
+            {t('dining.bill', { amount: fmt.aed(r.bill.totalFils) })}
+          </p>
+          {r.bill.minimumSpendTopUpFils && (
             <p className="text-body-2 text-text-body">
-              {t('dining.bill', { amount: fmt.aed(r.bill.totalFils) })}
+              {t('dining.minTopUp', { amount: fmt.aed(r.bill.minimumSpendTopUpFils) })}
             </p>
-            {r.bill.minimumSpendTopUpFils && (
-              <p className="text-body-2 text-text-body">
-                {t('dining.minTopUp', { amount: fmt.aed(r.bill.minimumSpendTopUpFils) })}
-              </p>
-            )}
-            {r.bill.depositAppliedFils && (
-              <p className="text-body-2 text-text-body">
-                {t('dining.depositApplied', { amount: fmt.aed(r.bill.depositAppliedFils) })}
-              </p>
-            )}
-            <p className="text-label-2 text-text-title">
-              {t(r.bill.method === 'wallet' ? 'dining.chargedWallet' : 'dining.chargedUnit', {
-                amount: fmt.aed(r.bill.chargedFils),
-              })}
+          )}
+          {r.bill.depositAppliedFils && (
+            <p className="text-body-2 text-text-body">
+              {t('dining.depositApplied', { amount: fmt.aed(r.bill.depositAppliedFils) })}
             </p>
-          </Card>
-        )}
+          )}
+          <p className="text-label-2 text-text-title">
+            {t(r.bill.method === 'wallet' ? 'dining.chargedWallet' : 'dining.chargedUnit', {
+              amount: fmt.aed(r.bill.chargedFils),
+            })}
+          </p>
+        </Card>
+      )}
 
-        {r.state === 'confirmed' && (
-          <>
-            {lateOpen ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-label-2 text-text-body">{t('dining.about')}</span>
-                {[10, 20, 30].map((m) => (
-                  <Chip
-                    key={m}
-                    active={r.runningLateMinutes === m}
-                    onClick={() => {
-                      run(
-                        dispatch('dining.runningLate', { reservationId: r.id, minutes: m }, actor),
-                        t('dining.hostKnows'),
-                      );
-                      setLateOpen(false);
-                    }}
-                  >
-                    {t('common.minutes', { count: m })}
-                  </Chip>
-                ))}
-              </div>
-            ) : (
-              <Button variant="secondary" fullWidth onClick={() => setLateOpen(true)}>
-                {r.runningLateMinutes
-                  ? t('dining.runningLateUpdate', { minutes: r.runningLateMinutes })
-                  : t('dining.runningLate')}
-              </Button>
-            )}
-          </>
-        )}
-        {(r.state === 'confirmed' || r.state === 'requested') && (
-          <>
-            {keepsDeposit && (
-              <Banner style="warning">
-                {t('dining.lateCancelKeeps', {
-                  hours: rules.dining[r.venue].lateCancellationHoursBefore,
-                  amount: fmt.aed(hold.fils),
-                })}
-              </Banner>
-            )}
-            <Button
-              variant="destructive"
-              fullWidth
-              onClick={() =>
-                run(
-                  dispatch('dining.cancel', { reservationId: r.id }, actor),
-                  t('dining.cancelled'),
-                )
-              }
-            >
-              {t('dining.cancelReservation')}
+      {r.state === 'confirmed' && (
+        <>
+          {lateOpen ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-label-2 text-text-body">{t('dining.about')}</span>
+              {[10, 20, 30].map((m) => (
+                <Chip
+                  key={m}
+                  active={r.runningLateMinutes === m}
+                  onClick={() => {
+                    run(
+                      dispatch('dining.runningLate', { reservationId: r.id, minutes: m }, actor),
+                      t('dining.hostKnows'),
+                    );
+                    setLateOpen(false);
+                  }}
+                >
+                  {t('common.minutes', { count: m })}
+                </Chip>
+              ))}
+            </div>
+          ) : (
+            <Button variant="secondary" fullWidth onClick={() => setLateOpen(true)}>
+              {r.runningLateMinutes
+                ? t('dining.runningLateUpdate', { minutes: r.runningLateMinutes })
+                : t('dining.runningLate')}
             </Button>
-            <p className="text-body-3 text-text-muted text-center">
-              {t(forfeitsDeposit(r.venue) ? 'dining.policyForfeit' : 'dining.policyRepeat', {
+          )}
+        </>
+      )}
+      {(r.state === 'confirmed' || r.state === 'requested') && (
+        <>
+          {keepsDeposit && (
+            <Banner style="warning">
+              {t('dining.lateCancelKeeps', {
                 hours: rules.dining[r.venue].lateCancellationHoursBefore,
+                amount: fmt.aed(hold.fils),
               })}
-            </p>
-          </>
-        )}
-      </div>
-    </div>
+            </Banner>
+          )}
+          <Button
+            variant="destructive"
+            fullWidth
+            onClick={() =>
+              run(dispatch('dining.cancel', { reservationId: r.id }, actor), t('dining.cancelled'))
+            }
+          >
+            {t('dining.cancelReservation')}
+          </Button>
+          <p className="text-body-3 text-text-muted text-center">
+            {t(forfeitsDeposit(r.venue) ? 'dining.policyForfeit' : 'dining.policyRepeat', {
+              hours: rules.dining[r.venue].lateCancellationHoursBefore,
+            })}
+          </p>
+        </>
+      )}
+    </ScreenShell>
   );
 }

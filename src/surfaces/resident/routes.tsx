@@ -18,6 +18,7 @@ import { WhatsOnScreen } from './screens/whats-on/WhatsOnScreen';
 import { EventDetailScreen } from './screens/whats-on/EventDetailScreen';
 import { WalletScreen } from './screens/wallet/WalletScreen';
 import { PadelBookScreen } from './screens/amenities/padel/PadelBookScreen';
+import { PadelPassScreen } from './screens/amenities/padel/PadelPassScreen';
 import { DiningBookScreen } from './screens/amenities/dining/DiningBookScreen';
 import { ReservationDetailScreen } from './screens/amenities/dining/ReservationDetailScreen';
 import { CrecheBookScreen } from './screens/amenities/creche/CrecheBookScreen';
@@ -30,10 +31,18 @@ export function residentRoutes(slot: DeviceSlotId): Record<string, RouteComponen
     home: () => <HomeScreen slot={slot} />,
     'my-unit': () => <MyUnitScreen slot={slot} />,
     search: () => <SearchScreen slot={slot} />,
-    activity: () => <ActivityScreen slot={slot} />,
+    activity: (params) => (
+      <ActivityScreen slot={slot} initialTab={params.tab === 'bookings' ? 'bookings' : undefined} />
+    ),
     profile: () => <ProfileScreen slot={slot} />,
     amenities: () => <AmenitiesListScreen slot={slot} />,
-    'amenity-detail': (params) => <AmenityDetailScreen slot={slot} amenityKey={params.key ?? ''} />,
+    'amenity-detail': (params) => (
+      <AmenityDetailScreen
+        slot={slot}
+        amenityKey={params.key ?? ''}
+        morph={params.transition === 'morph'}
+      />
+    ),
     'whats-on': () => <WhatsOnScreen slot={slot} />,
     'event-detail': (params) => (
       <EventDetailScreen
@@ -44,6 +53,9 @@ export function residentRoutes(slot: DeviceSlotId): Record<string, RouteComponen
     ),
     wallet: () => <WalletScreen slot={slot} />,
     'padel-book': () => <PadelBookScreen slot={slot} />,
+    'padel-pass': (params) => (
+      <PadelPassScreen slot={slot} bookingId={params.id ?? ''} fresh={params.fresh === '1'} />
+    ),
     'dining-book': (params) => (
       <DiningBookScreen slot={slot} initialVenue={params.venue as VenueKey | undefined} />
     ),

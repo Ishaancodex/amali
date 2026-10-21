@@ -10,7 +10,13 @@ import { useFmt, useT } from '@/i18n/hooks';
 import { Odometer } from '@/ui/Odometer';
 import { dur } from '@/design/motion';
 
-export function BalanceChip({ balanceFils }: { balanceFils: number }) {
+export function BalanceChip({
+  balanceFils,
+  large = false,
+}: {
+  balanceFils: number;
+  large?: boolean;
+}) {
   const t = useT();
   const fmt = useFmt();
   const prevRef = useRef(balanceFils);
@@ -36,12 +42,16 @@ export function BalanceChip({ balanceFils }: { balanceFils: number }) {
               : 'var(--brand-tint)',
       }}
       transition={{ duration: dur.slower }}
-      className={`rounded-tag inline-flex items-center gap-1.5 px-3 py-1.5 ${fmt.locale === 'ar' ? 'flex-row-reverse' : ''}`}
+      className={`inline-flex items-center gap-1.5 ${large ? 'rounded-tile px-5 py-3' : 'rounded-tag px-3 py-1.5'} ${fmt.locale === 'ar' ? 'flex-row-reverse' : ''}`}
     >
-      <span className="text-label-3 text-brand">{t('ui.currency')}</span>
+      <span className={large ? 'font-wide text-eyebrow text-brand' : 'text-label-3 text-brand'}>
+        {t('ui.currency')}
+      </span>
       <Odometer
         value={fmt.num(balanceFils / 100, { maximumFractionDigits: 2 })}
-        className="text-label-2 text-brand"
+        className={
+          large ? 'font-serif-display text-serif-numeral text-brand' : 'text-label-2 text-brand'
+        }
       />
     </motion.div>
   );

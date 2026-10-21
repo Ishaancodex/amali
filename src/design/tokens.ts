@@ -37,10 +37,8 @@ export const appColor = {
   maintenance: '#686056', // was #8A7F72
 } as const;
 
-export const sosGradient = {
-  from: '#E8572B',
-  to: '#D2382A',
-} as const;
+/** SOS: one flat red (white text on it is 5.1:1). */
+export const sosColor = '#D2382A';
 
 /** Browser device-frame window chrome (PRD §4.1 "Browser: ... window chrome"). */
 export const browserChrome = {
@@ -54,18 +52,28 @@ export const skeletonColor = {
   highlight: '#F5F1EC',
 } as const;
 
-/** Amali gradient placeholder for a missing amenity image (PRD §5.8: "--brand-tint → #E9E1D6"). */
-export const gradientPlaceholderEnd = '#E9E1D6';
+// ---------------------------------------------------------------------------
+// Colour — ember surfaces (resident header bands, tab bar, ticket stub)
+// ---------------------------------------------------------------------------
 
 /**
- * Home hero fallback (PRD §9, §18.7): shown only if `hero.jpg` (the real
- * Amali render from the brand guidelines, see `public/hero/`) fails to
- * load — a warm dusk-toned gradient in the same Sand/Ember family.
+ * The dark half of the resident app (`documents/competitor-reference-review.md`):
+ * header bands, the floating tab bar and the ticket stub sit on Ember, with the
+ * brand-book Sand (#BE7E63, 5.6:1 on Ember) as the one accent. Text on Ember
+ * is Pearl; muted text is a warm grey that clears 4.5:1.
  */
-export const heroFallback = {
-  top: '#4A4030',
-  mid: '#2A2420',
-  bottom: '#171310',
+export const emberColor = {
+  ember: '#0E0D0C',
+  emberRaised: '#22201D',
+  onEmber: '#F2EDE3',
+  onEmberMuted: '#B9B2A6',
+  sandOnEmber: '#BE7E63',
+  sandSoft: '#DFBFB0',
+  emberHairline: 'rgba(242,237,227,0.13)',
+  emberGlass: 'rgba(14,13,12,0.88)',
+  pearlGlass: 'rgba(247,244,240,0.82)',
+  /** Flat darkening laid over a photo behind a title, so text stays legible without a gradient. */
+  emberVeil: 'rgba(14,13,12,0.6)',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -148,12 +156,11 @@ export const shadow = {
  * Barlow), `script` = the "Romantically" accent (via Alex Brush), reserved
  * for the one decorative, non-functional moment that calls for it.
  *
- * Label-style text is never set in all-caps (no `transform` field): tracked
- * letter-spacing alone gives the brand book's "eyebrow label" rhythm
- * without resorting to an uppercase transform.
+ * Casing is not a token: the `eyebrow` role is uppercased by `ui/Eyebrow`
+ * (and left alone in Arabic).
  */
 export interface TypeStyle {
-  font: 'primary' | 'secondary' | 'script';
+  font: 'primary' | 'secondary' | 'script' | 'serif' | 'wide';
   sizePx: number;
   lineHeightPx: number;
   weight: number;
@@ -170,7 +177,12 @@ export const appType: Record<
   | 'button'
   | 'tag'
   | 'display'
-  | 'scriptAccent',
+  | 'scriptAccent'
+  | 'serifHero'
+  | 'serifTitle'
+  | 'serifSection'
+  | 'serifNumeral'
+  | 'eyebrow',
   TypeStyle
 > = {
   titleL: { font: 'primary', sizePx: 20, lineHeightPx: 24, weight: 500 },
@@ -183,6 +195,13 @@ export const appType: Record<
   tag: { font: 'secondary', sizePx: 12, lineHeightPx: 16, weight: 400, trackingEm: 0.02 },
   display: { font: 'primary', sizePx: 28, lineHeightPx: 34, weight: 500 },
   scriptAccent: { font: 'script', sizePx: 36, lineHeightPx: 40, weight: 400 },
+  // Resident header/section type: Instrument Serif italic for titles and big numerals,
+  // Julius Sans One caps for eyebrows (10px is the floor that stays legible and passes axe).
+  serifHero: { font: 'serif', sizePx: 44, lineHeightPx: 44, weight: 400 },
+  serifTitle: { font: 'serif', sizePx: 28, lineHeightPx: 30, weight: 400 },
+  serifSection: { font: 'serif', sizePx: 24, lineHeightPx: 26, weight: 400 },
+  serifNumeral: { font: 'serif', sizePx: 40, lineHeightPx: 40, weight: 400 },
+  eyebrow: { font: 'wide', sizePx: 10, lineHeightPx: 16, weight: 400, trackingEm: 0.26 },
 };
 
 export const shellType: Record<'label' | 'heading' | 'number' | 'body', TypeStyle> = {
@@ -202,6 +221,9 @@ export const layout = {
   pagePadding: 16,
   cardPadding: 12,
   cardGap: 16,
+  /** Floating tab bar (`ui/BottomNav`): its height, and the scroll inset that clears it. */
+  navHeight: 66,
+  navInset: 104,
 } as const;
 
 export const radius = {
@@ -211,6 +233,10 @@ export const radius = {
   button: 4,
   tag: 16,
   bottomSheetTop: 20,
+  /** Pearl body sheet overlapping a header band, and tickets. */
+  sheet: 26,
+  tile: 20,
+  nav: 24,
 } as const;
 
 export const borderWidth = {

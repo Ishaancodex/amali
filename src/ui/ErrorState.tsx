@@ -9,7 +9,9 @@ export function ErrorState({ message, onRetry }: { message?: string; onRetry: ()
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-10 text-center">
       <CircleAlert className="text-danger h-8 w-8" strokeWidth={1.5} />
-      <p className="text-body-2 text-text-muted">{message ?? t('common.somethingWrong')}</p>
+      <p className="font-serif-display text-serif-section text-text-title">
+        {message ?? t('common.somethingWrong')}
+      </p>
       <button
         type="button"
         onClick={onRetry}

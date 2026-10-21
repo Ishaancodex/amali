@@ -11,7 +11,15 @@
  * the one decorative, non-functional moment that calls for it (the Home
  * hero greeting) — never for dense or functional UI text.
  */
-import { Poppins, Barlow, Alex_Brush, IBM_Plex_Sans_Arabic } from 'next/font/google';
+import {
+  Poppins,
+  Barlow,
+  Alex_Brush,
+  IBM_Plex_Sans_Arabic,
+  Instrument_Serif,
+  Julius_Sans_One,
+  Amiri,
+} from 'next/font/google';
 
 export const poppins = Poppins({
   subsets: ['latin'],
@@ -44,9 +52,41 @@ export const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   adjustFontFallback: false,
 });
 
+/**
+ * Resident header type (competitor-reference-review.md): Instrument Serif italic for titles
+ * and big numerals, Julius Sans One for tracked caps eyebrows. Both are OFL; neither is in
+ * the brand book (Aviano Sans / DIN 2014), so this is a stakeholder-approved addition.
+ * Amiri is the Arabic counterpart of the serif role (Arabic has no italic).
+ */
+export const instrumentSerif = Instrument_Serif({
+  subsets: ['latin'],
+  weight: ['400'],
+  style: ['normal', 'italic'],
+  variable: '--font-instrument-serif',
+  display: 'swap',
+});
+
+export const juliusSansOne = Julius_Sans_One({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-julius-sans',
+  display: 'swap',
+});
+
+export const amiri = Amiri({
+  subsets: ['arabic'],
+  weight: ['400'],
+  variable: '--font-amiri',
+  display: 'swap',
+  adjustFontFallback: false,
+});
+
 export const fontVariables = [
   poppins.variable,
   barlow.variable,
   alexBrush.variable,
   ibmPlexSansArabic.variable,
+  instrumentSerif.variable,
+  juliusSansOne.variable,
+  amiri.variable,
 ].join(' ');

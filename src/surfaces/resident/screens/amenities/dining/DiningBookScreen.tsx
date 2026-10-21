@@ -8,7 +8,8 @@
  * when it falls short.
  */
 import { useState } from 'react';
-import { TopBar } from '@/ui/TopBar';
+import { ScreenShell } from '@/ui/ScreenShell';
+import { SectionHeading } from '@/ui/SectionHeading';
 import { Button } from '@/ui/Button';
 import { Banner } from '@/ui/Banner';
 import { Stepper } from '@/ui/Stepper';
@@ -94,82 +95,86 @@ export function DiningBookScreen({
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <TopBar title={t('resident.amenityDetail.reserve')} onBack={pop} />
-      <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-4 pt-2 pb-6 [&>*]:shrink-0">
+    <ScreenShell
+      eyebrow={t('resident.home.quick.dining')}
+      title={t('resident.amenityDetail.reserve')}
+      onBack={pop}
+      image="/amenities/dining.jpg"
+      bodyClassName="gap-6"
+      footer={
+        <div className="border-border-card bg-pearl-glass shrink-0 border-t-[0.5px] px-4 py-3 backdrop-blur-xl">
+          <Button fullWidth disabled={!start} onClick={reserve}>
+            {request ? t('dining.sendRequest') : t('dining.reserve')}
+          </Button>
+        </div>
+      }
+    >
+      <div className="flex flex-wrap gap-2">
+        {VENUES.map((v) => (
+          <Chip key={v} active={venue === v} onClick={() => reset(setVenue)(v)}>
+            {t(`dining.venue.${v}`)}
+          </Chip>
+        ))}
+      </div>
+      <SectionHeading title={t('padel.date')} />
+      <div className="flex flex-wrap gap-2">
+        {days.map((d) => (
+          <Chip key={d} active={day === d} onClick={() => reset(setDay)(d)}>
+            {fmt.dateKey(d, 'EEE d')}
+          </Chip>
+        ))}
+      </div>
+      <Stepper
+        label={t('dining.partySize')}
+        value={size}
+        min={min}
+        max={max}
+        onChange={reset(setParty)}
+      />
+      {windows.length > 1 && (
         <div className="flex flex-wrap gap-2">
-          {VENUES.map((v) => (
-            <Chip key={v} active={venue === v} onClick={() => reset(setVenue)(v)}>
-              {t(`dining.venue.${v}`)}
+          {windows.map((w) => (
+            <Chip
+              key={w.period}
+              active={window.period === w.period}
+              onClick={() => reset(setPeriod)(w.period)}
+            >
+              {t(`dining.period.${w.period}`)}
             </Chip>
           ))}
         </div>
-        <div className="flex flex-wrap gap-2">
-          {days.map((d) => (
-            <Chip key={d} active={day === d} onClick={() => reset(setDay)(d)}>
-              {fmt.dateKey(d, 'EEE d')}
-            </Chip>
-          ))}
-        </div>
-        <Stepper
-          label={t('dining.partySize')}
-          value={size}
-          min={min}
-          max={max}
-          onChange={reset(setParty)}
-        />
-        {windows.length > 1 && (
+      )}
+      <TimeChips
+        venue={venue}
+        window={window}
+        partySize={size}
+        value={start}
+        onChange={(time) => {
+          setStart(time);
+          setError(undefined);
+        }}
+      />
+      {venue === 'restaurant' && (
+        <section className="flex flex-col gap-2">
+          <SectionHeading title={t('dining.seating')} />
           <div className="flex flex-wrap gap-2">
-            {windows.map((w) => (
-              <Chip
-                key={w.period}
-                active={window.period === w.period}
-                onClick={() => reset(setPeriod)(w.period)}
-              >
-                {t(`dining.period.${w.period}`)}
+            {ZONES.map((z) => (
+              <Chip key={z} active={zone === z} onClick={() => setZone(zone === z ? undefined : z)}>
+                {t(`dining.zone.${z}`)}
               </Chip>
             ))}
           </div>
-        )}
-        <TimeChips
-          venue={venue}
-          window={window}
-          partySize={size}
-          value={start}
-          onChange={(time) => {
-            setStart(time);
-            setError(undefined);
-          }}
-        />
-        {venue === 'restaurant' && (
-          <section className="flex flex-col gap-2">
-            <h2 className="text-label-1 text-text-title">{t('dining.seating')}</h2>
-            <div className="flex flex-wrap gap-2">
-              {ZONES.map((z) => (
-                <Chip
-                  key={z}
-                  active={zone === z}
-                  onClick={() => setZone(zone === z ? undefined : z)}
-                >
-                  {t(`dining.zone.${z}`)}
-                </Chip>
-              ))}
-            </div>
-            <p className="text-body-3 text-text-muted">{t('dining.zoneNote')}</p>
-          </section>
-        )}
-        <RequestsSection value={requests} onChange={setRequests} />
-        <WalletPanel slot={slot} venue={venue} partySize={size} />
-        {request && (
-          <Banner style="info">
-            {t('dining.requestMode', { size: rules.dining.restaurant.requestModeMinPartySize })}
-          </Banner>
-        )}
-        {error && <Banner style="urgent">{error}</Banner>}
-        <Button fullWidth disabled={!start} onClick={reserve}>
-          {request ? t('dining.sendRequest') : t('dining.reserve')}
-        </Button>
-      </div>
-    </div>
+          <p className="text-body-3 text-text-muted">{t('dining.zoneNote')}</p>
+        </section>
+      )}
+      <RequestsSection value={requests} onChange={setRequests} />
+      <WalletPanel slot={slot} venue={venue} partySize={size} />
+      {request && (
+        <Banner style="info">
+          {t('dining.requestMode', { size: rules.dining.restaurant.requestModeMinPartySize })}
+        </Banner>
+      )}
+      {error && <Banner style="urgent">{error}</Banner>}
+    </ScreenShell>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 /** The unit's upcoming and recent reservations on the Dining page — tap one for its detail. */
+import { SectionHeading } from '@/ui/SectionHeading';
 import { Card } from '@/ui/Card';
 import { Tag } from '@/ui/Tag';
 import { useStore } from '@/store';
@@ -32,7 +33,7 @@ export function DiningStatusCard({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="text-label-1 text-text-title">{t('dining.yourReservations')}</h2>
+      <SectionHeading title={t('dining.yourReservations')} />
       {mine.map((r) => (
         <button
           key={r.id}
@@ -42,7 +43,7 @@ export function DiningStatusCard({ slot }: { slot: DeviceSlotId }) {
         >
           <Card className="flex items-center justify-between gap-2">
             <div>
-              <p className="text-label-2 text-text-title">
+              <p className="font-serif-display text-serif-section text-text-title">
                 {t(`dining.venue.${r.venue}`)} · {r.partySize}
               </p>
               <p className="text-body-3 text-text-muted">{fmt.dateTime(r.start)}</p>

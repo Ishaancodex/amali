@@ -6,7 +6,8 @@
  * velocity over 500 or offset over 30% of the sheet's height dismisses;
  * otherwise it springs back. Esc closes it.
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, type PanInfo } from 'motion/react';
 import { backdrop, sheet } from '@/design/motion';
 
@@ -15,13 +16,23 @@ export interface SheetProps {
   onClose: () => void;
   children: React.ReactNode;
   title?: string;
+  /** `ember` is the dark sheet used for SOS. */
+  tone?: 'light' | 'ember';
 }
 
 const DISMISS_VELOCITY = 500;
 const DISMISS_FRACTION = 0.3;
 
-export function Sheet({ open, onClose, children, title }: SheetProps) {
+export function Sheet({ open, onClose, children, title, tone = 'light' }: SheetProps) {
+  const dark = tone === 'ember';
   const sheetRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  // Portal into the device screen (`data-sheet-root`) so the sheet sits inside the screen, above
+  // the tab bar, however far the screen behind it has scrolled. A CSS-scaled frame would otherwise
+  // make `fixed` anchor to the whole bezel.
+  const [root, setRoot] = useState<Element | null>(null);
+  useEffect(() => setRoot(anchorRef.current?.closest('[data-sheet-root]') ?? null), []);
+  const pos = root ? 'absolute' : 'fixed';
 
   useEffect(() => {
     if (!open) return;
@@ -36,13 +47,13 @@ export function Sheet({ open, onClose, children, title }: SheetProps) {
     if (info.velocity.y > DISMISS_VELOCITY || info.offset.y > height * DISMISS_FRACTION) onClose();
   }
 
-  return (
+  const content = (
     <AnimatePresence>
       {open && (
         <>
           <motion.div
             key="backdrop"
-            className="bg-scrim fixed inset-0 z-40"
+            className={`bg-scrim ${pos} inset-0 z-40`}
             variants={backdrop}
             initial="initial"
             animate="animate"
@@ -53,7 +64,7 @@ export function Sheet({ open, onClose, children, title }: SheetProps) {
             key="sheet"
             ref={sheetRef}
             tabIndex={-1}
-            className="rounded-t-bottom-sheet bg-surface fixed inset-x-0 bottom-0 z-50 max-h-[85%] overflow-y-auto pb-6 outline-none"
+            className={`rounded-t-bottom-sheet ${pos} inset-x-0 bottom-0 z-50 max-h-[85%] overflow-y-auto pb-6 outline-none ${dark ? 'bg-ember text-on-ember' : 'bg-surface'}`}
             variants={sheet}
             initial="initial"
             animate="animate"
@@ -67,13 +78,28 @@ export function Sheet({ open, onClose, children, title }: SheetProps) {
             aria-label={title}
           >
             <div className="flex justify-center py-3">
-              <span className="bg-border-card h-1 w-9 rounded-full" />
+              <span
+                className={`h-1 w-9 rounded-full ${dark ? 'bg-ember-hairline' : 'bg-border-card'}`}
+              />
             </div>
-            {title && <h2 className="text-title-l text-text-title px-5 pb-3">{title}</h2>}
+            {title && (
+              <h2
+                className={`px-5 pb-3 ${dark ? 'font-serif-display text-serif-title' : 'text-title-l text-text-title'}`}
+              >
+                {title}
+              </h2>
+            )}
             <div className="px-5">{children}</div>
           </motion.div>
         </>
       )}
     </AnimatePresence>
+  );
+
+  return (
+    <>
+      <span ref={anchorRef} hidden />
+      {root ? createPortal(content, root) : content}
+    </>
   );
 }

@@ -5,7 +5,7 @@
  * pass"). The code is a mock — a deterministic pattern from the guardian
  * id with QR-style finder squares; the creche scanner is simulated too.
  */
-import { TopBar } from '@/ui/TopBar';
+import { ScreenShell } from '@/ui/ScreenShell';
 import { Card } from '@/ui/Card';
 import { EmptyState } from '@/ui/EmptyState';
 import { QrCode } from '@/ui/icons';
@@ -75,34 +75,39 @@ export function CrechePassScreen({ slot }: { slot: DeviceSlotId }) {
   const guardian = Object.values(guardians).find((g) => g.residentId === actorId);
 
   return (
-    <div className="flex h-full flex-col">
-      <TopBar title={t('resident.amenityDetail.dropOffPass')} onBack={pop} />
-      <div className="flex flex-1 flex-col items-center gap-4 overflow-y-auto px-6 pb-6">
-        {!guardian ? (
-          <EmptyState icon={QrCode} message={t('kids.notGuardian')} />
-        ) : (
-          <>
-            <Card className="mt-4 w-full max-w-64 p-4">
-              <MockCode value={guardian.id} />
-            </Card>
-            <div className="flex items-center gap-3">
-              <ChildAvatar initials={guardian.photo} />
-              <div>
-                <p className="text-label-1 text-text-title">{guardian.name}</p>
-                <p className="text-body-3 text-text-muted">
-                  {t('kids.authorisedFor', {
-                    names: guardian.childIds
-                      .map((id) => children[id]?.name.split(' ')[0])
-                      .filter(Boolean)
-                      .join(' & '),
-                  })}
-                </p>
-              </div>
+    <ScreenShell
+      eyebrow={t('resident.home.quick.kidsClub')}
+      title={t('resident.amenityDetail.dropOffPass')}
+      onBack={pop}
+      image="/amenities/creche.jpg"
+      bodyClassName="items-center gap-4"
+    >
+      {!guardian ? (
+        <EmptyState icon={QrCode} message={t('kids.notGuardian')} />
+      ) : (
+        <>
+          <Card className="w-full max-w-64 p-4">
+            <MockCode value={guardian.id} />
+          </Card>
+          <div className="flex items-center gap-3">
+            <ChildAvatar initials={guardian.photo} />
+            <div>
+              <p className="font-serif-display text-serif-section text-text-title">
+                {guardian.name}
+              </p>
+              <p className="text-body-3 text-text-muted">
+                {t('kids.authorisedFor', {
+                  names: guardian.childIds
+                    .map((id) => children[id]?.name.split(' ')[0])
+                    .filter(Boolean)
+                    .join(' & '),
+                })}
+              </p>
             </div>
-            <p className="text-body-3 text-text-muted text-center">{t('kids.showAtDesk')}</p>
-          </>
-        )}
-      </div>
-    </div>
+          </div>
+          <p className="text-body-3 text-text-muted text-center">{t('kids.showAtDesk')}</p>
+        </>
+      )}
+    </ScreenShell>
   );
 }

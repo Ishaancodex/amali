@@ -14,13 +14,13 @@ type Check = { A?: (string | RegExp)[]; B?: (string | RegExp)[]; notA?: (string 
 /** What each device must show after a step (only the steps with something specific to see). */
 const CHECKS: Record<string, Record<number, Check>> = {
   S1: {
-    0: { A: ['Good evening, James'] },
-    3: { A: ['Good afternoon, James'] },
+    0: { A: ['Good evening', 'James'] },
+    3: { A: ['Good afternoon', 'James'] },
     4: { A: ['Amali Residences'] },
     5: { A: ['Amali Residences'] },
     6: { A: ['Pool occupancy'] },
   },
-  S2: { 0: { A: ['Communications', 'Urgent closure'] }, 1: { A: ['Good evening, Ahmed'] } },
+  S2: { 0: { A: ['Communications', 'Urgent closure'] }, 1: { A: ['Good evening', 'Ahmed'] } },
   S3: { 4: { A: ['Amali Residences'] }, 5: { A: ['Pool occupancy'] } },
   S4: {
     0: { A: ['Omar', 'Authorised guardians'] },

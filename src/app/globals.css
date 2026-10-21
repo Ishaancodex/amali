@@ -33,6 +33,17 @@
   --color-maintenance: var(--maintenance);
 }
 @theme {
+  --color-ember: var(--ember);
+  --color-ember-raised: var(--ember-raised);
+  --color-on-ember: var(--on-ember);
+  --color-on-ember-muted: var(--on-ember-muted);
+  --color-sand-on-ember: var(--sand-on-ember);
+  --color-sand-soft: var(--sand-soft);
+  --color-ember-hairline: var(--ember-hairline);
+  --color-ember-glass: var(--ember-glass);
+  --color-pearl-glass: var(--pearl-glass);
+  --color-ember-veil: var(--ember-veil);
+
   --color-overlay: var(--overlay);
   --color-on-overlay: var(--on-overlay);
   --color-on-overlay-muted: var(--on-overlay-muted);
@@ -40,7 +51,7 @@
 
   --color-browser-chrome-frame: var(--browser-chrome-frame);
   --color-browser-chrome-toolbar: var(--browser-chrome-toolbar);
-  --color-gradient-placeholder-end: var(--gradient-placeholder-end);
+  --color-sos: var(--sos);
 
   --color-shell-stage: var(--shell-stage);
   --color-shell-stage-raised: var(--shell-stage-raised);
@@ -62,17 +73,21 @@
   --radius-button: var(--radius-button);
   --radius-tag: var(--radius-tag);
   --radius-bottom-sheet: var(--radius-bottom-sheet-top);
+  --radius-sheet: var(--radius-sheet);
+  --radius-tile: var(--radius-tile);
+  --radius-nav: var(--radius-nav);
 
   --spacing-page: var(--page-padding);
   --spacing-card: var(--card-padding);
   --spacing-card-gap: var(--card-gap);
 
-  @keyframes shimmer {
-    from {
-      background-position: 200% 0;
+  @keyframes skeleton-pulse {
+    0%,
+    100% {
+      background-color: var(--skeleton-base);
     }
-    to {
-      background-position: -200% 0;
+    50% {
+      background-color: var(--skeleton-highlight);
     }
   }
 }
@@ -141,6 +156,17 @@ body {
 @utility font-script {
   font-family: var(--font-script-accent), cursive;
 }
+@utility accent-brand {
+  accent-color: var(--brand);
+}
+@utility font-serif-display {
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-style: italic;
+}
+@utility font-wide {
+  font-family: var(--font-julius-sans), var(--font-poppins), ui-sans-serif, sans-serif;
+  text-transform: uppercase;
+}
 @utility font-arabic {
   font-family: var(--font-ibm-plex-arabic), ui-sans-serif, sans-serif;
 }
@@ -153,37 +179,50 @@ body {
     var(--font-ibm-plex-arabic), var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
 
-.sos-gradient {
-  background-image: linear-gradient(135deg, var(--sos-gradient-from), var(--sos-gradient-to));
+/* Arabic has no italic and no letter-spacing: the serif and wide roles drop both and take the
+   Arabic faces (Amiri for the serif role, Plex for the wide one). The reference app does the same. */
+[lang='ar'] .font-serif-display {
+  font-family: var(--font-amiri), var(--font-ibm-plex-arabic), serif;
+  font-style: normal;
+}
+[lang='ar'] .font-wide {
+  font-family: var(--font-ibm-plex-arabic), var(--font-poppins), ui-sans-serif, sans-serif;
+  text-transform: none;
+  letter-spacing: 0;
+}
+[lang='ar'] .text-serif-hero,
+[lang='ar'] .text-serif-title,
+[lang='ar'] .text-serif-section {
+  line-height: 1.4;
+}
+[lang='ar'] .text-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0;
 }
 
-/* Hero fallback (PRD §9/§5.1): shown only if the real Amali render
-   (public/brand/hero.jpg) fails to load — a warm dusk-toned gradient in
-   the same Sand/Ember family stands in. */
-.hero-gradient-fallback {
-  background-image:
-    radial-gradient(
-      120% 100% at 20% 0%,
-      color-mix(in srgb, var(--brand) 55%, transparent) 0%,
-      transparent 60%
-    ),
-    linear-gradient(
-      160deg,
-      var(--hero-fallback-top) 0%,
-      var(--hero-fallback-mid) 55%,
-      var(--hero-fallback-bottom) 100%
-    );
+/* Ember header band: flat Ember (ui/HeaderBand). With a photo behind it the photo fills the band. */
+.ember-band {
+  position: relative;
+  overflow: hidden;
+  color: var(--on-ember);
+  background-color: var(--ember);
 }
 
+/* Film grain over ember bands and art tiles (public/brand/grain.svg). */
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/brand/grain.svg');
+  opacity: 0.3;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+/* Loading placeholder: a flat warm grey that breathes. */
 .skeleton {
-  background-image: linear-gradient(
-    90deg,
-    var(--skeleton-base) 25%,
-    var(--skeleton-highlight) 37%,
-    var(--skeleton-base) 63%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.4s linear infinite;
+  background-color: var(--skeleton-base);
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
 }
 
 html,

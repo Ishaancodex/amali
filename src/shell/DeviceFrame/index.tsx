@@ -1,5 +1,7 @@
 'use client';
 
+import { useRef } from 'react';
+import { MotionConfig } from 'motion/react';
 import { deviceFrame, type DeviceKind } from '@/design/tokens';
 import { useDeviceScale } from './useDeviceScale';
 import { Phone } from './Phone';
@@ -46,6 +48,15 @@ export function DeviceFrame({
     maxScale,
   });
 
+  // The frame is CSS-scaled. Motion measures layout in viewport pixels but applies transforms in
+  // the frame's own pixels, so a shared-element morph would travel `scale`× too little. Mapping
+  // viewport points into the frame's space makes layout animations (layoutId) exact.
+  const scaledRef = useRef<HTMLDivElement>(null);
+  const toFramePoint = (point: { x: number; y: number }) => {
+    const rect = scaledRef.current?.getBoundingClientRect();
+    return rect ? { x: (point.x - rect.left) / scale, y: (point.y - rect.top) / scale } : point;
+  };
+
   return (
     <div
       ref={containerRef}
@@ -53,22 +64,24 @@ export function DeviceFrame({
       // a focused input near the bottom of a device, which shifts the whole frame up.
       className="flex h-full w-full items-start justify-center overflow-clip"
     >
-      <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
-        {kind === 'phone' && (
-          <Phone now={now} dir={dir} lang={lang} themeClass={themeClass} island={island}>
-            {children}
-          </Phone>
-        )}
-        {kind === 'tablet' && (
-          <Tablet now={now} dir={dir} lang={lang} themeClass={themeClass}>
-            {children}
-          </Tablet>
-        )}
-        {kind === 'browser' && (
-          <Browser dir={dir} lang={lang} themeClass={themeClass} address={address}>
-            {children}
-          </Browser>
-        )}
+      <div ref={scaledRef} style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
+        <MotionConfig transformPagePoint={toFramePoint}>
+          {kind === 'phone' && (
+            <Phone now={now} dir={dir} lang={lang} themeClass={themeClass} island={island}>
+              {children}
+            </Phone>
+          )}
+          {kind === 'tablet' && (
+            <Tablet now={now} dir={dir} lang={lang} themeClass={themeClass}>
+              {children}
+            </Tablet>
+          )}
+          {kind === 'browser' && (
+            <Browser dir={dir} lang={lang} themeClass={themeClass} address={address}>
+              {children}
+            </Browser>
+          )}
+        </MotionConfig>
       </div>
     </div>
   );

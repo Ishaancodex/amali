@@ -78,7 +78,7 @@ export function ChildLiveCard({
       <div className="flex items-center gap-3">
         <ChildAvatar initials={child.photo} />
         <div className="min-w-0 flex-1">
-          <p className="text-label-1 text-text-title">{first}</p>
+          <p className="font-serif-display text-serif-section text-text-title">{first}</p>
           <p className="text-body-3 text-text-muted">
             {inRoom
               ? t('kids.inPlayroom', {
@@ -98,7 +98,7 @@ export function ChildLiveCard({
       </div>
 
       {inRoom && (
-        <div className="bg-brand-tint rounded-card flex items-center justify-between px-3 py-2">
+        <div className="bg-brand-tint rounded-tile flex items-center justify-between px-3 py-2">
           <span className="text-label-2 text-brand">
             {activity ? activityLabel(activity.label, t) : t('kids.settlingIn')}
           </span>

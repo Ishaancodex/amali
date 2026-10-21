@@ -24,7 +24,7 @@ export function Toast({ message, variant = 'neutral', onDismiss, durationMs = 30
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 12 }}
       transition={{ duration: dur.fast, ease: ease.enter }}
-      className="rounded-card bg-overlay text-body-2 text-on-overlay pointer-events-auto flex items-center gap-2 px-4 py-3 shadow-xl"
+      className="bg-overlay text-body-2 text-on-overlay pointer-events-auto flex items-center gap-2 rounded-full px-4 py-3 shadow-xl"
       role="status"
     >
       {variant === 'success' && <CheckCircle2 className="text-success h-4 w-4" strokeWidth={1.5} />}

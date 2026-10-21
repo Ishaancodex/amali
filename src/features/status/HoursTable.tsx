@@ -21,7 +21,7 @@ export function HoursTable({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="divide-border-card rounded-card border-border-card divide-y border-[0.5px]">
+      <div className="divide-border-card rounded-tile border-border-card divide-y border-[0.5px]">
         {[0, 1, 2, 3, 4, 5, 6].map((day) => {
           const label = fmt.weekday(day, 'EEE');
           const entry = byDay.get(day as WeeklyHours['day']);

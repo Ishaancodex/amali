@@ -7,7 +7,9 @@
  * offers the waitlist rather than refusing.
  */
 import { useState } from 'react';
-import { TopBar } from '@/ui/TopBar';
+import { ScreenShell } from '@/ui/ScreenShell';
+import { SectionHeading } from '@/ui/SectionHeading';
+import { Chip } from '@/ui/Chip';
 import { Button } from '@/ui/Button';
 import { Banner } from '@/ui/Banner';
 import { Stepper } from '@/ui/Stepper';
@@ -20,7 +22,6 @@ import { countActiveInWindow, staffOnBand } from '@/domain/creche/capacity';
 import { crecheSessionId as sessionId } from '@/domain/creche/sessionIds';
 import { addDaysIso, addHoursIso, dubaiDateKey, dubaiDateTimeToIso } from '@/lib/time';
 import { useErrorText, useFmt, useT } from '@/i18n/hooks';
-import { cn } from '@/lib/cn';
 import type { DeviceSlotId } from '@/types/demo';
 
 type Kind = 'morning' | 'afternoon' | 'dropin';
@@ -35,29 +36,6 @@ const DROP_IN_STARTS = [
   '16:00',
   '17:00',
 ];
-
-function Chip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'rounded-tag text-label-3 px-3 py-1.5',
-        active ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand',
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 export function CrecheBookScreen({ slot, childId }: { slot: DeviceSlotId; childId?: string }) {
   const t = useT();
@@ -155,89 +133,96 @@ export function CrecheBookScreen({ slot, childId }: { slot: DeviceSlotId; childI
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <TopBar title={t('kids.bookTitle')} onBack={pop} />
-      <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-4 pb-6 [&>*]:shrink-0">
-        <section className="flex flex-col gap-2 pt-2">
-          <h2 className="text-label-1 text-text-title">{t('kids.whosGoing')}</h2>
-          {children.map((c) => (
-            <label key={c.id} className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                className="accent-brand h-5 w-5"
-                checked={picked.includes(c.id)}
-                onChange={(e) =>
-                  setPicked(e.target.checked ? [...picked, c.id] : picked.filter((p) => p !== c.id))
-                }
-              />
-              <span className="text-label-2 text-text-body flex-1">{c.name.split(' ')[0]}</span>
-              <span className="text-body-3 text-text-muted">{placesLeft(c.dob)}</span>
-            </label>
+    <ScreenShell
+      eyebrow={t('resident.home.quick.kidsClub')}
+      title={t('kids.bookTitle')}
+      onBack={pop}
+      image="/amenities/creche.jpg"
+      bodyClassName="gap-6"
+      footer={
+        <div className="border-border-card bg-pearl-glass shrink-0 border-t-[0.5px] px-4 py-3 backdrop-blur-xl">
+          <Button fullWidth disabled={picked.length === 0} onClick={book}>
+            {t('ui.book')}
+          </Button>
+        </div>
+      }
+    >
+      <section className="flex flex-col gap-2">
+        <SectionHeading title={t('kids.whosGoing')} />
+        {children.map((c) => (
+          <label key={c.id} className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              className="accent-brand h-5 w-5"
+              checked={picked.includes(c.id)}
+              onChange={(e) =>
+                setPicked(e.target.checked ? [...picked, c.id] : picked.filter((p) => p !== c.id))
+              }
+            />
+            <span className="text-label-2 text-text-title flex-1">{c.name.split(' ')[0]}</span>
+            <span className="text-body-3 text-text-muted">{placesLeft(c.dob)}</span>
+          </label>
+        ))}
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <SectionHeading title={t('kids.day')} />
+        <div className="flex flex-wrap gap-2">
+          {days.map((d) => (
+            <Chip key={d} active={day === d} onClick={() => setDay(d)}>
+              {fmt.dateKey(d, 'EEE d')}
+            </Chip>
           ))}
-        </section>
+        </div>
+      </section>
 
-        <section className="flex flex-col gap-2">
-          <h2 className="text-label-1 text-text-title">{t('kids.day')}</h2>
-          <div className="flex flex-wrap gap-2">
-            {days.map((d) => (
-              <Chip key={d} active={day === d} onClick={() => setDay(d)}>
-                {fmt.dateKey(d, 'EEE d')}
-              </Chip>
-            ))}
-          </div>
-        </section>
-
-        <section className="flex flex-col gap-2">
-          <h2 className="text-label-1 text-text-title">{t('kids.session')}</h2>
-          <div className="flex flex-wrap gap-2">
-            <Chip active={kind === 'morning'} onClick={() => setKind('morning')}>
-              {t('kids.morning', rules.creche.sessions.morning)}
-            </Chip>
-            <Chip active={kind === 'afternoon'} onClick={() => setKind('afternoon')}>
-              {t('kids.afternoon', rules.creche.sessions.afternoon)}
-            </Chip>
-            <Chip active={kind === 'dropin'} onClick={() => setKind('dropin')}>
-              {t('kids.dropIn')}
-            </Chip>
-          </div>
-          {kind === 'dropin' && (
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-wrap gap-2">
-                {DROP_IN_STARTS.map((time) => (
-                  <Chip key={time} active={dropStart === time} onClick={() => setDropStart(time)}>
-                    {time}
-                  </Chip>
-                ))}
-              </div>
-              <Stepper
-                label={t('kids.hours')}
-                value={hours}
-                min={rules.creche.sessions.dropIn.minHours}
-                max={rules.creche.sessions.dropIn.maxHours}
-                onChange={setHours}
-              />
+      <section className="flex flex-col gap-2">
+        <SectionHeading title={t('kids.session')} />
+        <div className="flex flex-wrap gap-2">
+          <Chip active={kind === 'morning'} onClick={() => setKind('morning')}>
+            {t('kids.morning', rules.creche.sessions.morning)}
+          </Chip>
+          <Chip active={kind === 'afternoon'} onClick={() => setKind('afternoon')}>
+            {t('kids.afternoon', rules.creche.sessions.afternoon)}
+          </Chip>
+          <Chip active={kind === 'dropin'} onClick={() => setKind('dropin')}>
+            {t('kids.dropIn')}
+          </Chip>
+        </div>
+        {kind === 'dropin' && (
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap gap-2">
+              {DROP_IN_STARTS.map((time) => (
+                <Chip key={time} active={dropStart === time} onClick={() => setDropStart(time)}>
+                  {time}
+                </Chip>
+              ))}
             </div>
-          )}
-        </section>
+            <Stepper
+              label={t('kids.hours')}
+              value={hours}
+              min={rules.creche.sessions.dropIn.minHours}
+              max={rules.creche.sessions.dropIn.maxHours}
+              onChange={setHours}
+            />
+          </div>
+        )}
+      </section>
 
-        <p className="text-body-3 text-text-muted">
-          {tenant
-            ? t('kids.tenantFee', {
-                amount: fmt.aed(rules.creche.tenantFeePerHourFils),
-                rounding: rules.creche.feeRoundingMinutes,
-              })
-            : t('kids.ownersFree')}{' '}
-          {t('kids.lateFee', {
-            grace: rules.creche.latePickup.graceMinutes,
-            amount: fmt.aed(rules.creche.latePickup.feePer15MinFils),
-          })}
-        </p>
+      <p className="text-body-3 text-text-muted">
+        {tenant
+          ? t('kids.tenantFee', {
+              amount: fmt.aed(rules.creche.tenantFeePerHourFils),
+              rounding: rules.creche.feeRoundingMinutes,
+            })
+          : t('kids.ownersFree')}{' '}
+        {t('kids.lateFee', {
+          grace: rules.creche.latePickup.graceMinutes,
+          amount: fmt.aed(rules.creche.latePickup.feePer15MinFils),
+        })}
+      </p>
 
-        {error && <Banner style="urgent">{error}</Banner>}
-        <Button fullWidth disabled={picked.length === 0} onClick={book}>
-          {t('ui.book')}
-        </Button>
-      </div>
-    </div>
+      {error && <Banner style="urgent">{error}</Banner>}
+    </ScreenShell>
   );
 }

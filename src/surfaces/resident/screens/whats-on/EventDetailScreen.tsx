@@ -14,7 +14,8 @@
  * 1") — there's no per-attendee name field in this phase's UI.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { TopBar } from '@/ui/TopBar';
+import { ScreenShell } from '@/ui/ScreenShell';
+import { SectionHeading } from '@/ui/SectionHeading';
 import { Button } from '@/ui/Button';
 import { Banner } from '@/ui/Banner';
 import { Tag } from '@/ui/Tag';
@@ -184,79 +185,84 @@ export function EventDetailScreen({
   }
 
   if (submit.kind === 'success') {
-    return <RsvpConfirmed showtime={showtime} onDone={() => replace('whats-on')} />;
+    return (
+      <RsvpConfirmed showtime={showtime} image={event.poster} onDone={() => replace('whats-on')} />
+    );
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <TopBar title={event.title} onBack={pop} />
-      <div className="flex-1 overflow-y-auto px-4 pb-6">
-        <div className="mt-4 flex items-center gap-2">
-          <Tag variant="brand">{t(`amenity.${event.venue}.name`)}</Tag>
-          <Tag variant="info">{event.ageRating}</Tag>
-        </div>
-        <p className="text-body-2 text-text-body mt-3">{event.description}</p>
+    <ScreenShell
+      eyebrow={t(`amenity.${event.venue}.name`)}
+      title={event.title}
+      onBack={pop}
+      image={event.poster}
+      tall
+      bodyClassName="gap-6"
+      footer={
+        !myRsvp ? (
+          <div className="border-border-card bg-pearl-glass shrink-0 border-t-[0.5px] px-4 py-3 backdrop-blur-xl">
+            <Button fullWidth disabled={!showtimeId} onClick={handleBook}>
+              {t('events.rsvp')}
+            </Button>
+          </div>
+        ) : undefined
+      }
+    >
+      <div className="flex items-center gap-2">
+        <Tag variant="brand">{t(`amenity.${event.venue}.name`)}</Tag>
+        <Tag variant="info">{event.ageRating}</Tag>
+      </div>
+      <p className="text-body-2 text-text-body -mt-2">{event.description}</p>
 
-        {myRsvp && <MyRsvp rsvp={myRsvp} onCancel={handleCancelRsvp} />}
+      {myRsvp && <MyRsvp rsvp={myRsvp} onCancel={handleCancelRsvp} />}
 
-        {!myRsvp && (
-          <>
-            <ShowtimePicker
-              showtimes={showtimes}
-              value={showtimeId}
-              onChange={(id) => {
-                setShowtimeId(id);
-                setSelectedSeats([]);
-                setSubmit({ kind: 'idle' });
-              }}
-            />
-            <PartySteppers
-              value={party}
-              onChange={setParty}
-              maxGuests={maxCombinedGuests}
-              childrenAllowed={childrenAllowed}
-            />
+      {!myRsvp && (
+        <>
+          <ShowtimePicker
+            showtimes={showtimes}
+            value={showtimeId}
+            onChange={(id) => {
+              setShowtimeId(id);
+              setSelectedSeats([]);
+              setSubmit({ kind: 'idle' });
+            }}
+          />
+          <PartySteppers
+            value={party}
+            onChange={setParty}
+            maxGuests={maxCombinedGuests}
+            childrenAllowed={childrenAllowed}
+          />
 
-            {isSeatMode && showtime && (
-              <>
-                <h2 className="text-label-1 text-text-title mt-5 mb-2">
-                  {t('events.chooseSeats', { count: totalAttendees })}
-                </h2>
-                <SeatGrid taken={takenSeats} selected={selectedSeats} onToggle={toggleSeat} />
-              </>
-            )}
+          {isSeatMode && showtime && (
+            <section>
+              <SectionHeading title={t('events.chooseSeats', { count: totalAttendees })} />
+              <SeatGrid taken={takenSeats} selected={selectedSeats} onToggle={toggleSeat} />
+            </section>
+          )}
 
-            {feeFils > 0 && (
-              <p className="text-body-3 text-text-muted mt-4">
-                {t('events.guestFee', { amount: fmt.aed(feeFils) })}
-              </p>
-            )}
+          {feeFils > 0 && (
+            <p className="text-body-3 text-text-muted">
+              {t('events.guestFee', { amount: fmt.aed(feeFils) })}
+            </p>
+          )}
 
-            {submit.kind === 'error' && (
-              <div className="mt-4">
-                <Shake trigger={submit.message}>
-                  <Banner style="warning">{submit.message}</Banner>
-                </Shake>
-              </div>
-            )}
+          {submit.kind === 'error' && (
+            <Shake trigger={submit.message}>
+              <Banner style="warning">{submit.message}</Banner>
+            </Shake>
+          )}
 
-            {submit.kind === 'full' && (
-              <div className="mt-4 flex flex-col gap-2">
-                <Banner style="info">{submit.message}</Banner>
-                <Button variant="secondary" fullWidth onClick={handleJoinWaitlist}>
-                  {t('padel.joinWaitlist')}
-                </Button>
-              </div>
-            )}
-
-            <div className="mt-6">
-              <Button fullWidth disabled={!showtimeId} onClick={handleBook}>
-                {t('events.rsvp')}
+          {submit.kind === 'full' && (
+            <div className="flex flex-col gap-2">
+              <Banner style="info">{submit.message}</Banner>
+              <Button variant="secondary" fullWidth onClick={handleJoinWaitlist}>
+                {t('padel.joinWaitlist')}
               </Button>
             </div>
-          </>
-        )}
-      </div>
-    </div>
+          )}
+        </>
+      )}
+    </ScreenShell>
   );
 }

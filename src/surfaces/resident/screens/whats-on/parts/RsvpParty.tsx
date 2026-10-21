@@ -6,6 +6,7 @@
  * children, capped at the venue's guest limit.
  */
 import { Stepper } from '@/ui/Stepper';
+import { SectionHeading } from '@/ui/SectionHeading';
 import { FillChip } from '@/ui/FillChip';
 import { useFmt, useT } from '@/i18n/hooks';
 import type { Showtime } from '@/types/event';
@@ -22,21 +23,21 @@ export function ShowtimePicker({
   const t = useT();
   const fmt = useFmt();
   return (
-    <>
-      <h2 className="text-label-1 text-text-title mt-5 mb-2">{t('events.showtime')}</h2>
+    <section>
+      <SectionHeading title={t('events.showtime')} />
       <div className="flex gap-2 overflow-x-auto pb-1">
         {showtimes.map((sh) => (
           <FillChip
             key={sh.id}
             selected={sh.id === value}
             onClick={() => onChange(sh.id)}
-            className="text-body-3 shrink-0 px-3 py-2"
+            className="text-body-3 shrink-0 px-4 py-2"
           >
             {fmt.date(sh.start, 'EEE d MMM')} · {fmt.time(sh.start)}
           </FillChip>
         ))}
       </div>
-    </>
+    </section>
   );
 }
 
@@ -59,12 +60,14 @@ export function PartySteppers({
 }) {
   const t = useT();
   return (
-    <>
-      <h2 className="text-label-1 text-text-title mt-5 mb-2">{t('events.whosComing')}</h2>
+    <section>
+      <SectionHeading title={t('events.whosComing')} />
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <span className="text-body-2 text-text-body">{t('events.you')}</span>
-          <span className="text-label-2 text-text-muted">1</span>
+          <span className="font-serif-display text-serif-section text-text-title w-6 text-center">
+            1
+          </span>
         </div>
         <Stepper
           label={t('events.householdMembers')}
@@ -90,6 +93,6 @@ export function PartySteppers({
           />
         )}
       </div>
-    </>
+    </section>
   );
 }

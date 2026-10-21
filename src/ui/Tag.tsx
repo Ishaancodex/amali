@@ -28,7 +28,7 @@ export function Tag({ variant = 'brand', icon: Icon, children, className }: TagP
   return (
     <span
       className={cn(
-        'rounded-tag text-tag font-secondary inline-flex items-center gap-1 px-2.5 py-1 tracking-wide',
+        'rounded-tag font-wide text-eyebrow inline-flex items-center gap-1 px-2.5 py-1',
         VARIANT_CLASSES[variant],
         className,
       )}

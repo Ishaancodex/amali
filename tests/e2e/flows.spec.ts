@@ -44,7 +44,7 @@ test('Arabic flips the device to RTL with a cross-fade and keeps form state', as
   const font = await a
     .getByRole('heading', { name: 'بحث' })
     .evaluate((el) => getComputedStyle(el).fontFamily);
-  expect(font).toMatch(/^"?IBM Plex Sans Arabic/);
+  expect(font).toMatch(/^"?(IBM Plex Sans Arabic|Amiri)/);
 
   await settle(page);
   await expectAccessible(page, 'Arabic search');

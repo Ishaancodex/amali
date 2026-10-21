@@ -33,7 +33,9 @@ export function CalendarMonth({
 
   return (
     <div>
-      <p className="text-label-1 text-text-title mb-3">{fmt.local(today, 'MMMM yyyy')}</p>
+      <p className="font-serif-display text-serif-section text-text-title mb-3">
+        {fmt.local(today, 'MMMM yyyy')}
+      </p>
       <div className="grid grid-cols-7 gap-y-2 text-center">
         {days.slice(0, 7).map((d) => (
           <span key={d.toISOString()} className="text-body-3 text-text-muted">

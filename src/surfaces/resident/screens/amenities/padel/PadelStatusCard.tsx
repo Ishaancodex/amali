@@ -10,6 +10,8 @@ import { Button } from '@/ui/Button';
 import { Banner } from '@/ui/Banner';
 import { Tag } from '@/ui/Tag';
 import { useStore } from '@/store';
+import { useNav } from '@/navigation/useNav';
+import { Ticket } from '@/ui/icons';
 import { useUiStore } from '@/store/uiStore';
 import { rules } from '@/config/rules';
 import { addMinutesIso } from '@/lib/time';
@@ -32,6 +34,7 @@ export function PadelStatusCard({ slot }: { slot: DeviceSlotId }) {
   const suspensionsRecord = useStore((s) => s.suspensions);
   const dispatch = useStore((s) => s.dispatch);
   const pushToast = useUiStore((s) => s.pushToast);
+  const { push } = useNav(slot);
 
   if (!resident || !unit) return null;
 
@@ -123,7 +126,7 @@ export function PadelStatusCard({ slot }: { slot: DeviceSlotId }) {
 
       <Card className="flex items-center justify-between">
         <span className="text-body-2 text-text-body">{t('padel.quotaThisWeek')}</span>
-        <span className="text-label-2 text-text-title tabular-nums">
+        <span className="font-serif-display text-serif-section text-text-title tabular-nums">
           {t('padel.quotaUsed', { used: usage.total, max: rules.padel.quota.maxBookings })}
         </span>
       </Card>
@@ -131,14 +134,18 @@ export function PadelStatusCard({ slot }: { slot: DeviceSlotId }) {
       {upcoming && (
         <Card className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-label-2 text-text-title">
+            <span className="font-serif-display text-serif-section text-text-title">
               {fmt.date(upcoming.start)} · {fmt.time(upcoming.start)}–{fmt.time(upcoming.end)}
             </span>
             <Tag variant={upcoming.state === 'checked_in' ? 'success' : 'brand'}>
               {upcoming.state === 'checked_in' ? t('padel.checkedIn') : t('padel.booked')}
             </Tag>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={() => push('padel-pass', { id: upcoming.id })}>
+              <Ticket className="h-3.5 w-3.5" strokeWidth={1.5} />
+              {t('resident.home.pass')}
+            </Button>
             {canCheckIn && (
               <Button variant="secondary" onClick={() => checkIn(upcoming.id)}>
                 {t('padel.checkIn')}

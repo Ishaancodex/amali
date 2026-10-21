@@ -74,6 +74,9 @@ import {
   ClipboardList,
   Timer,
   LayoutGrid,
+  Ticket,
+  HeartPulse,
+  Flame,
 } from 'lucide-react';
 
 export function Icon({ icon: IconComponent, ...props }: { icon: LucideIcon } & LucideProps) {
@@ -81,6 +84,9 @@ export function Icon({ icon: IconComponent, ...props }: { icon: LucideIcon } & L
 }
 
 export {
+  Ticket,
+  HeartPulse,
+  Flame,
   ChevronLeft,
   ChevronRight,
   ChevronDown,

@@ -171,7 +171,17 @@
       },
       "thisWeek": "What's on this week",
       "nothingThisWeek": "Nothing scheduled this week yet.",
-      "brand": "Amali"
+      "brand": "Amali",
+      "greetingEyebrow": {
+        "morning": "Good morning",
+        "afternoon": "Good afternoon",
+        "evening": "Good evening"
+      },
+      "unitLine": "Unit {{unit}}",
+      "pass": "Pass",
+      "allSpaces": "All spaces",
+      "nothingThisWeekTitle": "a quiet week",
+      "calendar": "Calendar"
     },
     "activity": {
       "tab": {
@@ -179,12 +189,27 @@
         "bookings": "Bookings"
       },
       "noNotifications": "No notifications yet.",
-      "noBookings": "No bookings yet. Book the padel court once booking opens."
+      "noBookings": "No bookings yet. Book a court, a seat or a table.",
+      "unread": "{{count}} unread",
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "party": "Party of {{count}}",
+      "state": {
+        "held": "Held",
+        "confirmed": "Confirmed",
+        "checked_in": "Checked in",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "late_cancelled": "Late cancel",
+        "no_show": "No-show",
+        "cancelled_by_ops": "Cancelled by Amali"
+      }
     },
     "search": {
       "placeholder": "Search amenities, events, announcements",
       "hint": "Search across amenities, events and announcements.",
-      "noResults": "No results for \"{{query}}\"."
+      "noResults": "No results for \"{{query}}\".",
+      "eyebrow": "Find a space"
     },
     "amenities": {
       "hours": {
@@ -198,7 +223,8 @@
         "teppanyaki": "Teppanyaki from {{amount}}pp"
       },
       "search": "Search amenities",
-      "noMatch": "No amenities match \"{{query}}\"."
+      "noMatch": "No amenities match \"{{query}}\".",
+      "eyebrow": "Reserve a space"
     },
     "amenityDetail": {
       "rules": {
@@ -216,7 +242,8 @@
       "unavailable": "Booking unavailable",
       "dropOffPass": "Drop-off pass",
       "seeWhatsOn": "See what's on",
-      "reserve": "Reserve a table"
+      "reserve": "Reserve a table",
+      "eyebrow": "Space"
     },
     "profile": {
       "language": "Language",
@@ -224,7 +251,44 @@
       "whatsapp": "WhatsApp",
       "whatsappOptIn": "WhatsApp opt-in",
       "pushOffNudge": "App push is off — WhatsApp will be used as a fallback where available.",
-      "help": "Help"
+      "help": "Help",
+      "eyebrow": "Membership"
+    },
+    "sos": {
+      "title": "emergency",
+      "body": "Hold the button for two seconds. Security and the community manager are alerted together.",
+      "kind": {
+        "security": "Security",
+        "medical": "Medical",
+        "fire": "Fire"
+      },
+      "hold": "Hold",
+      "holdAria": "Hold for two seconds to alert {{kind}}",
+      "where": "{{kind}} · Unit {{unit}}",
+      "cancel": "Cancel",
+      "sentTitle": "help is on the way",
+      "sentBody": "Security and the community manager have been alerted and know your unit.",
+      "demoNote": "Prototype only. No real alert is sent.",
+      "close": "Close"
+    },
+    "pass": {
+      "eyebrow": "Your pass",
+      "reserved": "Reserved",
+      "title": "your court awaits",
+      "space": "Space",
+      "date": "Date",
+      "time": "Time",
+      "players": "Players",
+      "resident": "Resident",
+      "reference": "Reference",
+      "hint": "Show this code at the court gate",
+      "confirmed": "Confirmed",
+      "checkedIn": "Checked in",
+      "notFound": "This booking is no longer available.",
+      "done": "Done"
+    },
+    "whatsOn": {
+      "eyebrow": "This week at Amali"
     }
   },
   "wallet": {

@@ -10,11 +10,13 @@
  * UI moment; a deliberate scope cut for this phase, not a missing command.
  */
 import { useState } from 'react';
-import { TopBar } from '@/ui/TopBar';
+import { ScreenShell } from '@/ui/ScreenShell';
+import { SectionHeading } from '@/ui/SectionHeading';
+import { ConfirmedPage } from '@/ui/ConfirmedPage';
+import { Eyebrow } from '@/ui/Eyebrow';
 import { Button } from '@/ui/Button';
 import { Stepper } from '@/ui/Stepper';
 import { Banner } from '@/ui/Banner';
-import { ConfirmedMark, Ticket } from '@/ui/ConfirmedMark';
 import { Shake } from '@/ui/Shake';
 import { motion } from 'motion/react';
 import { fadeUp, staggerDelay } from '@/design/motion';
@@ -113,32 +115,59 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
   }
 
   if (submit.kind === 'success') {
+    const booking = submit.booking;
     return (
-      <div className="flex h-full flex-col">
-        <TopBar title={t('padel.confirmedTitle')} />
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-          <ConfirmedMark />
-          <p className="text-title-l text-text-title">{t('padel.booked_title')}</p>
-          <Ticket>
-            <p className="text-body-2 text-text-muted">
-              {fmt.date(submit.booking.start)} · {fmt.time(submit.booking.start)}–
-              {fmt.time(submit.booking.end)}
-            </p>
-          </Ticket>
-          <Button fullWidth onClick={() => replace('amenity-detail', { key: 'padel' })}>
-            {t('common.done')}
-          </Button>
-        </div>
-      </div>
+      <ConfirmedPage
+        eyebrow={t('padel.confirmedTitle')}
+        title={t('padel.confirmedTitle')}
+        image="/amenities/padel.jpg"
+        headline={t('padel.booked_title')}
+        detail={
+          <p className="text-body-2 text-text-muted">
+            {fmt.date(booking.start)} · {fmt.time(booking.start)}–{fmt.time(booking.end)}
+          </p>
+        }
+        secondary={{
+          label: t('resident.pass.eyebrow'),
+          onClick: () => replace('padel-pass', { id: booking.id, fresh: '1' }),
+        }}
+        primary={{
+          label: t('common.done'),
+          onClick: () => replace('amenity-detail', { key: 'padel' }),
+        }}
+      />
     );
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <TopBar title={t('padel.bookTitle')} onBack={pop} />
-      <div className="flex-1 overflow-y-auto px-4 pb-6">
-        <h2 className="text-label-1 text-text-title mt-4 mb-2">{t('padel.date')}</h2>
-        <div className="flex gap-2 overflow-x-auto pb-1">
+    <ScreenShell
+      eyebrow={t('resident.amenities.eyebrow')}
+      title={t('padel.bookTitle')}
+      onBack={pop}
+      image="/amenities/padel.jpg"
+      bodyClassName="gap-6"
+      footer={
+        <div className="border-border-card bg-pearl-glass flex shrink-0 items-center justify-between gap-3 border-t-[0.5px] px-4 py-3 backdrop-blur-xl">
+          <div className="min-w-0">
+            <Eyebrow className="text-brand block">
+              {start
+                ? `${fmt.dateKey(dateKey, 'EEE d MMM')} · ${fmt.time(start)}`
+                : t('padel.chooseTime')}
+            </Eyebrow>
+            <p className="text-body-3 text-text-muted">
+              {t('common.minutes', { count: duration })}
+              {feeFils > 0 ? ` · ${fmt.aed(feeFils)}` : ''}
+            </p>
+          </div>
+          <Button disabled={!start} onClick={handleBook}>
+            {start ? t('padel.bookAt', { time: fmt.time(start) }) : t('padel.chooseTime')}
+          </Button>
+        </div>
+      }
+    >
+      <section>
+        <SectionHeading title={t('padel.date')} />
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
           {dateOptions.map((d) => (
             <FillChip
               key={d}
@@ -147,14 +176,16 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
                 setDateKey(d);
                 setStart(undefined);
               }}
-              className="text-body-3 shrink-0 px-3 py-2"
+              className="text-body-3 shrink-0 px-4 py-2.5"
             >
               {fmt.dateKey(d, 'EEE d')}
             </FillChip>
           ))}
         </div>
+      </section>
 
-        <h2 className="text-label-1 text-text-title mt-5 mb-2">{t('padel.duration')}</h2>
+      <section>
+        <SectionHeading title={t('padel.duration')} />
         <div className="flex gap-2">
           {rules.padel.durationsMinutes.map((m) => (
             <FillChip
@@ -164,14 +195,16 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
                 setDuration(m as 60 | 90);
                 setStart(undefined);
               }}
-              className="text-body-2 flex-1 py-2"
+              className="text-body-2 flex-1 py-2.5"
             >
               {t('common.minutes', { count: m })}
             </FillChip>
           ))}
         </div>
+      </section>
 
-        <h2 className="text-label-1 text-text-title mt-5 mb-2">{t('padel.time')}</h2>
+      <section>
+        <SectionHeading title={t('padel.time')} />
         {clinic && (
           <p className="text-body-3 text-text-muted mb-2">
             {t('padel.closedFor', { reason: clinic })}
@@ -189,8 +222,10 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
             </SlotChip>
           ))}
         </div>
+      </section>
 
-        <h2 className="text-label-1 text-text-title mt-5 mb-2">{t('padel.guests')}</h2>
+      <section>
+        <SectionHeading title={t('padel.guests')} />
         <Stepper
           value={guestCount}
           min={0}
@@ -203,52 +238,46 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
             {t('padel.guestFee', { amount: fmt.aed(feeFils) })}
           </p>
         )}
+      </section>
 
-        {submit.kind === 'error' && (
-          <div className="mt-4">
-            <Shake trigger={submit.message}>
-              <Banner style="warning">{submit.message}</Banner>
-            </Shake>
-            {submit.alternatives && submit.alternatives.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-2">
-                {submit.alternatives.map((alt, i) => (
-                  <motion.button
-                    key={alt}
-                    variants={fadeUp}
-                    initial="initial"
-                    animate="animate"
-                    transition={{ delay: staggerDelay(i) }}
-                    type="button"
-                    onClick={() => {
-                      setDateKey(dubaiDateKey(alt));
-                      setStart(alt);
-                      setSubmit({ kind: 'idle' });
-                    }}
-                    className="rounded-tag bg-brand-tint text-brand text-label-3 px-3 py-1.5"
-                  >
-                    {fmt.date(alt)} {fmt.time(alt)}
-                  </motion.button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+      {submit.kind === 'error' && (
+        <div>
+          <Shake trigger={submit.message}>
+            <Banner style="warning">{submit.message}</Banner>
+          </Shake>
+          {submit.alternatives && submit.alternatives.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {submit.alternatives.map((alt, i) => (
+                <motion.button
+                  key={alt}
+                  variants={fadeUp}
+                  initial="initial"
+                  animate="animate"
+                  transition={{ delay: staggerDelay(i) }}
+                  type="button"
+                  onClick={() => {
+                    setDateKey(dubaiDateKey(alt));
+                    setStart(alt);
+                    setSubmit({ kind: 'idle' });
+                  }}
+                  className="bg-ember text-on-ember font-wide text-eyebrow rounded-full px-4 py-2"
+                >
+                  {fmt.date(alt)} {fmt.time(alt)}
+                </motion.button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
-        {submit.kind === 'full' && (
-          <div className="mt-4 flex flex-col gap-2">
-            <Banner style="info">{submit.message}</Banner>
-            <Button variant="secondary" fullWidth onClick={handleJoinWaitlist}>
-              {t('padel.joinWaitlist')}
-            </Button>
-          </div>
-        )}
-
-        <div className="mt-6">
-          <Button fullWidth disabled={!start} onClick={handleBook}>
-            {start ? t('padel.bookAt', { time: fmt.time(start) }) : t('padel.chooseTime')}
+      {submit.kind === 'full' && (
+        <div className="flex flex-col gap-2">
+          <Banner style="info">{submit.message}</Banner>
+          <Button variant="secondary" fullWidth onClick={handleJoinWaitlist}>
+            {t('padel.joinWaitlist')}
           </Button>
         </div>
-      </div>
-    </div>
+      )}
+    </ScreenShell>
   );
 }

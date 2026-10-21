@@ -58,7 +58,7 @@ function MiniMonth({
   const fmt = useFmt();
 
   return (
-    <div className="rounded-card border-border-card border-[0.5px] p-2.5">
+    <div className="rounded-tile border-border-card border-[0.5px] p-2.5">
       <p className="text-label-3 text-text-title mb-1.5">{fmt.local(monthStart, 'MMMM')}</p>
       <div className="grid grid-cols-7 gap-0.5">
         {Array.from({ length: leadingBlanks }).map((_, i) => (
@@ -125,7 +125,7 @@ export function CalendarYear({
 
   return (
     <div>
-      <p className="text-label-1 text-text-title mb-3">
+      <p className="font-serif-display text-serif-section text-text-title mb-3">
         {rolling
           ? `${fmt.local(months[0]!, 'MMM yyyy')} – ${fmt.local(months[11]!, 'MMM yyyy')}`
           : format(today, 'yyyy')}

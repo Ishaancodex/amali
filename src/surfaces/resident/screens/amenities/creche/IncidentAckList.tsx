@@ -44,7 +44,7 @@ export function IncidentAckList({ slot, childIds }: { slot: DeviceSlotId; childI
       {open.map((i) => (
         <Card key={i.id} className="border-warning flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <p className="text-label-2 text-text-title">
+            <p className="font-serif-display text-serif-section text-text-title">
               {t('kids.incidentReport', { name: children[i.childId!]?.name.split(' ')[0] })}
             </p>
             <Tag variant={SEVERITY_TAG[i.severity]}>{t(`kids.severity.${i.severity}`)}</Tag>

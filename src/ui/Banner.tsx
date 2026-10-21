@@ -43,7 +43,7 @@ export function Banner({ style = 'info', children, onDismiss, cta }: BannerProps
       animate={{ height: 'auto', opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
       transition={{ duration: dur.base, ease: ease.enter }}
-      className="overflow-hidden"
+      className="rounded-tile overflow-hidden"
     >
       <div className={cn('relative flex items-start gap-2.5 px-4 py-3', STYLE_CLASSES[style])}>
         {style === 'urgent' && (

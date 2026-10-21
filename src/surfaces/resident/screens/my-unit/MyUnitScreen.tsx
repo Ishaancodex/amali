@@ -1,10 +1,12 @@
 'use client';
 
 /** My Unit (PRD §6.1): Household · Children & guardians · Wallet · Guests · Amenity rights. */
-import { TopBar } from '@/ui/TopBar';
+import { ScreenShell } from '@/ui/ScreenShell';
+import { SectionHeading } from '@/ui/SectionHeading';
+import { Eyebrow } from '@/ui/Eyebrow';
 import { Card } from '@/ui/Card';
 import { BalanceChip } from '@/features/wallet/BalanceChip';
-import { Users, Baby, Wallet as WalletIcon, UserPlus, Shield, ChevronRight } from '@/ui/icons';
+import { ChevronRight } from '@/ui/icons';
 import { ChildAvatar } from '@/features/creche/ChildAvatar';
 import { ageOnDate } from '@/domain/creche/bands';
 import { useStore } from '@/store';
@@ -12,15 +14,6 @@ import { useNav } from '@/navigation/useNav';
 import { dubaiDateKey } from '@/lib/time';
 import { useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
-
-function SectionHeader({ icon: Icon, label }: { icon: typeof Users; label: string }) {
-  return (
-    <div className="flex items-center gap-2 px-4 pt-5 pb-2">
-      <Icon className="text-brand h-4 w-4" strokeWidth={1.5} />
-      <h2 className="text-label-1 text-text-title">{label}</h2>
-    </div>
-  );
-}
 
 export function MyUnitScreen({ slot }: { slot: DeviceSlotId }) {
   const t = useT();
@@ -48,33 +41,32 @@ export function MyUnitScreen({ slot }: { slot: DeviceSlotId }) {
   if (!resident || !unit) return null;
 
   return (
-    <div className="flex h-full flex-col">
-      <TopBar title={t('resident.nav.myUnit')} />
-      <div className="flex-1 overflow-y-auto pb-6">
-        <div className="px-4 pt-4">
-          <p className="text-display text-text-title">
-            <bdi>{unit.id}</bdi>
-          </p>
-          <p className="text-body-2 text-text-muted">{t(`myUnit.kind.${unit.kind}`)}</p>
-        </div>
-
-        <SectionHeader icon={Users} label={t('myUnit.household')} />
-        <div className="flex flex-col gap-2 px-4">
+    <ScreenShell
+      eyebrow={t(`myUnit.kind.${unit.kind}`)}
+      title={unit.id}
+      image="/stock/my-unit.jpg"
+      bodyClassName="gap-7"
+    >
+      <section>
+        <SectionHeading title={t('myUnit.household')} />
+        <div className="flex flex-col gap-2.5">
           {householdMembers.map((m) => (
             <Card key={m.id} className="flex items-center gap-3">
-              <span className="bg-brand-tint text-label-3 text-brand flex h-9 w-9 shrink-0 items-center justify-center rounded-full">
+              <span className="bg-ember text-sand-soft font-wide text-eyebrow flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
                 {m.avatar}
               </span>
               <div>
-                <p className="text-label-2 text-text-body">{m.name}</p>
+                <p className="text-label-2 text-text-title">{m.name}</p>
                 <p className="text-body-3 text-text-muted">{t(`myUnit.type.${m.type}`)}</p>
               </div>
             </Card>
           ))}
         </div>
+      </section>
 
-        <SectionHeader icon={Baby} label={t('myUnit.children')} />
-        <div className="flex flex-col gap-2 px-4">
+      <section>
+        <SectionHeading title={t('myUnit.children')} />
+        <div className="flex flex-col gap-2.5">
           {children.length === 0 && (
             <p className="text-body-3 text-text-muted">{t('myUnit.noChildren')}</p>
           )}
@@ -88,7 +80,7 @@ export function MyUnitScreen({ slot }: { slot: DeviceSlotId }) {
               <Card className="flex items-center gap-3">
                 <ChildAvatar initials={child.photo} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-label-2 text-text-body">{child.name}</p>
+                  <p className="text-label-2 text-text-title">{child.name}</p>
                   <p className="text-body-3 text-text-muted">
                     {t('myUnit.childLine', {
                       age: ageOnDate(child.dob, dubaiDateKey(now)),
@@ -109,48 +101,45 @@ export function MyUnitScreen({ slot }: { slot: DeviceSlotId }) {
           <button
             type="button"
             onClick={() => push('child-register')}
-            className="text-label-3 text-brand self-start py-1"
+            className="font-wide text-eyebrow text-brand self-start py-1"
           >
             {t('myUnit.registerChild')}
           </button>
         </div>
+      </section>
 
-        <SectionHeader icon={WalletIcon} label={t('resident.home.quick.wallet')} />
-        <div className="px-4">
-          <Card className="flex items-center justify-between">
-            <div>
-              <p className="text-body-3 text-text-muted">{t('wallet.balance')}</p>
-              <BalanceChip balanceFils={wallet?.balanceFils ?? 0} />
-            </div>
-            <button
-              type="button"
-              onClick={() => push('wallet')}
-              className="text-label-3 text-brand"
-            >
-              {t('myUnit.manage')}
-            </button>
-          </Card>
-        </div>
+      <section>
+        <SectionHeading
+          title={t('resident.home.quick.wallet')}
+          linkLabel={t('myUnit.manage')}
+          onLink={() => push('wallet')}
+        />
+        <Card className="flex flex-col items-start gap-1.5">
+          <Eyebrow>{t('wallet.balance')}</Eyebrow>
+          <BalanceChip balanceFils={wallet?.balanceFils ?? 0} />
+        </Card>
+      </section>
 
-        <SectionHeader icon={UserPlus} label={t('myUnit.guests')} />
-        <p className="text-body-3 text-text-muted px-4">{t('myUnit.guestsSoon')}</p>
+      <section>
+        <SectionHeading title={t('myUnit.guests')} />
+        <p className="text-body-3 text-text-muted">{t('myUnit.guestsSoon')}</p>
+      </section>
 
-        <SectionHeader icon={Shield} label={t('myUnit.rights')} />
-        <div className="px-4">
-          <Card>
-            <p className="text-body-2 text-text-body">
-              {t(rightsHolder?.id === resident.id ? 'myUnit.heldByYou' : 'myUnit.heldBy', {
-                name: rightsHolder?.name ?? t('myUnit.unknown'),
-              })}
+      <section>
+        <SectionHeading title={t('myUnit.rights')} />
+        <Card>
+          <p className="text-body-2 text-text-body">
+            {t(rightsHolder?.id === resident.id ? 'myUnit.heldByYou' : 'myUnit.heldBy', {
+              name: rightsHolder?.name ?? t('myUnit.unknown'),
+            })}
+          </p>
+          {unit.leaseEnd && (
+            <p className="text-body-3 text-text-muted mt-1">
+              {t('myUnit.transferBack', { date: fmt.date(unit.leaseEnd) })}
             </p>
-            {unit.leaseEnd && (
-              <p className="text-body-3 text-text-muted mt-1">
-                {t('myUnit.transferBack', { date: fmt.date(unit.leaseEnd) })}
-              </p>
-            )}
-          </Card>
-        </div>
-      </div>
-    </div>
+          )}
+        </Card>
+      </section>
+    </ScreenShell>
   );
 }

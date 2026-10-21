@@ -15,6 +15,8 @@ const fontVar: Record<TypeStyle['font'], string> = {
   primary: 'var(--font-poppins)',
   secondary: 'var(--font-barlow)',
   script: 'var(--font-script-accent)',
+  serif: 'var(--font-instrument-serif)',
+  wide: 'var(--font-julius-sans)',
 };
 
 function Swatch({ name, hex }: { name: string; hex: string }) {

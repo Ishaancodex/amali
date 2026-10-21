@@ -44,6 +44,18 @@ export const dur = {
   get shake() {
     return 0.32 * slow;
   },
+  /** Hero photos settle from 1.07× to 1× on arrival. */
+  get kenBurns() {
+    return 2.4 * slow;
+  },
+  /** Body blocks rise into place on a screen's arrival. */
+  get rise() {
+    return 0.7 * slow;
+  },
+  /** Press-and-hold to confirm (SOS). */
+  get hold() {
+    return 2 * slow;
+  },
   /** M9's one-off gold sheen across a new ticket. */
   get sheen() {
     return 0.8 * slow;
@@ -54,7 +66,17 @@ export const ease = {
   standard: [0.2, 0, 0, 1],
   enter: [0.05, 0.7, 0.1, 1],
   exit: [0.3, 0, 0.8, 0.15],
+  /** The long soft ease-out the reference app uses for arrivals. */
+  soft: [0.22, 0.8, 0.24, 1],
 } as const;
+
+/** Under-screen on a push: drifts back and dims (Navigator). */
+export const pushUnder = { xPct: -24, brightness: 0.85 } as const;
+/** Hero photo scale at the start of Ken Burns. */
+export const kenBurnsFrom = 1.07;
+/** Distance a body block rises from, and the stagger between blocks. */
+export const riseFromPx = 16;
+export const riseStepS = 0.05;
 
 function springOf(stiffness: number, damping: number, mass = 1): Transition {
   return { type: 'spring', stiffness: stiffness / slow ** 2, damping: damping / slow, mass };
@@ -160,3 +182,21 @@ export function localeFade(opacity: 0 | 1) {
     transition: { duration: dur.base / 2, ease: opacity ? ease.enter : ease.exit },
   };
 }
+
+/** Hero photo settling in. Skipped (`initial={false}`) when a shared-image morph brings it in. */
+export const kenBurns: Variants = {
+  initial: { scale: kenBurnsFrom },
+  get animate() {
+    return { scale: 1, transition: { duration: dur.kenBurns, ease: ease.soft } };
+  },
+};
+
+/** Body blocks of a screen rising in, one after another (`custom` = block index). */
+export const rise: Variants = {
+  initial: { opacity: 0, y: riseFromPx },
+  animate: (i: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: dur.rise, ease: ease.soft, delay: Math.min(i, 8) * riseStepS * slow },
+  }),
+};

@@ -8,7 +8,8 @@ import { useFmt, useT } from '@/i18n/hooks';
 import { startTimes, tableMinutes, type PeriodWindow } from '@/domain/dining/periods';
 import { freeFraction } from '@/domain/dining/tables';
 import type { VenueKey } from '@/types/dining';
-import { Chip } from './Chip';
+import { Chip } from '@/ui/Chip';
+import { SectionHeading } from '@/ui/SectionHeading';
 
 export function TimeChips({
   venue,
@@ -33,7 +34,7 @@ export function TimeChips({
 
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="text-label-1 text-text-title">{t('padel.time')}</h2>
+      <SectionHeading title={t('padel.time')} />
       {times.length === 0 ? (
         <p className="text-body-3 text-text-muted">{t('dining.noSeatings')}</p>
       ) : (

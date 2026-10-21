@@ -24,6 +24,7 @@ import './incidents';
 import './workOrders';
 import './roster';
 import './notifications';
+import './sos';
 import './creche';
 import './crecheRegistration';
 import './crecheRoom';

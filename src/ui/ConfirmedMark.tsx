@@ -38,16 +38,16 @@ export function ConfirmedMark() {
 export function Ticket({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
-      className="rounded-card border-border-card bg-surface relative w-full overflow-hidden border-[0.5px] px-4 py-3"
+      className="rounded-tile border-border-card bg-surface relative w-full overflow-hidden border-[0.5px] px-4 py-3"
       initial={{ y: 24, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ ...spring.soft, delay: dur.slow }}
     >
       <motion.span
         aria-hidden
-        className="via-brand-tint pointer-events-none absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent to-transparent"
+        className="bg-brand-tint/70 pointer-events-none absolute inset-y-0 w-10 -skew-x-12"
         initial={{ x: '-120%' }}
-        animate={{ x: '320%' }}
+        animate={{ x: '420%' }}
         transition={{ duration: dur.sheen, ease: ease.standard, delay: dur.slower }}
       />
       <div className="relative">{children}</div>

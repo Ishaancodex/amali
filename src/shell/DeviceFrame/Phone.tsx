@@ -26,7 +26,9 @@ export function Phone({ now, dir, lang, themeClass, island, children }: PhonePro
       >
         <StatusBar now={now} />
         <DynamicIsland>{island}</DynamicIsland>
-        <div className="relative min-h-0 flex-1 overflow-hidden">{children}</div>
+        <div data-sheet-root className="relative min-h-0 flex-1 overflow-hidden">
+          {children}
+        </div>
       </div>
     </div>
   );
