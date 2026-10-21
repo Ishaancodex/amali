@@ -25,9 +25,8 @@ import {
   dubaiDateTimeToIso,
   fmtDate,
   fmtTime,
-  isAfterIso,
 } from '@/lib/time';
-import { gridStartsForDate, slotEnd, slotsOverlap } from '@/domain/booking/slots';
+import { slotOptions } from '@/domain/booking/slots';
 import type { DeviceSlotId } from '@/types/demo';
 import type { Booking } from '@/types/booking';
 
@@ -43,6 +42,7 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
   const resident = useStore((s) => s.residents[actorId]);
   const now = useStore((s) => s.demo.clock.now);
   const bookingsRecord = useStore((s) => s.bookings);
+  const blackoutsRecord = useStore((s) => s.blackouts);
   const dispatch = useStore((s) => s.dispatch);
 
   const todayKey = dubaiDateKey(now);
@@ -65,16 +65,14 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
   );
 
   const earliestBookable = addHoursIso(now, rules.padel.leadTimeHours);
-  const closeIso = dubaiDateTimeToIso(dateKey, rules.padel.operatingHours.close);
-  const slots = gridStartsForDate(dateKey)
-    .filter((s) => s >= dubaiDateTimeToIso(dateKey, rules.padel.operatingHours.open))
-    .filter((s) => slotEnd(s, duration) <= closeIso)
-    .map((s) => ({
-      start: s,
-      bookable:
-        isAfterIso(s, earliestBookable) &&
-        !padelBookings.some((b) => slotsOverlap(s, slotEnd(s, duration), b.start, b.end)),
-    }));
+  const slots = slotOptions({
+    dateKey,
+    durationMinutes: duration,
+    earliestBookable,
+    bookings: padelBookings,
+    blackouts: Object.values(blackoutsRecord).filter((b) => b.amenity === 'padel'),
+  });
+  const clinic = slots.find((s) => s.blackoutReason)?.blackoutReason;
 
   const guests = Array.from({ length: guestCount }, (_, i) => ({
     guestName: `Guest ${i + 1}`,
@@ -179,6 +177,9 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
         </div>
 
         <h2 className="text-label-1 text-text-title mt-5 mb-2">Time</h2>
+        {clinic && (
+          <p className="text-body-3 text-text-muted mb-2">Some times are closed for {clinic}.</p>
+        )}
         <div className="grid grid-cols-4 gap-2">
           {slots.map(({ start: s, bookable }) => (
             <button

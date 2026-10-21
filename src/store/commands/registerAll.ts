@@ -34,3 +34,5 @@ import './diningPartySize';
 import './diningHost';
 import './diningRequests';
 import './diningSettle';
+import './programme';
+import './season';

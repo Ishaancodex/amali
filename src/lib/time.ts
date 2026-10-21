@@ -9,6 +9,7 @@ import {
   addMinutes,
   addHours,
   addDays,
+  addMonths,
   addMilliseconds,
   differenceInMinutes,
   differenceInSeconds,
@@ -142,4 +143,8 @@ export function rangesOverlap(aStart: string, aEnd: string, bStart: string, bEnd
 /** Formats a `YYYY-MM-DD` date key (e.g. a date of birth) without a timezone shifting it a day. */
 export function fmtDateKey(dateKey: string, pattern = 'd MMM yyyy'): string {
   return fmtDate(dubaiDateTimeToIso(dateKey, '12:00'), pattern);
+}
+
+export function addMonthsIso(iso: string, months: number): string {
+  return toIso(addMonths(parseISO(iso), months));
 }

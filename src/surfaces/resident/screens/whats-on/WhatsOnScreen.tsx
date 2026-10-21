@@ -13,6 +13,7 @@ import { Skeleton } from '@/ui/Skeleton';
 import { Tag } from '@/ui/Tag';
 import { CalendarMonth } from '@/ui/Calendar/Month';
 import { CalendarYear } from '@/ui/Calendar/Year';
+import { seasonBands } from '@/store/selectors/programme';
 import { CalendarDays } from '@/ui/icons';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
@@ -32,6 +33,7 @@ const TABS: { id: ViewTab; label: string }[] = [
 export function WhatsOnScreen({ slot }: { slot: DeviceSlotId }) {
   const { pop, push } = useNav(slot);
   const now = useStore((s) => s.demo.clock.now);
+  const seasons = useStore((s) => s.seasons);
   const events = useStore((s) => s.events);
   const showtimes = useStore((s) => s.showtimes);
   const [tab, setTab] = useState<ViewTab>('list');
@@ -143,7 +145,12 @@ export function WhatsOnScreen({ slot }: { slot: DeviceSlotId }) {
           <CalendarMonth now={now} eventDatesByDay={dots} onSelectDay={selectDay} />
         )}
         {tab === 'year' && (
-          <CalendarYear now={now} eventDatesByDay={dots} onSelectDay={selectDay} />
+          <CalendarYear
+            now={now}
+            eventDatesByDay={dots}
+            bands={seasonBands(seasons)}
+            onSelectDay={selectDay}
+          />
         )}
       </div>
     </div>

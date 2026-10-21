@@ -19,6 +19,7 @@ import { buildShifts } from './shifts';
 import { buildWaterReadings } from './waterReadings';
 import { buildCreche } from './creche';
 import { buildDining } from './dining';
+import { seedProgramme } from './programme';
 
 export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
   const demo = defaultDemoState(now, seed);
@@ -37,7 +38,7 @@ export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
   const creche = buildCreche(seed, seedNow, residents);
   const dining = buildDining(seed, seedNow, residents, personas.wallets);
 
-  return {
+  const state: AppState = {
     units,
     residents,
     children: { ...creche.children, ...personas.children },
@@ -61,6 +62,7 @@ export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
     showtimes: {},
     rsvps: {},
     seasons: {},
+    programme: {},
 
     crecheSessions: creche.crecheSessions,
     crecheBookings: creche.crecheBookings,
@@ -93,4 +95,7 @@ export function buildSeed(seed: string = SEED_NAME, now?: string): AppState {
 
     demo,
   };
+  // The programme materialises into blackouts, statuses, showtimes and hours exceptions above.
+  seedProgramme(state, seed, seedNow);
+  return state;
 }

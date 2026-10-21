@@ -8,7 +8,7 @@
  */
 import { Navigator } from '@/navigation/Navigator';
 import { useNav } from '@/navigation/useNav';
-import { Megaphone, Wrench } from '@/ui/icons';
+import { CalendarDays, Megaphone, Wrench } from '@/ui/icons';
 import { useStore } from '@/store';
 import type { DeviceSlotId } from '@/types/demo';
 import { consoleRoutes } from './routes';
@@ -34,6 +34,12 @@ const NAV_ITEMS = [
     matches: (r: string) => r === 'home' || r === 'composer' || r === 'announcement-detail',
   },
   { route: 'ops', label: 'Operations', icon: Wrench, matches: (r: string) => OPS_ROUTES.has(r) },
+  {
+    route: 'programme',
+    label: 'Programme',
+    icon: CalendarDays,
+    matches: (r: string) => r === 'programme' || r === 'programme-edit',
+  },
 ] as const;
 
 export function ConsoleApp({ slot }: { slot: DeviceSlotId }) {

@@ -36,6 +36,7 @@ export interface EventsState {
   showtimes: Record<string, T.Showtime>;
   rsvps: Record<string, T.Rsvp>;
   seasons: Record<string, T.Season>;
+  programme: Record<string, T.ProgrammeItem>;
 }
 
 export interface CrecheState {
@@ -151,6 +152,7 @@ export const APP_STATE_KEYS = [
   'showtimes',
   'rsvps',
   'seasons',
+  'programme',
   'crecheSessions',
   'crecheBookings',
   'bandAssignments',

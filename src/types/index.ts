@@ -10,3 +10,4 @@ export * from './ops';
 export * from './comms';
 export * from './report';
 export * from './demo';
+export * from './programme';

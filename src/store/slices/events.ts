@@ -5,4 +5,5 @@ export const createEventsSlice: StoreSlice<EventsState> = () => ({
   showtimes: {},
   rsvps: {},
   seasons: {},
+  programme: {},
 });

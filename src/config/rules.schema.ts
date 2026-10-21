@@ -211,6 +211,8 @@ const BookingRulesSchema = z.object({
 
 const ProgrammeRulesSchema = z.object({
   forwardHorizonMonths: z.number().int().positive(),
+  publicHolidays: z.array(z.object({ date: dateKey, name: z.string().min(1) })),
+  suggestionGridMinutes: minutes,
 });
 
 const SeedHistoryRulesSchema = z.object({

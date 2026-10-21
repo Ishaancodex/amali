@@ -3,6 +3,7 @@
  */
 import type { BaseEntity, Charge, ISODateTime } from './common';
 import type { HoursException } from './amenity';
+import type { SeasonHours } from './programme';
 
 export type EventVenue = 'screening' | 'music' | 'pool' | 'padel';
 export type EventType = 'movie' | 'live_music' | 'workshop' | 'class' | 'clinic';
@@ -35,6 +36,8 @@ export interface Showtime extends BaseEntity {
   capacityMode: ShowtimeCapacityMode;
   capacity: number;
   blockedSeats: string[];
+  /** Set when a programme series created it. */
+  programmeId?: string;
   regOpens: ISODateTime;
   regCloses: ISODateTime;
   state: ShowtimeState;
@@ -71,4 +74,8 @@ export interface Season extends BaseEntity {
   end: ISODateTime;
   banner: string;
   hoursOverrides: HoursException[];
+  /** Daily hours for the whole range (Ramadan: Pool 08:00–20:00) — materialised into per-date `exceptions`. */
+  hours?: SeasonHours[];
+  /** Year-view band colour token. */
+  tone?: 'brand' | 'info' | 'success' | 'warning';
 }

@@ -56,3 +56,40 @@ export function isPeakStart(startIso: string): boolean {
   const hhmm = fmtTime(startIso);
   return hhmm >= rules.padel.quota.peakHours.start && hhmm < rules.padel.quota.peakHours.end;
 }
+
+export interface SlotOption {
+  start: string;
+  bookable: boolean;
+  /** Why it isn't bookable, when it's a blackout (a clinic, maintenance). */
+  blackoutReason?: string;
+}
+
+/**
+ * The padel slot list for a day (PRD §8.1): grid starts that fit inside
+ * operating hours, bookable unless taken, too soon, or inside a blackout
+ * — a recurring Padel Clinic removes its Saturday 08:00–10:00 slots here.
+ */
+export function slotOptions(input: {
+  dateKey: string;
+  durationMinutes: number;
+  earliestBookable: string;
+  bookings: readonly { start: string; end: string }[];
+  blackouts: readonly { start: string; end: string; reason: string }[];
+}): SlotOption[] {
+  const open = dubaiDateTimeToIso(input.dateKey, rules.padel.operatingHours.open);
+  const close = dubaiDateTimeToIso(input.dateKey, rules.padel.operatingHours.close);
+  return gridStartsForDate(input.dateKey)
+    .filter((s) => s >= open && slotEnd(s, input.durationMinutes) <= close)
+    .map((s) => {
+      const end = slotEnd(s, input.durationMinutes);
+      const blackout = input.blackouts.find((b) => slotsOverlap(s, end, b.start, b.end));
+      return {
+        start: s,
+        bookable:
+          s > input.earliestBookable &&
+          !blackout &&
+          !input.bookings.some((b) => slotsOverlap(s, end, b.start, b.end)),
+        blackoutReason: blackout?.reason,
+      };
+    });
+}

@@ -10,7 +10,7 @@ import { reject } from '@/domain/rules/errors';
 import { applyRefund } from '@/domain/wallet/ledger';
 import { notify } from './bookingHelpers';
 import { defineCommand } from './registry';
-import type { CommandResult } from './types';
+import type { CommandCtx, CommandResult } from './types';
 import type {
   AgeRating,
   AttendeeCategory,
@@ -212,47 +212,7 @@ defineCommand<'event.cancel'>(
 
       const showtimes = Object.values(ctx.state.showtimes).filter((s) => s.eventId === event.id);
       for (const showtime of showtimes) {
-        if (showtime.state === 'cancelled' || showtime.state === 'completed') continue;
-        showtime.state = 'cancelled';
-        showtime.updatedAt = ctx.now;
-
-        for (const rsvp of Object.values(ctx.state.rsvps)) {
-          if (rsvp.showtimeId !== showtime.id) continue;
-          if (rsvp.state !== 'held' && rsvp.state !== 'confirmed') continue;
-
-          rsvp.state = 'cancelled';
-          rsvp.updatedAt = ctx.now;
-
-          const refundFils = rsvp.charges.reduce((sum, c) => sum + c.fils, 0);
-          if (refundFils > 0) {
-            const { wallet, entry } = applyRefund(ctx.state.wallets[rsvp.unitId], {
-              unitId: rsvp.unitId,
-              amountFils: refundFils,
-              label: 'Event cancelled refund',
-              byResidentId: rsvp.bookerId,
-              ref: { type: 'rsvp', id: rsvp.id },
-              now: ctx.now,
-            });
-            ctx.state.wallets[rsvp.unitId] = wallet;
-            const entryId = id('ledger');
-            ctx.state.ledger[entryId] = { id: entryId, ...entry };
-          }
-
-          notify(
-            ctx,
-            rsvp.bookerId,
-            'Event cancelled',
-            `"${event.title}" was cancelled: ${input.reason}.`,
-            'amali://resident/whats-on',
-          );
-        }
-
-        for (const entry of Object.values(ctx.state.waitlist)) {
-          if (entry.resourceKey !== `showtime:${showtime.id}`) continue;
-          if (entry.state !== 'waiting' && entry.state !== 'offered') continue;
-          entry.state = 'withdrawn';
-          entry.updatedAt = ctx.now;
-        }
+        cancelShowtime(ctx, showtime, event.title, input.reason);
       }
 
       return {
@@ -271,3 +231,61 @@ defineCommand<'event.cancel'>(
   },
   { capability: 'event.manage' },
 );
+
+/**
+ * Cancels one showtime: its live RSVPs are cancelled, refunded and told,
+ * and its waitlist withdrawn. Shared by `event.cancel` and the programme
+ * calendar (deleting a class occurrence that has bookings). Returns how
+ * many RSVPs it cancelled.
+ */
+export function cancelShowtime(
+  ctx: CommandCtx,
+  showtime: Showtime,
+  title: string,
+  reason: string,
+): number {
+  if (showtime.state === 'cancelled' || showtime.state === 'completed') return 0;
+  let cancelled = 0;
+  showtime.state = 'cancelled';
+  showtime.updatedAt = ctx.now;
+
+  for (const rsvp of Object.values(ctx.state.rsvps)) {
+    if (rsvp.showtimeId !== showtime.id) continue;
+    if (rsvp.state !== 'held' && rsvp.state !== 'confirmed') continue;
+
+    rsvp.state = 'cancelled';
+    cancelled += 1;
+    rsvp.updatedAt = ctx.now;
+
+    const refundFils = rsvp.charges.reduce((sum, c) => sum + c.fils, 0);
+    if (refundFils > 0) {
+      const { wallet, entry } = applyRefund(ctx.state.wallets[rsvp.unitId], {
+        unitId: rsvp.unitId,
+        amountFils: refundFils,
+        label: 'Event cancelled refund',
+        byResidentId: rsvp.bookerId,
+        ref: { type: 'rsvp', id: rsvp.id },
+        now: ctx.now,
+      });
+      ctx.state.wallets[rsvp.unitId] = wallet;
+      const entryId = id('ledger');
+      ctx.state.ledger[entryId] = { id: entryId, ...entry };
+    }
+
+    notify(
+      ctx,
+      rsvp.bookerId,
+      'Event cancelled',
+      `"${title}" was cancelled: ${reason}.`,
+      'amali://resident/whats-on',
+    );
+  }
+
+  for (const entry of Object.values(ctx.state.waitlist)) {
+    if (entry.resourceKey !== `showtime:${showtime.id}`) continue;
+    if (entry.state !== 'waiting' && entry.state !== 'offered') continue;
+    entry.state = 'withdrawn';
+    entry.updatedAt = ctx.now;
+  }
+  return cancelled;
+}

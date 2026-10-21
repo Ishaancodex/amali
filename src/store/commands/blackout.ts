@@ -11,7 +11,7 @@ import { slotEnd, slotsOverlap } from '@/domain/booking/slots';
 import { applyRefund } from '@/domain/wallet/ledger';
 import { assembleValidateInput, notify } from './bookingHelpers';
 import { defineCommand } from './registry';
-import type { CommandResult } from './types';
+import type { CommandCtx, CommandResult } from './types';
 import type { Blackout, BlackoutHandling } from '@/types/amenity';
 
 export interface BlackoutCreateInput {
@@ -67,104 +67,7 @@ defineCommand<'blackout.create'>(
         setBy: ctx.actor.id,
       });
 
-      const allBookings = Object.values(ctx.state.bookings).filter((b) => b.amenity === 'padel');
-      const impact = computeBlackoutImpact(
-        input.start,
-        input.end,
-        allBookings,
-        Object.values(ctx.state.waitlist),
-      );
-
-      for (const booking of impact.affectedBookings) {
-        if (input.handling === 'cancel_priority_rebook') {
-          booking.state = 'cancelled_by_ops';
-          booking.updatedAt = ctx.now;
-          booking.history.push({
-            state: 'cancelled_by_ops',
-            at: ctx.now,
-            by: ctx.actor.id,
-            note: input.reason,
-          });
-          const refundFils = booking.charges.reduce((sum, c) => sum + c.fils, 0);
-          if (refundFils > 0) {
-            const { wallet, entry } = applyRefund(ctx.state.wallets[booking.unitId], {
-              unitId: booking.unitId,
-              amountFils: refundFils,
-              label: 'Padel blackout refund',
-              byResidentId: booking.bookerId,
-              ref: { type: 'booking', id: booking.id },
-              now: ctx.now,
-            });
-            ctx.state.wallets[booking.unitId] = wallet;
-            const entryId = id('ledger');
-            ctx.state.ledger[entryId] = { id: entryId, ...entry };
-          }
-          notify(
-            ctx,
-            booking.bookerId,
-            'Padel booking cancelled',
-            `Your padel booking was cancelled: ${input.reason}. Pick a priority rebook slot — it won't use your weekly quota.`,
-            'amali://resident/amenity-detail?key=padel',
-          );
-        } else {
-          // auto_move: nearest same-duration slot outside the blackout; falls back to cancel+refund if none found.
-          const durationMinutes =
-            (new Date(booking.end).getTime() - new Date(booking.start).getTime()) / 60000;
-          const assembled = assembleValidateInput(ctx, {
-            bookerId: booking.bookerId,
-            start: booking.start,
-            durationMinutes,
-            players: booking.players,
-          });
-          const alternative = !('error' in assembled)
-            ? findAlternatives(
-                booking.start,
-                (candidate) =>
-                  !slotsOverlap(
-                    candidate,
-                    slotEnd(candidate, durationMinutes),
-                    input.start,
-                    input.end,
-                  ) && validateBooking({ ...assembled, start: candidate }).ok,
-              )[0]
-            : undefined;
-
-          if (alternative) {
-            booking.start = alternative;
-            booking.end = slotEnd(alternative, durationMinutes);
-            booking.updatedAt = ctx.now;
-            booking.history.push({
-              state: booking.state,
-              at: ctx.now,
-              by: ctx.actor.id,
-              note: `Moved from blackout — ${input.reason}`,
-            });
-            notify(
-              ctx,
-              booking.bookerId,
-              'Padel booking moved',
-              `Your padel booking moved to ${alternative} — ${input.reason}.`,
-              'amali://resident/amenity-detail?key=padel',
-            );
-          } else {
-            booking.state = 'cancelled_by_ops';
-            booking.updatedAt = ctx.now;
-            booking.history.push({
-              state: 'cancelled_by_ops',
-              at: ctx.now,
-              by: ctx.actor.id,
-              note: `No alternative found — ${input.reason}`,
-            });
-            notify(
-              ctx,
-              booking.bookerId,
-              'Padel booking cancelled',
-              `Your padel booking was cancelled: ${input.reason}.`,
-              'amali://resident/amenity-detail?key=padel',
-            );
-          }
-        }
-      }
+      const affected = applyBlackoutHandling(ctx, input, input.handling);
 
       return {
         ok: true,
@@ -178,7 +81,7 @@ defineCommand<'blackout.create'>(
             start: input.start,
             end: input.end,
             handling: input.handling,
-            affected: impact.affectedBookings.length,
+            affected,
           },
         },
       } satisfies CommandResult<Blackout>;
@@ -216,3 +119,116 @@ defineCommand<'suspension.lift'>(
   },
   { capability: 'suspension.lift' },
 );
+
+/**
+ * Cancels (with a priority rebook) or auto-moves every padel booking a
+ * blackout window covers, notifying each booker. Shared by
+ * `blackout.create` and the programme calendar's recurring blackouts (a
+ * Padel Clinic saved over existing Saturday bookings). Returns how many
+ * bookings it touched.
+ */
+export function applyBlackoutHandling(
+  ctx: CommandCtx,
+  window: { start: string; end: string; reason: string },
+  handling: BlackoutHandling,
+): number {
+  const allBookings = Object.values(ctx.state.bookings).filter((b) => b.amenity === 'padel');
+  const impact = computeBlackoutImpact(
+    window.start,
+    window.end,
+    allBookings,
+    Object.values(ctx.state.waitlist),
+  );
+
+  for (const booking of impact.affectedBookings) {
+    if (handling === 'cancel_priority_rebook') {
+      booking.state = 'cancelled_by_ops';
+      booking.updatedAt = ctx.now;
+      booking.history.push({
+        state: 'cancelled_by_ops',
+        at: ctx.now,
+        by: ctx.actor.id,
+        note: window.reason,
+      });
+      const refundFils = booking.charges.reduce((sum, c) => sum + c.fils, 0);
+      if (refundFils > 0) {
+        const { wallet, entry } = applyRefund(ctx.state.wallets[booking.unitId], {
+          unitId: booking.unitId,
+          amountFils: refundFils,
+          label: 'Padel blackout refund',
+          byResidentId: booking.bookerId,
+          ref: { type: 'booking', id: booking.id },
+          now: ctx.now,
+        });
+        ctx.state.wallets[booking.unitId] = wallet;
+        const entryId = id('ledger');
+        ctx.state.ledger[entryId] = { id: entryId, ...entry };
+      }
+      notify(
+        ctx,
+        booking.bookerId,
+        'Padel booking cancelled',
+        `Your padel booking was cancelled: ${window.reason}. Pick a priority rebook slot — it won't use your weekly quota.`,
+        'amali://resident/amenity-detail?key=padel',
+      );
+    } else {
+      // auto_move: nearest same-duration slot outside the blackout; falls back to cancel+refund if none found.
+      const durationMinutes =
+        (new Date(booking.end).getTime() - new Date(booking.start).getTime()) / 60000;
+      const assembled = assembleValidateInput(ctx, {
+        bookerId: booking.bookerId,
+        start: booking.start,
+        durationMinutes,
+        players: booking.players,
+      });
+      const alternative = !('error' in assembled)
+        ? findAlternatives(
+            booking.start,
+            (candidate) =>
+              !slotsOverlap(
+                candidate,
+                slotEnd(candidate, durationMinutes),
+                window.start,
+                window.end,
+              ) && validateBooking({ ...assembled, start: candidate }).ok,
+          )[0]
+        : undefined;
+
+      if (alternative) {
+        booking.start = alternative;
+        booking.end = slotEnd(alternative, durationMinutes);
+        booking.updatedAt = ctx.now;
+        booking.history.push({
+          state: booking.state,
+          at: ctx.now,
+          by: ctx.actor.id,
+          note: `Moved from blackout — ${window.reason}`,
+        });
+        notify(
+          ctx,
+          booking.bookerId,
+          'Padel booking moved',
+          `Your padel booking moved to ${alternative} — ${window.reason}.`,
+          'amali://resident/amenity-detail?key=padel',
+        );
+      } else {
+        booking.state = 'cancelled_by_ops';
+        booking.updatedAt = ctx.now;
+        booking.history.push({
+          state: 'cancelled_by_ops',
+          at: ctx.now,
+          by: ctx.actor.id,
+          note: `No alternative found — ${window.reason}`,
+        });
+        notify(
+          ctx,
+          booking.bookerId,
+          'Padel booking cancelled',
+          `Your padel booking was cancelled: ${window.reason}.`,
+          'amali://resident/amenity-detail?key=padel',
+        );
+      }
+    }
+  }
+  return impact.affectedBookings.length;
+}

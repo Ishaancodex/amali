@@ -18,7 +18,14 @@ export function selectCurrentStatusEntry(
   if (covering.length === 0) return undefined;
   // `>=`, not `>`: two status changes dispatched without the clock moving share a `from`, and the
   // later one (later in the array — entries are only ever pushed) must win.
-  return covering.reduce((latest, e) => (e.from >= latest.from ? e : latest));
+  const latest = (list: StatusEntry[]) => list.reduce((a, e) => (e.from >= a.from ? e : a));
+  // A programme occurrence ("Limited: lanes 1–3 reserved") only shows over an otherwise-open
+  // amenity — a 07:00 class must never mask a 06:00 emergency closure or a maintenance status.
+  const manual = covering.filter((e) => !e.programmeId);
+  const base = manual.length ? latest(manual) : undefined;
+  if (base && base.status !== 'open') return base;
+  const programme = covering.filter((e) => e.programmeId);
+  return programme.length ? latest(programme) : base;
 }
 
 /** Just the status enum — see `selectCurrentStatusEntry` for the reason text too. */

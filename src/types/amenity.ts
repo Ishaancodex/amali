@@ -26,6 +26,8 @@ export interface StatusEntry extends BaseEntity {
   to?: ISODateTime;
   workOrderId?: string;
   setBy: string;
+  /** Set when a programme occurrence created it — it only shows while the amenity is otherwise open. */
+  programmeId?: string;
 }
 
 export interface WeeklyHours {
@@ -59,4 +61,5 @@ export interface Blackout extends BaseEntity {
   handling: BlackoutHandling;
   workOrderId?: string;
   createdBy: string;
+  programmeId?: string;
 }

@@ -213,6 +213,16 @@ const rawRules: Rules = {
   // PRD §8.6 — Scheduling and programming
   programme: {
     forwardHorizonMonths: 12,
+    /** PRD §8.6 edge case: a class on a public holiday shows "Skip" or "Keep". Mock UAE dates. */
+    publicHolidays: [
+      { date: '2026-12-01', name: 'Commemoration Day' },
+      { date: '2026-12-02', name: 'National Day' },
+      { date: '2026-12-03', name: 'National Day holiday' },
+      { date: '2027-03-10', name: 'Eid al-Fitr' },
+      { date: '2027-03-11', name: 'Eid al-Fitr holiday' },
+    ],
+    /** A class's new time when a season's hours clash is suggested on this grid. */
+    suggestionGridMinutes: 30,
   },
 
   // PRD §8.10 / §11 — 90-day seed history generation

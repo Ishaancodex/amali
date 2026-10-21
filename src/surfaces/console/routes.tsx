@@ -12,6 +12,8 @@ import { WorkOrdersScreen } from './screens/WorkOrdersScreen';
 import { WorkOrderDetailScreen } from './screens/WorkOrderDetailScreen';
 import { VendorsScreen } from './screens/VendorsScreen';
 import { AuditLogScreen } from './screens/AuditLogScreen';
+import { ProgrammeScreen } from './screens/ProgrammeScreen';
+import { SeriesEditorScreen } from './screens/SeriesEditorScreen';
 
 export function consoleRoutes(slot: DeviceSlotId): Record<string, RouteComponent> {
   return {
@@ -31,5 +33,7 @@ export function consoleRoutes(slot: DeviceSlotId): Record<string, RouteComponent
     ),
     vendors: () => <VendorsScreen slot={slot} />,
     'audit-log': () => <AuditLogScreen slot={slot} />,
+    programme: () => <ProgrammeScreen slot={slot} />,
+    'programme-edit': (params) => <SeriesEditorScreen slot={slot} programmeId={params.id} />,
   };
 }
