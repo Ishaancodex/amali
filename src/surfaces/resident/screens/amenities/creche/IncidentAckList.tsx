@@ -6,12 +6,15 @@ import { Tag } from '@/ui/Tag';
 import { Button } from '@/ui/Button';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
-import { fmtTime } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 
 const SEVERITY_TAG = { low: 'info', medium: 'warning', high: 'danger' } as const;
 
 export function IncidentAckList({ slot, childIds }: { slot: DeviceSlotId; childIds: string[] }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const incidents = useStore((s) => s.incidents);
   const children = useStore((s) => s.children);
@@ -31,7 +34,7 @@ export function IncidentAckList({ slot, childIds }: { slot: DeviceSlotId; childI
     );
     pushToast(
       slot,
-      result.ok ? 'Acknowledged.' : result.error.message,
+      result.ok ? t('kids.acknowledged') : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
@@ -42,17 +45,17 @@ export function IncidentAckList({ slot, childIds }: { slot: DeviceSlotId; childI
         <Card key={i.id} className="border-warning flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <p className="text-label-2 text-text-title">
-              Incident report · {children[i.childId!]?.name.split(' ')[0]}
+              {t('kids.incidentReport', { name: children[i.childId!]?.name.split(' ')[0] })}
             </p>
-            <Tag variant={SEVERITY_TAG[i.severity]}>{i.severity}</Tag>
+            <Tag variant={SEVERITY_TAG[i.severity]}>{t(`kids.severity.${i.severity}`)}</Tag>
           </div>
           <p className="text-body-2 text-text-body">{i.description}</p>
           <p className="text-body-3 text-text-muted">
-            {fmtTime(i.at)}
-            {i.firstAid ? ' · first aid given' : ''}
+            {fmt.time(i.at)}
+            {i.firstAid ? ` · ${t('kids.firstAid')}` : ''}
           </p>
           <Button fullWidth onClick={() => acknowledge(i.id)}>
-            Acknowledge
+            {t('kids.acknowledge')}
           </Button>
         </Card>
       ))}

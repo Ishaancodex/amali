@@ -6,9 +6,11 @@
  */
 import { useEffect, useRef } from 'react';
 import { WifiOff } from './icons';
-import { fmtTime } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 
 export function OfflineBar({ offline, now }: { offline: boolean; now: string }) {
+  const t = useT();
+  const fmt = useFmt();
   const frozenAtRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -23,7 +25,7 @@ export function OfflineBar({ offline, now }: { offline: boolean; now: string }) 
   return (
     <div className="bg-maintenance text-body-3 text-on-brand flex items-center justify-center gap-1.5 px-3 py-1.5">
       <WifiOff className="h-3.5 w-3.5" strokeWidth={1.5} />
-      You&apos;re offline. Showing last updated {fmtTime(frozenAtRef.current ?? now)}.
+      {t('common.offline', { time: fmt.time(frozenAtRef.current ?? now) })}
     </div>
   );
 }

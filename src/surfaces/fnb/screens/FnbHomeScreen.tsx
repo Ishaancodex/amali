@@ -9,7 +9,7 @@
  */
 import { useState } from 'react';
 import { cn } from '@/lib/cn';
-import { fmtTime } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import { useStore } from '@/store';
 import type { ServicePeriod, VenueKey } from '@/types/dining';
 import type { DeviceSlotId } from '@/types/demo';
@@ -25,17 +25,7 @@ import { Arrivals } from './parts/Arrivals';
 import { ReservationPanel } from './parts/ReservationPanel';
 import { WalkInSheet } from './parts/WalkInSheet';
 
-const VENUES: { key: VenueKey; label: string }[] = [
-  { key: 'restaurant', label: 'Restaurant' },
-  { key: 'pdr', label: 'Private Dining' },
-  { key: 'teppanyaki', label: 'Teppanyaki' },
-];
-const PERIOD_LABEL: Record<ServicePeriod, string> = {
-  breakfast: 'Breakfast',
-  lunch: 'Lunch',
-  iftar: 'Iftar',
-  dinner: 'Dinner',
-};
+const VENUES: VenueKey[] = ['restaurant', 'pdr', 'teppanyaki'];
 type Tab = 'timeline' | 'floor' | 'covers' | 'approvals';
 
 function Segment<T extends string>({
@@ -73,6 +63,8 @@ export function FnbHomeScreen({
   slot: DeviceSlotId;
   initialVenue?: VenueKey;
 }) {
+  const t = useT();
+  const fmt = useFmt();
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const staffMember = useStore((s) => s.staff[actorId]);
   const [venue, setVenue] = useState<VenueKey>(initialVenue ?? 'restaurant');
@@ -86,24 +78,29 @@ export function FnbHomeScreen({
   const requests = service.all.filter((r) => r.state === 'requested').length;
   const ramadanClashes = ramadanLunchConflicts(service.all, rules.dining);
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'timeline', label: 'Timeline' },
-    { key: 'floor', label: 'Floor plan' },
-    { key: 'covers', label: 'Covers' },
-    { key: 'approvals', label: requests ? `Approvals · ${requests}` : 'Approvals' },
+    { key: 'timeline', label: t('fnb.tab.timeline') },
+    { key: 'floor', label: t('fnb.tab.floor') },
+    { key: 'covers', label: t('fnb.tab.covers') },
+    {
+      key: 'approvals',
+      label: requests ? `${t('fnb.tab.approvals')} · ${requests}` : t('fnb.tab.approvals'),
+    },
   ];
 
   return (
     <div className="flex h-full flex-col">
       <header className="border-border-card flex flex-wrap items-center gap-3 border-b-[0.5px] px-5 py-3">
         <div className="me-2">
-          <p className="text-tag font-secondary text-brand">F&amp;B · {staffMember.name}</p>
+          <p className="text-tag font-secondary text-brand">
+            {t('fnb.role')} · {staffMember.name}
+          </p>
           <p className="text-label-1 text-text-title">
-            {PERIOD_LABEL[service.window.period]} · {fmtTime(service.window.start)}–
-            {fmtTime(service.window.end)}
+            {t(`dining.period.${service.window.period}`)} · {fmt.time(service.window.start)}–
+            {fmt.time(service.window.end)}
           </p>
         </div>
         <Segment
-          items={VENUES}
+          items={VENUES.map((v) => ({ key: v, label: t(`dining.venue.${v}`) }))}
           value={venue}
           onChange={(v) => {
             setVenue(v);
@@ -111,7 +108,10 @@ export function FnbHomeScreen({
           }}
         />
         <Segment
-          items={service.windows.map((w) => ({ key: w.period, label: PERIOD_LABEL[w.period] }))}
+          items={service.windows.map((w) => ({
+            key: w.period,
+            label: t(`dining.period.${w.period}`),
+          }))}
           value={service.window.period}
           onChange={setPeriod}
         />
@@ -124,10 +124,7 @@ export function FnbHomeScreen({
           {ramadanClashes.length > 0 && (
             <div className="mb-3">
               <Banner style="warning">
-                {ramadanClashes.length} lunch{' '}
-                {ramadanClashes.length === 1 ? 'reservation falls' : 'reservations fall'} in
-                Ramadan, when Iftar at sunset replaces Lunch — move{' '}
-                {ramadanClashes.length === 1 ? 'it' : 'them'}.
+                {t('fnb.ramadanClash', { count: ramadanClashes.length })}
               </Banner>
             </div>
           )}

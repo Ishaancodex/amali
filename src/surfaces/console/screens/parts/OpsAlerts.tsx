@@ -15,11 +15,15 @@ import { effectiveHoursForDate } from '@/domain/booking/hours';
 import { findCoverageGaps, gapAt } from '@/domain/ops/roster';
 import { isWaterReadingOverdue } from '@/domain/ops/water';
 import { rules } from '@/config/rules';
-import { dubaiDateKey, fmtTime } from '@/lib/time';
+import { dubaiDateKey } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 import { useConsoleActor } from '../../useConsoleActor';
 
 export function OpsAlerts({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const { push } = useNav(slot);
   const pushToast = useUiStore((s) => s.pushToast);
   const dispatch = useStore((s) => s.dispatch);
@@ -81,13 +85,13 @@ export function OpsAlerts({ slot }: { slot: DeviceSlotId }) {
     if (!actor) return;
     const result = dispatch(
       'amenity.setStatus',
-      { amenity: 'pool', status: 'closed', reason: 'No lifeguard on shift' },
+      { amenity: 'pool', status: 'closed', reason: t('console.ops.noLifeguardReason') },
       actor,
       { assignedAmenities },
     );
     pushToast(
       slot,
-      result.ok ? 'Pool set to Closed.' : result.error.message,
+      result.ok ? t('console.ops.poolClosed') : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
@@ -102,22 +106,28 @@ export function OpsAlerts({ slot }: { slot: DeviceSlotId }) {
   return (
     <section className="flex flex-col gap-2">
       {lifeguardGapNow && (
-        <Banner style="urgent" cta={{ label: 'Set to Closed', onClick: closePool }}>
-          Pool is open with no lifeguard on shift ({fmtTime(lifeguardGapNow.start)}–
-          {fmtTime(lifeguardGapNow.end)}).
+        <Banner style="urgent" cta={{ label: t('console.ops.setClosed'), onClick: closePool }}>
+          {t('console.ops.noLifeguard', {
+            from: fmt.time(lifeguardGapNow.start),
+            to: fmt.time(lifeguardGapNow.end),
+          })}
         </Banner>
       )}
       {waterOverdue && (
-        <Banner style="warning" cta={{ label: 'Log a reading', onClick: () => push('water') }}>
-          Pool water reading is overdue{lastReading ? ` — last logged ${fmtTime(lastReading)}` : ''}
-          .
+        <Banner
+          style="warning"
+          cta={{ label: t('console.ops.logReading'), onClick: () => push('water') }}
+        >
+          {lastReading
+            ? t('console.ops.waterOverdueLast', { time: fmt.time(lastReading) })
+            : t('console.ops.waterOverdue')}
         </Banner>
       )}
       {myAlerts.map((n) => (
         <Banner
           key={n.id}
           style="warning"
-          cta={{ label: 'Acknowledge', onClick: () => acknowledge(n.id) }}
+          cta={{ label: t('kids.acknowledge'), onClick: () => acknowledge(n.id) }}
         >
           <span className="text-label-2">{n.title}</span> — {n.body}
         </Banner>

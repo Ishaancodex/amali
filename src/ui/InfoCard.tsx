@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { Card } from './Card';
 import type { LucideIcon } from './icons';
+import { useT } from '@/i18n/hooks';
 
 export function InfoCard({
   icon: Icon,
@@ -24,6 +25,7 @@ export function InfoCard({
   body?: string;
   footer?: React.ReactNode;
 }) {
+  const t = useT();
   const [expanded, setExpanded] = useState(false);
   const isLong = (body?.length ?? 0) > 120;
 
@@ -58,7 +60,7 @@ export function InfoCard({
               onClick={() => setExpanded((v) => !v)}
               className="text-label-3 text-brand ms-1.5"
             >
-              {expanded ? 'Show less' : 'Show more'}
+              {expanded ? t('ui.showLess') : t('ui.showMore')}
             </button>
           )}
         </p>

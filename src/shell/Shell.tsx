@@ -27,19 +27,25 @@ import { RolePill } from './TopBar/RolePill';
 import { ResetButton } from './TopBar/ResetButton';
 import { MenuButton } from './TopBar/MenuButton';
 import { useShellShortcuts } from './shortcuts';
+import { setMotionSpeed } from '@/design/motion';
+import { installE2EBridge } from './e2eBridge';
 
 export function Shell() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [notesDrawerOpen, setNotesDrawerOpen] = useState(false);
   const dualView = useStore((s) => s.demo.dualView);
+  const motionSpeed = useStore((s) => s.demo.motionSpeed);
 
   useEffect(() => {
     if (isStoreEmpty()) hydrateFromSeed();
     else restorePersistedJobs();
+    installE2EBridge();
     return startSync();
   }, []);
 
   useShellShortcuts();
+  // PRD §13.1 "Motion speed": every token reads it (design/motion.ts).
+  setMotionSpeed(motionSpeed);
 
   return (
     <MotionConfig reducedMotion="user">

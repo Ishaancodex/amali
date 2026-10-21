@@ -10,12 +10,13 @@ import { NoPermission } from '@/ui/NoPermission';
 import { CheckCircle2 } from '@/ui/icons';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
-import { fmtDateTime } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 
-const VENUE = { restaurant: 'Restaurant', pdr: 'Private Dining', teppanyaki: 'Teppanyaki' };
-
 export function Approvals({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const reservations = useStore((s) => s.reservations);
   const residents = useStore((s) => s.residents);
   const dispatch = useStore((s) => s.dispatch);
@@ -29,10 +30,10 @@ export function Approvals({ slot }: { slot: DeviceSlotId }) {
     .sort((a, b) => a.start.localeCompare(b.start));
 
   if (role !== 'fnb_manager') {
-    return <NoPermission askWho="the F&B manager" />;
+    return <NoPermission askWho={t('fnb.manager')} />;
   }
   if (requests.length === 0)
-    return <EmptyState icon={CheckCircle2} message="No requests waiting." />;
+    return <EmptyState icon={CheckCircle2} message={t('fnb.noRequests')} />;
 
   function decide(reservationId: string, accept: boolean) {
     const result = dispatch(
@@ -42,7 +43,7 @@ export function Approvals({ slot }: { slot: DeviceSlotId }) {
     );
     pushToast(
       slot,
-      result.ok ? (accept ? 'Accepted.' : 'Declined.') : result.error.message,
+      result.ok ? (accept ? t('fnb.accepted') : t('fnb.declined')) : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
@@ -52,23 +53,23 @@ export function Approvals({ slot }: { slot: DeviceSlotId }) {
       {requests.map((r) => (
         <Card key={r.id} className="flex flex-col gap-2">
           <p className="text-label-1 text-text-title">
-            {residents[r.residentId]?.name} · {r.partySize} people
+            {residents[r.residentId]?.name} · {t('common.people', { count: r.partySize })}
           </p>
           <p className="text-body-2 text-text-muted">
-            {VENUE[r.venue]} · {fmtDateTime(r.start)}
+            {t(`dining.venue.${r.venue}`)} · {fmt.dateTime(r.start)}
             {r.occasion ? ` · ${r.occasion}` : ''}
             {r.requests ? ` · “${r.requests}”` : ''}
           </p>
           <Input
-            placeholder="Message to the resident (optional)"
+            placeholder={t('fnb.messageToResident')}
             value={messages[r.id] ?? ''}
             onChange={(e) => setMessages({ ...messages, [r.id]: e.target.value })}
           />
           <div className="flex gap-2">
             <Button variant="secondary" onClick={() => decide(r.id, false)}>
-              Decline
+              {t('fnb.decline')}
             </Button>
-            <Button onClick={() => decide(r.id, true)}>Accept</Button>
+            <Button onClick={() => decide(r.id, true)}>{t('padel.accept')}</Button>
           </div>
         </Card>
       ))}

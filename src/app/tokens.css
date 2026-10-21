@@ -5,21 +5,25 @@
 
 :root {
   /* App colour tokens — PRD §5.2 */
-  --brand: #BE7E63;
+  --brand: #985A3F;
   --brand-tint: #F1ECE2;
   --on-brand: #FFFFFF;
   --text-title: #57585B;
   --text-body: #31383C;
-  --text-muted: #6F7A80;
-  --text-placeholder: #868686;
+  --text-muted: #616B70;
+  --text-placeholder: #6E6E6E;
   --border-card: #E2DDDB;
   --surface: #FFFFFF;
   --bg-page: #F7F4F0;
-  --success: #19B27A;
-  --warning: #C98A2E;
-  --danger: #D2493A;
-  --info: #4F7A94;
-  --maintenance: #8A7F72;
+  --success: #0F6E4B;
+  --warning: #81591E;
+  --danger: #AC3527;
+  --info: #41657A;
+  --maintenance: #686056;
+  --overlay: #1C1B18;
+  --on-overlay: #F5F1E8;
+  --on-overlay-muted: #B2AA9A;
+  --scrim: #0E0D0B;
   --sos-gradient-from: #E8572B;
   --sos-gradient-to: #D2382A;
   --browser-chrome-frame: #E8E6E1;
@@ -78,6 +82,13 @@
   --text-muted: #A3A09A;
   --text-placeholder: #A3A09A;
   --brand: #BE7E63;
+  --brand-tint: #251E17;
+  --on-brand: #14130F;
+  --success: #19B27A;
+  --warning: #CC8C2F;
+  --danger: #DF7D72;
+  --info: #779EB6;
+  --maintenance: #A1988D;
 }
 
 /* Shell (presentation stage) tokens — PRD §5.4. Scoped to .shell. */

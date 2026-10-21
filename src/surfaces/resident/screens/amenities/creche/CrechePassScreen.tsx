@@ -13,6 +13,7 @@ import { ChildAvatar } from '@/features/creche/ChildAvatar';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
 import type { DeviceSlotId } from '@/types/demo';
+import { useT } from '@/i18n/hooks';
 
 const N = 21;
 const FINDER = 7;
@@ -40,6 +41,7 @@ function inFinder(x: number, y: number): boolean | undefined {
 }
 
 function MockCode({ value }: { value: string }) {
+  const t = useT();
   let seed = hash(value);
   const cells: { x: number; y: number }[] = [];
   for (let y = 0; y < N; y += 1) {
@@ -54,7 +56,7 @@ function MockCode({ value }: { value: string }) {
       viewBox={`-1 -1 ${N + 2} ${N + 2}`}
       className="h-auto w-full"
       role="img"
-      aria-label="Drop-off pass code"
+      aria-label={t('kids.passCode')}
     >
       <rect x={-1} y={-1} width={N + 2} height={N + 2} fill="var(--surface)" />
       {cells.map((c) => (
@@ -65,6 +67,7 @@ function MockCode({ value }: { value: string }) {
 }
 
 export function CrechePassScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
   const { pop } = useNav(slot);
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const guardians = useStore((s) => s.guardians);
@@ -73,13 +76,10 @@ export function CrechePassScreen({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Drop-off pass" onBack={pop} />
+      <TopBar title={t('resident.amenityDetail.dropOffPass')} onBack={pop} />
       <div className="flex flex-1 flex-col items-center gap-4 overflow-y-auto px-6 pb-6">
         {!guardian ? (
-          <EmptyState
-            icon={QrCode}
-            message="You’re not an authorised guardian for any child yet."
-          />
+          <EmptyState icon={QrCode} message={t('kids.notGuardian')} />
         ) : (
           <>
             <Card className="mt-4 w-full max-w-64 p-4">
@@ -90,17 +90,16 @@ export function CrechePassScreen({ slot }: { slot: DeviceSlotId }) {
               <div>
                 <p className="text-label-1 text-text-title">{guardian.name}</p>
                 <p className="text-body-3 text-text-muted">
-                  Authorised for{' '}
-                  {guardian.childIds
-                    .map((id) => children[id]?.name.split(' ')[0])
-                    .filter(Boolean)
-                    .join(' & ')}
+                  {t('kids.authorisedFor', {
+                    names: guardian.childIds
+                      .map((id) => children[id]?.name.split(' ')[0])
+                      .filter(Boolean)
+                      .join(' & '),
+                  })}
                 </p>
               </div>
             </div>
-            <p className="text-body-3 text-text-muted text-center">
-              Show this at the Kids’ Club desk for drop-off and pickup.
-            </p>
+            <p className="text-body-3 text-text-muted text-center">{t('kids.showAtDesk')}</p>
           </>
         )}
       </div>

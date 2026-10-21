@@ -12,8 +12,10 @@ import { minutesBetween } from '@/lib/time';
 import { vendorPerformance } from '@/domain/ops/vendorPerformance';
 import { rules } from '@/config/rules';
 import type { DeviceSlotId } from '@/types/demo';
+import { useT } from '@/i18n/hooks';
 
 export function VendorsScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
   const { pop } = useNav(slot);
   const vendors = useStore((s) => s.vendors);
   const workOrders = useStore((s) => s.workOrders);
@@ -21,7 +23,7 @@ export function VendorsScreen({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Vendors" onBack={pop} />
+      <TopBar title={t('console.vendors.title')} onBack={pop} />
       <div className="flex-1 overflow-y-auto px-6 pb-8">
         <div className="mx-auto flex max-w-2xl flex-col gap-3">
           {Object.values(vendors).map((vendor) => {
@@ -37,18 +39,26 @@ export function VendorsScreen({ slot }: { slot: DeviceSlotId }) {
               <div key={vendor.id} className="rounded-card border-border-card border-[0.5px] p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-label-1 text-text-title">{vendor.name}</span>
-                  {expiringWithin30Days && <Tag variant="warning">Contract expires soon</Tag>}
+                  {expiringWithin30Days && (
+                    <Tag variant="warning">{t('console.vendors.expiring')}</Tag>
+                  )}
                 </div>
                 <p className="text-body-3 text-text-muted mt-0.5">{vendor.services.join(', ')}</p>
                 <p className="text-body-3 text-text-muted">
-                  {vendor.contact.name} · {vendor.contact.phone}
+                  {vendor.contact.name} · <bdi>{vendor.contact.phone}</bdi>
                 </p>
                 <div className="text-body-3 mt-2 flex gap-4">
-                  <span>Within SLA: {pctWithinSla !== undefined ? `${pctWithinSla}%` : '—'}</span>
                   <span>
-                    Avg resolve: {avgResolveMinutes !== undefined ? `${avgResolveMinutes}m` : '—'}
+                    {t('console.vendors.withinSla', {
+                      value: pctWithinSla !== undefined ? `${pctWithinSla}%` : '—',
+                    })}
                   </span>
-                  <span>Breaches: {breaches}</span>
+                  <span>
+                    {t('console.vendors.avgResolve', {
+                      value: avgResolveMinutes !== undefined ? `${avgResolveMinutes}m` : '—',
+                    })}
+                  </span>
+                  <span>{t('console.vendors.breaches', { count: breaches })}</span>
                 </div>
               </div>
             );

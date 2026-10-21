@@ -11,10 +11,12 @@ import { Check, CheckCheck } from '@/ui/icons';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import { useNav } from '@/navigation/useNav';
-import { fmtTime } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 import type { Delivery, WaMessage } from '@/types/comms';
 import type { CommandName } from '@/store/commands/types';
+import { motion } from 'motion/react';
+import { bubbleIn } from '@/design/motion';
 
 function TickIcon({ message, delivery }: { message: WaMessage; delivery?: Delivery }) {
   const resolved = delivery ? delivery.state : (message.ticks ?? 'sent');
@@ -24,16 +26,19 @@ function TickIcon({ message, delivery }: { message: WaMessage; delivery?: Delive
     resolved === 'held_quiet_hours' ||
     resolved === 'queued'
   ) {
-    return <Check className="text-shell-notes-body h-3.5 w-3.5" strokeWidth={1.5} />;
+    return <Check className="text-text-muted h-3.5 w-3.5" strokeWidth={1.5} />;
   }
   if (resolved === 'read') {
     return <CheckCheck className="text-brand h-3.5 w-3.5" strokeWidth={1.5} />;
   }
   // 'sent' or 'delivered'
-  return <CheckCheck className="text-shell-notes-body h-3.5 w-3.5" strokeWidth={1.5} />;
+  return <CheckCheck className="text-text-muted h-3.5 w-3.5" strokeWidth={1.5} />;
 }
 
 export function ThreadScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const waMessages = useStore((s) => s.waMessages);
   const deliveries = useStore((s) => s.deliveries);
@@ -54,19 +59,23 @@ export function ThreadScreen({ slot }: { slot: DeviceSlotId }) {
       { kind: 'resident', id: actorId },
     );
     if (!recorded.ok) {
-      pushToast(slot, recorded.error.message, 'error');
+      pushToast(slot, errorText(recorded.error), 'error');
       return;
     }
     const result = dispatch(button.action.name as CommandName, button.action.args as never, {
       kind: 'resident',
       id: actorId,
     });
-    pushToast(slot, result.ok ? 'Done.' : result.error.message, result.ok ? 'success' : 'error');
+    pushToast(
+      slot,
+      result.ok ? t('whatsapp.done') : errorText(result.error),
+      result.ok ? 'success' : 'error',
+    );
   }
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Amali Residences" onBack={pop} />
+      <TopBar title={t('whatsapp.business')} onBack={pop} />
       <div className="flex flex-1 flex-col-reverse gap-2 overflow-y-auto px-4 py-4">
         <div />
         {[...messages].reverse().map((m) => {
@@ -74,7 +83,12 @@ export function ThreadScreen({ slot }: { slot: DeviceSlotId }) {
           const isOut = m.dir === 'out';
           return (
             <div key={m.id} className={`flex flex-col ${isOut ? 'items-end' : 'items-start'}`}>
-              <div
+              {/* M16: a bubble scales up from its tail corner as it arrives. */}
+              <motion.div
+                variants={bubbleIn}
+                initial="initial"
+                animate="animate"
+                style={{ transformOrigin: isOut ? 'bottom right' : 'bottom left' }}
                 className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 whitespace-pre-line ${
                   isOut
                     ? 'bg-brand-tint text-text-body'
@@ -104,10 +118,10 @@ export function ThreadScreen({ slot }: { slot: DeviceSlotId }) {
                   </div>
                 )}
                 <div className="mt-1 flex items-center justify-end gap-1">
-                  <span className="text-body-3 text-text-muted">{fmtTime(m.at)}</span>
+                  <span className="text-body-3 text-text-muted">{fmt.time(m.at)}</span>
                   {isOut && <TickIcon message={m} delivery={delivery} />}
                 </div>
-              </div>
+              </motion.div>
             </div>
           );
         })}

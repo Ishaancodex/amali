@@ -10,6 +10,7 @@ import { useUiStore } from '@/store/uiStore';
 import { rules } from '@/config/rules';
 import type { VenueKey } from '@/types/dining';
 import type { DeviceSlotId } from '@/types/demo';
+import { useErrorText, useT } from '@/i18n/hooks';
 
 export function WalkInSheet({
   slot,
@@ -22,6 +23,8 @@ export function WalkInSheet({
   open: boolean;
   onClose: () => void;
 }) {
+  const t = useT();
+  const errorText = useErrorText();
   const [size, setSize] = useState(2);
   const dispatch = useStore((s) => s.dispatch);
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
@@ -38,19 +41,25 @@ export function WalkInSheet({
     pushToast(
       slot,
       result.ok
-        ? `Walk-in for ${size} at ${result.value.tableIds.join('+')}.`
-        : result.error.message,
+        ? t('fnb.walkInSeated', { size, tables: result.value.tableIds.join('+') })
+        : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
     if (result.ok) onClose();
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Walk-in">
+    <Sheet open={open} onClose={onClose} title={t('fnb.walkIn')}>
       <div className="flex flex-col gap-4 pb-2">
-        <Stepper label="Party size" value={size} min={min} max={max} onChange={setSize} />
+        <Stepper
+          label={t('dining.partySize')}
+          value={size}
+          min={min}
+          max={max}
+          onChange={setSize}
+        />
         <Button fullWidth onClick={seat}>
-          Seat now
+          {t('fnb.seatNow')}
         </Button>
       </div>
     </Sheet>

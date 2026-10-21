@@ -14,21 +14,19 @@ import { TopBar } from '@/ui/TopBar';
 import { Button } from '@/ui/Button';
 import { Stepper } from '@/ui/Stepper';
 import { Banner } from '@/ui/Banner';
-import { CheckCircle2 } from '@/ui/icons';
+import { ConfirmedMark, Ticket } from '@/ui/ConfirmedMark';
+import { Shake } from '@/ui/Shake';
+import { motion } from 'motion/react';
+import { fadeUp, staggerDelay } from '@/design/motion';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
 import { rules } from '@/config/rules';
-import {
-  addDaysIso,
-  addHoursIso,
-  dubaiDateKey,
-  dubaiDateTimeToIso,
-  fmtDate,
-  fmtTime,
-} from '@/lib/time';
+import { addDaysIso, addHoursIso, dubaiDateKey } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import { slotOptions } from '@/domain/booking/slots';
 import type { DeviceSlotId } from '@/types/demo';
 import type { Booking } from '@/types/booking';
+import { FillChip, SlotChip } from './parts/SlotChips';
 
 type SubmitState =
   | { kind: 'idle' }
@@ -37,6 +35,9 @@ type SubmitState =
   | { kind: 'success'; booking: Booking };
 
 export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const { pop, replace } = useNav(slot);
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const resident = useStore((s) => s.residents[actorId]);
@@ -75,7 +76,7 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
   const clinic = slots.find((s) => s.blackoutReason)?.blackoutReason;
 
   const guests = Array.from({ length: guestCount }, (_, i) => ({
-    guestName: `Guest ${i + 1}`,
+    guestName: t('padel.guestName', { n: i + 1 }),
     guestPhone: '+971500000000',
   }));
   const feeFils = guestCount * rules.padel.guestFeeFils;
@@ -91,11 +92,11 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
     if (result.ok) {
       setSubmit({ kind: 'success', booking: result.value });
     } else if (result.error.code === 'SLOT_FULL' || result.error.code === 'SLOT_HELD') {
-      setSubmit({ kind: 'full', message: result.error.message });
+      setSubmit({ kind: 'full', message: errorText(result.error) });
     } else {
       setSubmit({
         kind: 'error',
-        message: result.error.message,
+        message: errorText(result.error),
         alternatives: (result.error.alternatives as string[] | undefined)?.slice(0, 3),
       });
     }
@@ -107,23 +108,25 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
     if (result.ok) {
       replace('amenity-detail', { key: 'padel' });
     } else {
-      setSubmit({ kind: 'error', message: result.error.message });
+      setSubmit({ kind: 'error', message: errorText(result.error) });
     }
   }
 
   if (submit.kind === 'success') {
     return (
       <div className="flex h-full flex-col">
-        <TopBar title="Booking confirmed" />
+        <TopBar title={t('padel.confirmedTitle')} />
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-          <CheckCircle2 className="text-success h-14 w-14" strokeWidth={1.5} />
-          <p className="text-title-l text-text-title">Padel court booked</p>
-          <p className="text-body-2 text-text-muted">
-            {fmtDate(submit.booking.start)} · {fmtTime(submit.booking.start)}–
-            {fmtTime(submit.booking.end)}
-          </p>
+          <ConfirmedMark />
+          <p className="text-title-l text-text-title">{t('padel.booked_title')}</p>
+          <Ticket>
+            <p className="text-body-2 text-text-muted">
+              {fmt.date(submit.booking.start)} · {fmt.time(submit.booking.start)}–
+              {fmt.time(submit.booking.end)}
+            </p>
+          </Ticket>
           <Button fullWidth onClick={() => replace('amenity-detail', { key: 'padel' })}>
-            Done
+            {t('common.done')}
           </Button>
         </div>
       </div>
@@ -132,94 +135,89 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Book Padel" onBack={pop} />
+      <TopBar title={t('padel.bookTitle')} onBack={pop} />
       <div className="flex-1 overflow-y-auto px-4 pb-6">
-        <h2 className="text-label-1 text-text-title mt-4 mb-2">Date</h2>
+        <h2 className="text-label-1 text-text-title mt-4 mb-2">{t('padel.date')}</h2>
         <div className="flex gap-2 overflow-x-auto pb-1">
           {dateOptions.map((d) => (
-            <button
+            <FillChip
               key={d}
-              type="button"
+              selected={d === dateKey}
               onClick={() => {
                 setDateKey(d);
                 setStart(undefined);
               }}
-              className={`rounded-input text-body-3 shrink-0 border px-3 py-2 text-center ${
-                d === dateKey
-                  ? 'bg-brand text-on-brand border-brand'
-                  : 'border-border-card text-text-body'
-              }`}
+              className="text-body-3 shrink-0 px-3 py-2"
             >
-              {fmtDate(dubaiDateTimeToIso(d, '12:00'), 'EEE d')}
-            </button>
+              {fmt.dateKey(d, 'EEE d')}
+            </FillChip>
           ))}
         </div>
 
-        <h2 className="text-label-1 text-text-title mt-5 mb-2">Duration</h2>
+        <h2 className="text-label-1 text-text-title mt-5 mb-2">{t('padel.duration')}</h2>
         <div className="flex gap-2">
           {rules.padel.durationsMinutes.map((m) => (
-            <button
+            <FillChip
               key={m}
-              type="button"
+              selected={m === duration}
               onClick={() => {
                 setDuration(m as 60 | 90);
                 setStart(undefined);
               }}
-              className={`rounded-input text-body-2 flex-1 border py-2 text-center ${
-                m === duration
-                  ? 'bg-brand text-on-brand border-brand'
-                  : 'border-border-card text-text-body'
-              }`}
+              className="text-body-2 flex-1 py-2"
             >
-              {m} min
-            </button>
+              {t('common.minutes', { count: m })}
+            </FillChip>
           ))}
         </div>
 
-        <h2 className="text-label-1 text-text-title mt-5 mb-2">Time</h2>
+        <h2 className="text-label-1 text-text-title mt-5 mb-2">{t('padel.time')}</h2>
         {clinic && (
-          <p className="text-body-3 text-text-muted mb-2">Some times are closed for {clinic}.</p>
+          <p className="text-body-3 text-text-muted mb-2">
+            {t('padel.closedFor', { reason: clinic })}
+          </p>
         )}
         <div className="grid grid-cols-4 gap-2">
           {slots.map(({ start: s, bookable }) => (
-            <button
+            <SlotChip
               key={s}
-              type="button"
-              disabled={!bookable}
+              bookable={bookable}
+              selected={s === start}
               onClick={() => setStart(s)}
-              className={`rounded-input text-body-3 border py-2 text-center tabular-nums disabled:cursor-not-allowed disabled:opacity-30 ${
-                s === start
-                  ? 'bg-brand text-on-brand border-brand'
-                  : 'border-border-card text-text-body'
-              }`}
             >
-              {fmtTime(s)}
-            </button>
+              {fmt.time(s)}
+            </SlotChip>
           ))}
         </div>
 
-        <h2 className="text-label-1 text-text-title mt-5 mb-2">Guests</h2>
+        <h2 className="text-label-1 text-text-title mt-5 mb-2">{t('padel.guests')}</h2>
         <Stepper
           value={guestCount}
           min={0}
           max={rules.padel.maxGuestsPerBooking}
           onChange={setGuestCount}
-          label="Guests"
+          label={t('padel.guests')}
         />
         {feeFils > 0 && (
           <p className="text-body-3 text-text-muted mt-1">
-            AED {feeFils / 100} guest fee, charged on booking.
+            {t('padel.guestFee', { amount: fmt.aed(feeFils) })}
           </p>
         )}
 
         {submit.kind === 'error' && (
           <div className="mt-4">
-            <Banner style="warning">{submit.message}</Banner>
+            <Shake trigger={submit.message}>
+              <Banner style="warning">{submit.message}</Banner>
+            </Shake>
             {submit.alternatives && submit.alternatives.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
-                {submit.alternatives.map((alt) => (
-                  <button
+                {submit.alternatives.map((alt, i) => (
+                  <motion.button
                     key={alt}
+                    variants={fadeUp}
+                    initial="initial"
+                    animate="animate"
+                    transition={{ delay: staggerDelay(i) }}
                     type="button"
                     onClick={() => {
                       setDateKey(dubaiDateKey(alt));
@@ -228,8 +226,8 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
                     }}
                     className="rounded-tag bg-brand-tint text-brand text-label-3 px-3 py-1.5"
                   >
-                    {fmtDate(alt)} {fmtTime(alt)}
-                  </button>
+                    {fmt.date(alt)} {fmt.time(alt)}
+                  </motion.button>
                 ))}
               </div>
             )}
@@ -240,14 +238,14 @@ export function PadelBookScreen({ slot }: { slot: DeviceSlotId }) {
           <div className="mt-4 flex flex-col gap-2">
             <Banner style="info">{submit.message}</Banner>
             <Button variant="secondary" fullWidth onClick={handleJoinWaitlist}>
-              Join waitlist
+              {t('padel.joinWaitlist')}
             </Button>
           </div>
         )}
 
         <div className="mt-6">
           <Button fullWidth disabled={!start} onClick={handleBook}>
-            {start ? `Book ${fmtTime(start)}` : 'Choose a time'}
+            {start ? t('padel.bookAt', { time: fmt.time(start) }) : t('padel.chooseTime')}
           </Button>
         </div>
       </div>

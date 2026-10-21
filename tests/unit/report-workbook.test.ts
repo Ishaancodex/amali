@@ -28,7 +28,9 @@ let state: ReturnType<typeof buildSeed>;
 const reportFor = (role: ConsoleRole): Report => buildReport(state, request, role, undefined, NOW);
 
 async function roundTrip(role: ConsoleRole) {
-  const buffer = await buildWorkbook(reportSheets(reportFor(role), role)).xlsx.writeBuffer();
+  const buffer = await (
+    await buildWorkbook(reportSheets(reportFor(role), role))
+  ).xlsx.writeBuffer();
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(buffer as ArrayBuffer);
   return wb;

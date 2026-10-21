@@ -16,15 +16,8 @@ import { useUiStore } from '@/store/uiStore';
 import { rules } from '@/config/rules';
 import { residentView } from '@/domain/rbac/pii';
 import { slotOptions } from '@/domain/booking/slots';
-import {
-  addDaysIso,
-  addHoursIso,
-  dubaiDateKey,
-  dubaiDateTimeToIso,
-  fmtDate,
-  fmtDateTime,
-  fmtTime,
-} from '@/lib/time';
+import { addDaysIso, addHoursIso, dubaiDateKey } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import { cn } from '@/lib/cn';
 import type { DeviceSlotId } from '@/types/demo';
 import { useConsoleActor } from '../../useConsoleActor';
@@ -56,6 +49,9 @@ function Chip({
 }
 
 export function ResidentPanel({ slot, residentId }: { slot: DeviceSlotId; residentId: string }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const { actor, consoleRole, assignedAmenities } = useConsoleActor(slot);
   const resident = useStore((s) => s.residents[residentId]);
   const bookingsRecord = useStore((s) => s.bookings);
@@ -95,7 +91,7 @@ export function ResidentPanel({ slot, residentId }: { slot: DeviceSlotId; reside
     if (result.ok) setRevealed(true);
     pushToast(
       slot,
-      result.ok ? 'Phone revealed — this is logged.' : result.error.message,
+      result.ok ? t('console.residents.revealed') : errorText(result.error),
       result.ok ? 'neutral' : 'error',
     );
   }
@@ -109,7 +105,7 @@ export function ResidentPanel({ slot, residentId }: { slot: DeviceSlotId; reside
       opts,
     );
     if (!result.ok) {
-      setError(result.error.message);
+      setError(errorText(result.error));
       return;
     }
     setError(undefined);
@@ -117,57 +113,66 @@ export function ResidentPanel({ slot, residentId }: { slot: DeviceSlotId; reside
     setReason('');
     pushToast(
       slot,
-      `Booked padel for ${resident!.name.split(' ')[0]} · ${fmtDateTime(result.value.start)}.`,
+      t('console.residents.booked', {
+        name: resident!.name.split(' ')[0],
+        date: fmt.dateTime(result.value.start),
+      }),
       'success',
     );
   }
 
   function cancel(bookingId: string) {
     const result = dispatch('booking.cancelOnBehalf', { bookingId, reason }, actor!, opts);
-    if (!result.ok) setError(result.error.message);
-    else pushToast(slot, 'Cancelled on their behalf.', 'success');
+    if (!result.ok) setError(errorText(result.error));
+    else pushToast(slot, t('console.residents.cancelled'), 'success');
   }
 
   return (
     <div className="flex flex-col gap-4">
       <Card className="flex flex-col gap-1">
         <p className="text-title-l text-text-title">{view.name}</p>
-        <p className="text-body-2 text-text-body">Unit {view.unitId}</p>
+        <p className="text-body-2 text-text-body">
+          {t('console.residents.unit')} <bdi>{view.unitId}</bdi>
+        </p>
         {view.phone && (
           <p className="text-body-2 text-text-body flex items-center gap-2">
-            {view.phone}
+            <bdi>{view.phone}</bdi>
             {view.canReveal && (
               <Button variant="tertiary" onClick={reveal}>
                 <Eye className="me-1 inline h-4 w-4" strokeWidth={1.5} />
-                Reveal
+                {t('console.residents.reveal')}
               </Button>
             )}
           </p>
         )}
-        {view.email && <p className="text-body-2 text-text-body">{view.email}</p>}
+        {view.email && (
+          <p className="text-body-2 text-text-body">
+            <bdi>{view.email}</bdi>
+          </p>
+        )}
       </Card>
 
       <Input
-        label="Reason (required, logged)"
+        label={t('console.residents.reason')}
         value={reason}
         onChange={(e) => setReason(e.target.value)}
-        placeholder="e.g. Resident called — no app access"
+        placeholder={t('console.residents.reasonHint')}
       />
       {error && <Banner style="urgent">{error}</Banner>}
 
       <Card className="flex flex-col gap-3">
-        <h2 className="text-label-1 text-text-title">Padel bookings</h2>
+        <h2 className="text-label-1 text-text-title">{t('console.residents.padelBookings')}</h2>
         {upcoming.length === 0 ? (
-          <p className="text-body-3 text-text-muted">No upcoming bookings.</p>
+          <p className="text-body-3 text-text-muted">{t('console.residents.noUpcoming')}</p>
         ) : (
           upcoming.map((b) => (
             <div key={b.id} className="flex items-center justify-between gap-2">
               <span className="text-body-2 text-text-body">
-                {fmtDateTime(b.start)}–{fmtTime(b.end)}
-                {b.source === 'agent' ? ' · booked by staff' : ''}
+                {fmt.dateTime(b.start)}–{fmt.time(b.end)}
+                {b.source === 'agent' ? ` · ${t('console.residents.byStaff')}` : ''}
               </span>
               <Button variant="destructive" disabled={!reason.trim()} onClick={() => cancel(b.id)}>
-                Cancel on behalf
+                {t('console.residents.cancelOnBehalf')}
               </Button>
             </div>
           ))
@@ -175,7 +180,7 @@ export function ResidentPanel({ slot, residentId }: { slot: DeviceSlotId; reside
       </Card>
 
       <Card className="flex flex-col gap-3">
-        <h2 className="text-label-1 text-text-title">Book padel on behalf</h2>
+        <h2 className="text-label-1 text-text-title">{t('console.residents.bookOnBehalf')}</h2>
         <div className="flex flex-wrap gap-1.5">
           {days.map((d) => (
             <Chip
@@ -186,7 +191,7 @@ export function ResidentPanel({ slot, residentId }: { slot: DeviceSlotId; reside
                 setStart(undefined);
               }}
             >
-              {fmtDate(dubaiDateTimeToIso(d, '12:00'), 'EEE d')}
+              {fmt.dateKey(d, 'EEE d')}
             </Chip>
           ))}
         </div>
@@ -200,7 +205,7 @@ export function ResidentPanel({ slot, residentId }: { slot: DeviceSlotId; reside
                 setStart(undefined);
               }}
             >
-              {m} min
+              {t('common.minutes', { count: m })}
             </Chip>
           ))}
         </div>
@@ -212,16 +217,19 @@ export function ResidentPanel({ slot, residentId }: { slot: DeviceSlotId; reside
               disabled={!s.bookable}
               onClick={() => setStart(s.start)}
             >
-              {fmtTime(s.start)}
+              {fmt.time(s.start)}
             </Chip>
           ))}
         </div>
         <Button disabled={!start || !reason.trim()} onClick={book}>
           {reason.trim()
             ? start
-              ? `Book ${fmtTime(start)} for ${resident.name.split(' ')[0]}`
-              : 'Choose a time'
-            : 'Give a reason first'}
+              ? t('console.residents.bookFor', {
+                  time: fmt.time(start),
+                  name: resident.name.split(' ')[0],
+                })
+              : t('padel.chooseTime')
+            : t('console.residents.reasonFirst')}
         </Button>
       </Card>
     </div>

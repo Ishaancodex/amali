@@ -27,8 +27,10 @@ import { useConsoleActor } from '../useConsoleActor';
 import { ReportForm } from './parts/ReportForm';
 import { ReportView } from './parts/ReportView';
 import { ScheduledReports } from './parts/ScheduledReports';
+import { useT } from '@/i18n/hooks';
 
 export function ReportsScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
   const { actor, consoleRole, assignedAmenities } = useConsoleActor(slot);
   const dispatch = useStore((s) => s.dispatch);
   const pushToast = useUiStore((s) => s.pushToast);
@@ -60,12 +62,12 @@ export function ReportsScreen({ slot }: { slot: DeviceSlotId }) {
       { assignedAmenities },
     );
     await downloadWorkbook(report, consoleRole!);
-    pushToast(slot, `Exported ${sheets.length} sheets.`, 'success');
+    pushToast(slot, t('console.report.exported', { count: sheets.length }), 'success');
   }
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Reports" />
+      <TopBar title={t('console.nav.reports')} />
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-6 pb-6 [&>*]:shrink-0">
         <ReportForm
           slot={slot}
@@ -89,7 +91,7 @@ export function ReportsScreen({ slot }: { slot: DeviceSlotId }) {
               {canExport && (
                 <Button variant="secondary" onClick={exportWorkbook}>
                   <Download className="me-1.5 inline h-4 w-4" strokeWidth={1.5} />
-                  Export to Excel
+                  {t('console.report.export')}
                 </Button>
               )}
             </div>

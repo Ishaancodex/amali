@@ -20,14 +20,13 @@ import {
   reportScope,
 } from '@/store/selectors/report';
 import { grantFor } from '@/domain/rbac/can';
-import { fmtAed } from '@/lib/money';
+import { useAmenityLabel, useFmt, useT } from '@/i18n/hooks';
 import { addDaysIso, dubaiDateKey } from '@/lib/time';
 import type { AmenityKey } from '@/types/amenity';
 import type { DeviceSlotId } from '@/types/demo';
 import { useConsoleActor } from '../useConsoleActor';
 
 const ALL: AmenityKey[] = ['padel', 'screening', 'music', 'creche', 'dining', 'pool', 'gym'];
-const pct = (v: number | undefined) => (v === undefined ? '—' : `${Math.round(v * 100)}%`);
 
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
@@ -40,8 +39,11 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
 }
 
 export function OverviewScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
+  const amenityLabel = useAmenityLabel();
+  const pct = (v: number | undefined) => (v === undefined ? '—' : fmt.pct(v));
   const { consoleRole, assignedAmenities } = useConsoleActor(slot);
-  const amenities = useStore((s) => s.amenities);
   const amenityStatus = useStore((s) => s.amenityStatus);
   const nowMinute = useStore((s) => s.demo.clock.now.slice(0, 16));
   const bookings = useStore((s) => s.bookings);
@@ -91,14 +93,14 @@ export function OverviewScreen({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Overview" />
+      <TopBar title={t('console.nav.overview')} />
       <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-6 pb-6">
         <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {visible.map((a) => {
             const entry = selectCurrentStatusEntry({ amenityStatus }, a, now);
             return (
               <Card key={a} className="flex flex-col gap-2">
-                <span className="text-label-2 text-text-title">{amenities[a]?.name ?? a}</span>
+                <span className="text-label-2 text-text-title">{amenityLabel(a)}</span>
                 <AmenityStatusTag status={entry?.status ?? 'open'} />
                 {entry?.reason && (
                   <span className="text-body-3 text-text-muted line-clamp-2">{entry.reason}</span>
@@ -109,38 +111,48 @@ export function OverviewScreen({ slot }: { slot: DeviceSlotId }) {
         </section>
 
         {statusesOnly ? (
-          <p className="text-body-3 text-text-muted">
-            Statuses only for the Call-centre Agent. Use Residents to book or cancel on someone’s
-            behalf.
-          </p>
+          <p className="text-body-3 text-text-muted">{t('console.overview.statusesOnly')}</p>
         ) : report ? (
           <>
             <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <Stat label="Bookings today" value={String(todayBookings)} />
-              <Stat label="Open work orders" value={String(report.ops.openWorkOrders)} />
+              <Stat label={t('console.overview.bookingsToday')} value={fmt.num(todayBookings)} />
               <Stat
-                label="SLA compliance"
+                label={t('console.overview.openWorkOrders')}
+                value={fmt.num(report.ops.openWorkOrders)}
+              />
+              <Stat
+                label={t('console.overview.sla')}
                 value={pct(report.ops.slaCompliance)}
-                hint="Last 7 days"
+                hint={t('console.water.lastDays', { days: 7 })}
               />
               {report.revenue && (
-                <Stat label="Revenue" value={fmtAed(report.revenue.total)} hint="Last 7 days" />
+                <Stat
+                  label={t('console.overview.revenue')}
+                  value={fmt.aed(report.revenue.total)}
+                  hint={t('console.water.lastDays', { days: 7 })}
+                />
               )}
             </section>
             <section className="flex flex-col gap-2">
-              <h2 className="text-label-1 text-text-title">Last 7 days</h2>
+              <h2 className="text-label-1 text-text-title">
+                {t('console.water.lastDays', { days: 7 })}
+              </h2>
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 {report.utilisation.map((u) => (
                   <Stat
                     key={u.amenity}
-                    label={`${amenities[u.amenity]?.name ?? u.amenity} ${u.kind}`}
+                    label={t(`console.overview.${u.kind}`, {
+                      amenity: amenityLabel(u.amenity, 'short'),
+                    })}
                     value={pct(u.value)}
                   />
                 ))}
                 {report.noShows.byAmenity.map((n) => (
                   <Stat
                     key={`ns-${n.amenity}`}
-                    label={`${amenities[n.amenity]?.name ?? n.amenity} no-shows`}
+                    label={t('console.overview.noShows', {
+                      amenity: amenityLabel(n.amenity, 'short'),
+                    })}
                     value={pct(n.noShowRate)}
                   />
                 ))}

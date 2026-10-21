@@ -14,6 +14,7 @@ import { resolveSlaState } from '@/domain/ops/sla';
 import { rules } from '@/config/rules';
 import type { DeviceSlotId } from '@/types/demo';
 import type { WorkOrderState } from '@/types/ops';
+import { useAmenityLabel, useT } from '@/i18n/hooks';
 
 const STATES: WorkOrderState[] = [
   'open',
@@ -26,6 +27,8 @@ const STATES: WorkOrderState[] = [
 const SLA_TAG = { on_track: 'success', at_risk: 'warning', breached: 'danger' } as const;
 
 export function WorkOrdersScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const amenityLabel = useAmenityLabel();
   const { pop, push } = useNav(slot);
   const workOrders = useStore((s) => s.workOrders);
   const now = useStore((s) => s.demo.clock.now);
@@ -37,7 +40,7 @@ export function WorkOrdersScreen({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Work orders" onBack={pop} />
+      <TopBar title={t('console.wo.title')} onBack={pop} />
       <div className="flex-1 overflow-y-auto px-6 pb-8">
         <div className="mx-auto flex max-w-2xl flex-col gap-3">
           <div className="flex flex-wrap gap-2">
@@ -46,15 +49,15 @@ export function WorkOrdersScreen({ slot }: { slot: DeviceSlotId }) {
                 key={s}
                 type="button"
                 onClick={() => setStateFilter(s)}
-                className={`rounded-tag text-label-3 px-3 py-1.5 capitalize ${stateFilter === s ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand'}`}
+                className={`rounded-tag text-label-3 px-3 py-1.5 ${stateFilter === s ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand'}`}
               >
-                {s.replace(/_/g, ' ')}
+                {s === 'all' ? t('console.all') : t(`console.woState.${s}`)}
               </button>
             ))}
           </div>
 
           {list.length === 0 ? (
-            <EmptyState icon={Wrench} message="No work orders match." />
+            <EmptyState icon={Wrench} message={t('console.wo.none')} />
           ) : (
             list.map((wo) => {
               const sla =
@@ -80,11 +83,13 @@ export function WorkOrdersScreen({ slot }: { slot: DeviceSlotId }) {
                       <Tag variant="brand">{wo.priority}</Tag>
                       <span className="text-label-2 text-text-title truncate">{wo.title}</span>
                     </div>
-                    <p className="text-body-3 text-text-muted mt-0.5 capitalize">
-                      {wo.amenity} · {wo.assignee.kind} · {wo.state.replace(/_/g, ' ')}
+                    <p className="text-body-3 text-text-muted mt-0.5">
+                      {amenityLabel(wo.amenity, 'short')} ·{' '}
+                      {t(`console.assignee.${wo.assignee.kind}`)} ·{' '}
+                      {t(`console.woState.${wo.state}`)}
                     </p>
                   </div>
-                  <Tag variant={SLA_TAG[sla]}>{sla.replace(/_/g, ' ')}</Tag>
+                  <Tag variant={SLA_TAG[sla]}>{t(`console.sla.${sla}`)}</Tag>
                 </button>
               );
             })

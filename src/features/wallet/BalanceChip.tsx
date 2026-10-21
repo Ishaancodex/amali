@@ -6,11 +6,13 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { fmtAed } from '@/lib/money';
+import { useFmt, useT } from '@/i18n/hooks';
 import { Odometer } from '@/ui/Odometer';
 import { dur } from '@/design/motion';
 
 export function BalanceChip({ balanceFils }: { balanceFils: number }) {
+  const t = useT();
+  const fmt = useFmt();
   const prevRef = useRef(balanceFils);
   const [flash, setFlash] = useState<'credit' | 'debit' | null>(null);
 
@@ -34,11 +36,11 @@ export function BalanceChip({ balanceFils }: { balanceFils: number }) {
               : 'var(--brand-tint)',
       }}
       transition={{ duration: dur.slower }}
-      className="rounded-tag inline-flex items-center gap-1.5 px-3 py-1.5"
+      className={`rounded-tag inline-flex items-center gap-1.5 px-3 py-1.5 ${fmt.locale === 'ar' ? 'flex-row-reverse' : ''}`}
     >
-      <span className="text-label-3 text-brand">AED</span>
+      <span className="text-label-3 text-brand">{t('ui.currency')}</span>
       <Odometer
-        value={fmtAed(balanceFils).replace('AED', '').trim()}
+        value={fmt.num(balanceFils / 100, { maximumFractionDigits: 2 })}
         className="text-label-2 text-brand"
       />
     </motion.div>

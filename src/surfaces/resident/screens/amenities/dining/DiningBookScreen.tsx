@@ -15,7 +15,8 @@ import { Stepper } from '@/ui/Stepper';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
 import { rules } from '@/config/rules';
-import { addDaysIso, dubaiDateKey, dubaiDateTimeToIso, fmtDate } from '@/lib/time';
+import { addDaysIso, dubaiDateKey } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import { periodsFor } from '@/domain/dining/periods';
 import type { ServicePeriod, TableZone, VenueKey } from '@/types/dining';
 import type { DeviceSlotId } from '@/types/demo';
@@ -24,22 +25,8 @@ import { TimeChips } from './TimeChips';
 import { RequestsSection, type Requests } from './RequestsSection';
 import { WalletPanel } from './WalletPanel';
 
-const VENUES: { key: VenueKey; label: string }[] = [
-  { key: 'restaurant', label: 'Restaurant' },
-  { key: 'pdr', label: 'Private Dining' },
-  { key: 'teppanyaki', label: 'Teppanyaki' },
-];
-const PERIOD: Record<ServicePeriod, string> = {
-  breakfast: 'Breakfast',
-  lunch: 'Lunch',
-  iftar: 'Iftar',
-  dinner: 'Dinner',
-};
-const ZONES: { key: TableZone; label: string }[] = [
-  { key: 'indoor', label: 'Indoor' },
-  { key: 'terrace', label: 'Terrace' },
-  { key: 'canal', label: 'Canal view' },
-];
+const VENUES: VenueKey[] = ['restaurant', 'pdr', 'teppanyaki'];
+const ZONES: TableZone[] = ['indoor', 'terrace', 'canal'];
 const DAYS_SHOWN = 14;
 
 export function DiningBookScreen({
@@ -49,6 +36,9 @@ export function DiningBookScreen({
   slot: DeviceSlotId;
   initialVenue?: VenueKey;
 }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const { pop, replace } = useNav(slot);
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const now = useStore((s) => s.demo.clock.now);
@@ -70,8 +60,8 @@ export function DiningBookScreen({
     windows.find((w) => w.period === period) ?? windows.find((w) => w.end > now) ?? windows[0]!;
   const request = venue === 'restaurant' && size >= rules.dining.restaurant.requestModeMinPartySize;
 
-  function reset<T>(set: (v: T) => void) {
-    return (v: T) => {
+  function reset<V>(set: (v: V) => void) {
+    return (v: V) => {
       set(v);
       setStart(undefined);
       setError(undefined);
@@ -100,28 +90,34 @@ export function DiningBookScreen({
         id: result.value.id,
         ...(result.value.zoneHonoured ? {} : { zone: 'missed' }),
       });
-    else setError(result.error.message);
+    else setError(errorText(result.error));
   }
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Reserve a table" onBack={pop} />
+      <TopBar title={t('resident.amenityDetail.reserve')} onBack={pop} />
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-4 pt-2 pb-6 [&>*]:shrink-0">
         <div className="flex flex-wrap gap-2">
           {VENUES.map((v) => (
-            <Chip key={v.key} active={venue === v.key} onClick={() => reset(setVenue)(v.key)}>
-              {v.label}
+            <Chip key={v} active={venue === v} onClick={() => reset(setVenue)(v)}>
+              {t(`dining.venue.${v}`)}
             </Chip>
           ))}
         </div>
         <div className="flex flex-wrap gap-2">
           {days.map((d) => (
             <Chip key={d} active={day === d} onClick={() => reset(setDay)(d)}>
-              {fmtDate(dubaiDateTimeToIso(d, '12:00'), 'EEE d')}
+              {fmt.dateKey(d, 'EEE d')}
             </Chip>
           ))}
         </div>
-        <Stepper label="Party size" value={size} min={min} max={max} onChange={reset(setParty)} />
+        <Stepper
+          label={t('dining.partySize')}
+          value={size}
+          min={min}
+          max={max}
+          onChange={reset(setParty)}
+        />
         {windows.length > 1 && (
           <div className="flex flex-wrap gap-2">
             {windows.map((w) => (
@@ -130,7 +126,7 @@ export function DiningBookScreen({
                 active={window.period === w.period}
                 onClick={() => reset(setPeriod)(w.period)}
               >
-                {PERIOD[w.period]}
+                {t(`dining.period.${w.period}`)}
               </Chip>
             ))}
           </div>
@@ -140,41 +136,38 @@ export function DiningBookScreen({
           window={window}
           partySize={size}
           value={start}
-          onChange={(t) => {
-            setStart(t);
+          onChange={(time) => {
+            setStart(time);
             setError(undefined);
           }}
         />
         {venue === 'restaurant' && (
           <section className="flex flex-col gap-2">
-            <h2 className="text-label-1 text-text-title">Seating</h2>
+            <h2 className="text-label-1 text-text-title">{t('dining.seating')}</h2>
             <div className="flex flex-wrap gap-2">
               {ZONES.map((z) => (
                 <Chip
-                  key={z.key}
-                  active={zone === z.key}
-                  onClick={() => setZone(zone === z.key ? undefined : z.key)}
+                  key={z}
+                  active={zone === z}
+                  onClick={() => setZone(zone === z ? undefined : z)}
                 >
-                  {z.label}
+                  {t(`dining.zone.${z}`)}
                 </Chip>
               ))}
             </div>
-            <p className="text-body-3 text-text-muted">
-              Requested, not guaranteed — we seat you there where we can.
-            </p>
+            <p className="text-body-3 text-text-muted">{t('dining.zoneNote')}</p>
           </section>
         )}
         <RequestsSection value={requests} onChange={setRequests} />
         <WalletPanel slot={slot} venue={venue} partySize={size} />
         {request && (
           <Banner style="info">
-            Parties of {rules.dining.restaurant.requestModeMinPartySize}+ are a request — the
-            manager confirms.
+            {t('dining.requestMode', { size: rules.dining.restaurant.requestModeMinPartySize })}
           </Banner>
         )}
         {error && <Banner style="urgent">{error}</Banner>}
         <Button fullWidth disabled={!start} onClick={reserve}>
-          {request ? 'Send request' : 'Reserve'}
+          {request ? t('dining.sendRequest') : t('dining.reserve')}
         </Button>
       </div>
     </div>

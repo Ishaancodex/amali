@@ -12,7 +12,8 @@ import { Input } from '@/ui/Input';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import { rules } from '@/config/rules';
-import { aedToFils, fmtAed } from '@/lib/money';
+import { aedToFils } from '@/lib/money';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import { planSettlement } from '@/domain/wallet/holds';
 import type { Reservation } from '@/types/dining';
 import type { DeviceSlotId } from '@/types/demo';
@@ -24,6 +25,9 @@ export function SettlePanel({
   slot: DeviceSlotId;
   reservation: Reservation;
 }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const wallet = useStore((s) => s.wallets[r.unitId]);
   const holdsRecord = useStore((s) => s.walletHolds);
   const dispatch = useStore((s) => s.dispatch);
@@ -54,7 +58,7 @@ export function SettlePanel({
     );
     pushToast(
       slot,
-      result.ok ? 'Settled — receipt sent.' : result.error.message,
+      result.ok ? t('fnb.settled') : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
@@ -62,34 +66,31 @@ export function SettlePanel({
   return (
     <div className="border-border-card rounded-card flex flex-col gap-2 border-[0.5px] p-3">
       <Input
-        label="Bill (AED)"
+        label={t('fnb.billAed')}
         inputMode="decimal"
         value={amount}
         onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ''))}
-        placeholder="e.g. 1520"
+        placeholder={t('fnb.billHint')}
       />
       {plan && (
         <ul className="text-body-3 text-text-body flex flex-col gap-0.5">
-          <li>Bill {fmtAed(totalFils)}</li>
+          <li>{t('dining.bill', { amount: fmt.aed(totalFils) })}</li>
           {plan.minimumSpendTopUpFils > 0 && (
-            <li>Minimum spend top-up {fmtAed(plan.minimumSpendTopUpFils)}</li>
+            <li>{t('dining.minTopUp', { amount: fmt.aed(plan.minimumSpendTopUpFils) })}</li>
           )}
           {plan.depositAppliedFils > 0 && (
-            <li>Deposit applied −{fmtAed(plan.depositAppliedFils)}</li>
+            <li>{t('dining.depositApplied', { amount: fmt.aed(plan.depositAppliedFils) })}</li>
           )}
           <li className={plan.method === 'wallet' ? 'text-label-2' : 'text-label-2 text-warning'}>
-            {fmtAed(plan.remainderFils)}{' '}
-            {plan.method === 'wallet'
-              ? 'to the wallet'
-              : '— wallet short, to the unit account (invoice)'}
+            {t(plan.method === 'wallet' ? 'fnb.toWallet' : 'fnb.toUnit', {
+              amount: fmt.aed(plan.remainderFils),
+            })}
           </li>
         </ul>
       )}
-      {!r.unitId && (
-        <p className="text-body-3 text-text-muted">Walk-in guest — recorded as paid at the till.</p>
-      )}
+      {!r.unitId && <p className="text-body-3 text-text-muted">{t('fnb.walkInTill')}</p>}
       <Button fullWidth disabled={totalFils <= 0} onClick={settle}>
-        {plan?.method === 'unit_account' ? 'Charge to unit account' : 'Charge to wallet'}
+        {plan?.method === 'unit_account' ? t('fnb.chargeUnit') : t('fnb.chargeWallet')}
       </Button>
     </div>
   );

@@ -8,10 +8,10 @@
 import { Sheet } from '@/ui/Sheet';
 import { Card } from '@/ui/Card';
 import { ChildAvatar } from '@/features/creche/ChildAvatar';
-import { BAND_LABEL } from '@/domain/creche/bands';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
-import { dubaiDateKey, fmtTime } from '@/lib/time';
+import { dubaiDateKey } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import type { AgeBand } from '@/types/creche';
 import type { DeviceSlotId } from '@/types/demo';
 import { useCrecheStaff } from '../../useCrecheStaff';
@@ -25,6 +25,9 @@ export function AddCoverSheet({
   band: AgeBand | undefined;
   onClose: () => void;
 }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const { actor } = useCrecheStaff(slot);
   const dispatch = useStore((s) => s.dispatch);
   const pushToast = useUiStore((s) => s.pushToast);
@@ -53,18 +56,22 @@ export function AddCoverSheet({
     const result = dispatch('creche.addCover', { band, staffId }, actor);
     pushToast(
       slot,
-      result.ok ? `${staff[staffId]?.name} now covers ${BAND_LABEL[band]}.` : result.error.message,
+      result.ok
+        ? t('creche.nowCovers', { name: staff[staffId]?.name, band: t(`kids.band.${band}`) })
+        : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
     if (result.ok) onClose();
   }
 
   return (
-    <Sheet open={!!band} onClose={onClose} title={band ? `Cover ${BAND_LABEL[band]}` : undefined}>
+    <Sheet
+      open={!!band}
+      onClose={onClose}
+      title={band ? t('creche.cover', { band: t(`kids.band.${band}`) }) : undefined}
+    >
       {available.length === 0 ? (
-        <p className="text-body-2 text-text-muted pb-4">
-          No other creche staff on shift. Stop new check-ins until cover arrives.
-        </p>
+        <p className="text-body-2 text-text-muted pb-4">{t('creche.noCover')}</p>
       ) : (
         <div className="flex flex-col gap-2 pb-2">
           {available.map((shift) => {
@@ -81,11 +88,18 @@ export function AddCoverSheet({
                   <div className="min-w-0 flex-1">
                     <p className="text-label-2 text-text-title">
                       {staff[shift.staffId]?.name}
-                      {staff[shift.staffId]?.role === 'creche_lead' ? ' (Lead)' : ''}
+                      {staff[shift.staffId]?.role === 'creche_lead'
+                        ? ` ${t('creche.leadTag')}`
+                        : ''}
                     </p>
                     <p className="text-body-3 text-text-muted">
-                      On shift {fmtTime(shift.start)}–{fmtTime(shift.end)}
-                      {from ? ` · moves off ${BAND_LABEL[from]}` : ' · floating'}
+                      {t('creche.onShift', {
+                        from: fmt.time(shift.start),
+                        to: fmt.time(shift.end),
+                      })}
+                      {from
+                        ? ` · ${t('creche.movesOff', { band: t(`kids.band.${from}`) })}`
+                        : ` · ${t('creche.floating')}`}
                     </p>
                   </div>
                 </Card>

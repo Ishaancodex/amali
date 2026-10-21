@@ -13,22 +13,13 @@ import { Input } from '@/ui/Input';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import { useNav } from '@/navigation/useNav';
-import { resolveSlaState } from '@/domain/ops/sla';
-import { rules } from '@/config/rules';
-import { dubaiDateKey, fmtDateTime, fmtTime, minutesBetween } from '@/lib/time';
+import { dubaiDateKey } from '@/lib/time';
+import { useAmenityLabel, useErrorText, useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 import type { WorkOrderState } from '@/types/ops';
 import { useConsoleActor } from '../useConsoleActor';
 import { WorkOrderStatusSuggestion } from './parts/WorkOrderStatusSuggestion';
-
-const SLA_TAG = { on_track: 'success', at_risk: 'warning', breached: 'danger' } as const;
-
-function countdownLabel(now: string, deadline: string): string {
-  const minutes = minutesBetween(now, deadline);
-  if (minutes <= 0) return `overdue by ${Math.abs(minutes)}m`;
-  if (minutes < 60) return `${minutes}m left`;
-  return `${Math.floor(minutes / 60)}h ${minutes % 60}m left`;
-}
+import { WorkOrderSla } from './parts/WorkOrderSla';
 
 export function WorkOrderDetailScreen({
   slot,
@@ -37,6 +28,10 @@ export function WorkOrderDetailScreen({
   slot: DeviceSlotId;
   workOrderId: string;
 }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
+  const amenityLabel = useAmenityLabel();
   const { pop } = useNav(slot);
   const pushToast = useUiStore((s) => s.pushToast);
   const dispatch = useStore((s) => s.dispatch);
@@ -57,23 +52,6 @@ export function WorkOrderDetailScreen({
     workOrder.assignee.kind === 'vendor'
       ? (vendors[workOrder.assignee.id]?.name ?? workOrder.assignee.id)
       : (staff[workOrder.assignee.id]?.name ?? workOrder.assignee.id);
-
-  const respondState = resolveSlaState(
-    workOrder.sla.respondBy,
-    workOrder.createdAt,
-    workOrder.sla,
-    now,
-    rules.ops.slaAtRiskFraction,
-    workOrder.sla.respondedAt,
-  );
-  const resolveState = resolveSlaState(
-    workOrder.sla.resolveBy,
-    workOrder.createdAt,
-    workOrder.sla,
-    now,
-    rules.ops.slaAtRiskFraction,
-    workOrder.sla.resolvedAt,
-  );
 
   const todayKey = dubaiDateKey(now);
   const todayShifts = Object.values(shifts).filter(
@@ -98,7 +76,9 @@ export function WorkOrderDetailScreen({
     if (silent && result.ok) return;
     pushToast(
       slot,
-      result.ok ? `Moved to ${toState.replace(/_/g, ' ')}.` : result.error.message,
+      result.ok
+        ? t('console.woDetail.moved', { state: t(`console.woState.${toState}`) })
+        : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
@@ -106,8 +86,12 @@ export function WorkOrderDetailScreen({
   // The simulated vendor update (S6 step 5) can land before anyone pressed "Start work" — the vendor
   // was on site regardless, so it walks the state machine through In progress on its way to Resolved.
   function vendorUpdate() {
-    if (workOrder?.state === 'assigned') transition('in_progress', `${assigneeName} on site`, true);
-    transition('resolved', vendorNote || `${assigneeName}: work complete`);
+    if (workOrder?.state === 'assigned')
+      transition('in_progress', t('console.woDetail.onSite', { name: assigneeName }), true);
+    transition(
+      'resolved',
+      vendorNote || t('console.woDetail.workComplete', { name: assigneeName }),
+    );
     setVendorNote('');
   }
 
@@ -118,51 +102,29 @@ export function WorkOrderDetailScreen({
         <div className="mx-auto flex max-w-2xl flex-col gap-6">
           <section className="flex flex-wrap items-center gap-2">
             <Tag variant="brand">{workOrder.priority}</Tag>
-            <Tag variant="info">{workOrder.state.replace(/_/g, ' ')}</Tag>
-            <span className="text-body-3 text-text-muted capitalize">{workOrder.amenity}</span>
+            <Tag variant="info">{t(`console.woState.${workOrder.state}`)}</Tag>
+            <span className="text-body-3 text-text-muted">
+              {amenityLabel(workOrder.amenity, 'short')}
+            </span>
             <span className="text-body-3 text-text-muted">· {assigneeName}</span>
           </section>
 
           <WorkOrderStatusSuggestion slot={slot} workOrder={workOrder} />
 
-          <section>
-            <h2 className="text-label-1 text-text-title mb-2">SLA</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-card border-border-card border-[0.5px] p-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-label-2 text-text-title">Respond</span>
-                  <Tag variant={SLA_TAG[respondState]}>{respondState.replace(/_/g, ' ')}</Tag>
-                </div>
-                <p className="text-body-3 text-text-muted mt-1">
-                  {workOrder.sla.respondedAt
-                    ? `Responded ${fmtTime(workOrder.sla.respondedAt)}`
-                    : countdownLabel(now, workOrder.sla.respondBy)}
-                </p>
-              </div>
-              <div className="rounded-card border-border-card border-[0.5px] p-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-label-2 text-text-title">Resolve</span>
-                  <Tag variant={SLA_TAG[resolveState]}>{resolveState.replace(/_/g, ' ')}</Tag>
-                </div>
-                <p className="text-body-3 text-text-muted mt-1">
-                  {workOrder.sla.resolvedAt
-                    ? `Resolved ${fmtTime(workOrder.sla.resolvedAt)}`
-                    : countdownLabel(now, workOrder.sla.resolveBy)}
-                </p>
-              </div>
-            </div>
-          </section>
+          <WorkOrderSla workOrder={workOrder} now={now} />
 
           {todayShifts.length > 0 && (
             <section>
               <h2 className="text-label-1 text-text-title mb-2">
-                Today&apos;s roster — {workOrder.amenity}
+                {t('console.woDetail.roster', {
+                  amenity: amenityLabel(workOrder.amenity, 'short'),
+                })}
               </h2>
               <p className="text-body-2 text-text-body">
                 {todayShifts
                   .map(
                     (s) =>
-                      `${staff[s.staffId]?.name ?? s.staffId} (${fmtTime(s.start)}–${fmtTime(s.end)})`,
+                      `${staff[s.staffId]?.name ?? s.staffId} (${fmt.time(s.start)}–${fmt.time(s.end)})`,
                   )
                   .join(' · ')}
               </p>
@@ -171,25 +133,31 @@ export function WorkOrderDetailScreen({
 
           <section className="flex flex-wrap gap-2">
             {workOrder.state === 'assigned' && (
-              <Button onClick={() => transition('in_progress')}>Start work</Button>
+              <Button onClick={() => transition('in_progress')}>
+                {t('console.woDetail.start')}
+              </Button>
             )}
             {workOrder.state === 'in_progress' && (
               <>
                 <Button
                   variant="secondary"
-                  onClick={() => transition('on_hold', 'Awaiting parts/vendor')}
+                  onClick={() => transition('on_hold', t('console.woDetail.awaiting'))}
                 >
-                  Put on hold
+                  {t('console.woDetail.hold')}
                 </Button>
-                <Button onClick={() => transition('resolved')}>Mark resolved</Button>
+                <Button onClick={() => transition('resolved')}>
+                  {t('console.woDetail.markResolved')}
+                </Button>
               </>
             )}
             {workOrder.state === 'on_hold' && (
               <>
                 <Button variant="secondary" onClick={() => transition('in_progress')}>
-                  Resume
+                  {t('console.woDetail.resume')}
                 </Button>
-                <Button onClick={() => transition('resolved')}>Mark resolved</Button>
+                <Button onClick={() => transition('resolved')}>
+                  {t('console.woDetail.markResolved')}
+                </Button>
               </>
             )}
           </section>
@@ -199,29 +167,32 @@ export function WorkOrderDetailScreen({
             workOrder.state === 'on_hold') &&
             workOrder.assignee.kind === 'vendor' && (
               <section>
-                <h2 className="text-label-1 text-text-title mb-2">Vendor update</h2>
+                <h2 className="text-label-1 text-text-title mb-2">
+                  {t('console.woDetail.vendorUpdate')}
+                </h2>
                 <div className="flex gap-2">
                   <input
                     value={vendorNote}
                     onChange={(e) => setVendorNote(e.target.value)}
-                    placeholder={`${assigneeName}: what's the update?`}
+                    placeholder={t('console.woDetail.updateHint', { name: assigneeName })}
+                    aria-label={t('console.woDetail.vendorUpdate')}
                     className="rounded-input border-border-card bg-surface text-body-3 h-10 flex-1 border px-3"
                   />
-                  <Button onClick={vendorUpdate}>Send</Button>
+                  <Button onClick={vendorUpdate}>{t('console.woDetail.send')}</Button>
                 </div>
               </section>
             )}
 
           {workOrder.state === 'resolved' && (
             <section className="flex flex-col gap-2">
-              <h2 className="text-label-1 text-text-title">Close — verify and resolve</h2>
+              <h2 className="text-label-1 text-text-title">{t('console.woDetail.closeTitle')}</h2>
               <Input
-                label="Resolution note"
+                label={t('console.woDetail.resolutionNote')}
                 value={resolutionNote}
                 onChange={(e) => setResolutionNote(e.target.value)}
               />
               <Input
-                label="Cost (AED, optional)"
+                label={t('console.woDetail.cost')}
                 type="number"
                 value={costFils}
                 onChange={(e) => setCostFils(e.target.value)}
@@ -229,16 +200,16 @@ export function WorkOrderDetailScreen({
               <div className="flex gap-2">
                 <Button
                   variant="secondary"
-                  onClick={() => transition('in_progress', 'Reopened — verification failed')}
+                  onClick={() => transition('in_progress', t('console.woDetail.reopenNote'))}
                 >
-                  Reopen
+                  {t('console.woDetail.reopen')}
                 </Button>
                 <Button
                   fullWidth
                   disabled={!resolutionNote.trim()}
                   onClick={() => transition('closed')}
                 >
-                  Verify and close
+                  {t('console.woDetail.verify')}
                 </Button>
               </div>
             </section>
@@ -246,22 +217,24 @@ export function WorkOrderDetailScreen({
 
           {workOrder.resolution && (
             <section>
-              <h2 className="text-label-1 text-text-title mb-2">Resolution</h2>
+              <h2 className="text-label-1 text-text-title mb-2">
+                {t('console.woDetail.resolution')}
+              </h2>
               <p className="text-body-2 text-text-body">{workOrder.resolution.note}</p>
               {workOrder.resolution.costFils !== undefined && (
                 <p className="text-body-3 text-text-muted mt-1">
-                  AED {(workOrder.resolution.costFils / 100).toFixed(0)}
+                  {fmt.aed(workOrder.resolution.costFils)}
                 </p>
               )}
             </section>
           )}
 
           <section>
-            <h2 className="text-label-1 text-text-title mb-2">Timeline</h2>
+            <h2 className="text-label-1 text-text-title mb-2">{t('fnb.tab.timeline')}</h2>
             <div className="flex flex-col gap-2">
               {[...workOrder.timeline].reverse().map((entry, i) => (
                 <div key={i} className="text-body-3 text-text-body">
-                  <span className="text-text-muted">{fmtDateTime(entry.at)}</span> — {entry.text}
+                  <span className="text-text-muted">{fmt.dateTime(entry.at)}</span> — {entry.text}
                 </div>
               ))}
             </div>

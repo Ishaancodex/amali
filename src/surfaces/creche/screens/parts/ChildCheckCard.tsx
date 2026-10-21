@@ -12,7 +12,8 @@ import { Card } from '@/ui/Card';
 import { Tag } from '@/ui/Tag';
 import { Check } from '@/ui/icons';
 import { ChildAvatar } from '@/features/creche/ChildAvatar';
-import { BAND_LABEL, ageOnDate, bandForChild } from '@/domain/creche/bands';
+import { ageOnDate, bandForChild } from '@/domain/creche/bands';
+import { useT } from '@/i18n/hooks';
 import { guardianAuthorisation } from '@/domain/creche/guardians';
 import { useStore } from '@/store';
 import { selectBoardSession } from '@/store/selectors/creche';
@@ -34,6 +35,7 @@ export function ChildCheckCard({
   initialGuardianId?: string;
   onBack: () => void;
 }) {
+  const t = useT();
   const child = useStore((s) => s.children[childId]);
   const guardians = useStore((s) => s.guardians);
   const crecheBookings = useStore((s) => s.crecheBookings);
@@ -58,26 +60,29 @@ export function ChildCheckCard({
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title={inRoom ? 'Check out' : 'Check in'} onBack={onBack} />
+      <TopBar title={inRoom ? t('creche.checkOut') : t('padel.checkIn')} onBack={onBack} />
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pb-6 [&>*]:shrink-0">
         <div className="flex items-center gap-4 pt-2">
           <ChildAvatar initials={child.photo} size="lg" />
           <div>
             <p className="text-title-l text-text-title">{child.name}</p>
             <p className="text-body-2 text-text-muted">
-              {age} yrs · {band.ok ? BAND_LABEL[band.band] : band.message}
+              {t('myUnit.years', { age })} ·{' '}
+              {band.ok
+                ? t(`kids.band.${band.band}`)
+                : t(`kids.bandReason.${band.reason}`, { age: rules.creche.minAcceptedAge })}
             </p>
             <div className="mt-1">
               {booking ? (
                 <Tag variant={booking.state === 'waitlisted' ? 'warning' : 'success'}>
                   {booking.state === 'checked_in'
-                    ? 'In the room'
+                    ? t('creche.state.checked_in')
                     : booking.state === 'waitlisted'
-                      ? 'Waitlisted'
-                      : 'Booked'}
+                      ? t('padel.waitlisted')
+                      : t('padel.booked')}
                 </Tag>
               ) : (
-                <Tag variant="warning">No booking now</Tag>
+                <Tag variant="warning">{t('creche.noBookingNow')}</Tag>
               )}
             </div>
           </div>
@@ -85,14 +90,17 @@ export function ChildCheckCard({
 
         {child.allergies && (
           <Banner style={child.allergies.severe ? 'urgent' : 'warning'}>
-            {child.allergies.severe ? 'Severe allergy: ' : 'Allergy: '}
-            {child.allergies.text}
+            {t(child.allergies.severe ? 'myUnit.severeAllergy' : 'myUnit.allergy', {
+              text: child.allergies.text,
+            })}
           </Banner>
         )}
-        {child.dietary && <p className="text-body-3 text-text-muted">Diet: {child.dietary}</p>}
+        {child.dietary && (
+          <p className="text-body-3 text-text-muted">{t('myUnit.diet', { text: child.dietary })}</p>
+        )}
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-label-1 text-text-title">Who’s here?</h2>
+          <h2 className="text-label-1 text-text-title">{t('creche.whosHere')}</h2>
           {child.guardianIds.map((gId) => {
             const g = guardians[gId];
             if (!g) return null;
@@ -111,20 +119,18 @@ export function ChildCheckCard({
                   <div className="min-w-0 flex-1">
                     <p className="text-label-2 text-text-title">{g.name}</p>
                     <p className="text-body-3 text-text-muted">
-                      {g.relation} · ID ••{g.idLast4}
+                      {g.relation} · <bdi>{t('creche.guardian.id', { last4: g.idLast4 })}</bdi>
                     </p>
                   </div>
                   {guardianId === gId && (
-                    <Check className="text-brand h-4 w-4" strokeWidth={2} aria-label="Selected" />
+                    <Check
+                      className="text-brand h-4 w-4"
+                      strokeWidth={2}
+                      aria-label={t('events.seat.selected')}
+                    />
                   )}
                   <Tag variant={auth.ok ? 'success' : 'danger'}>
-                    {auth.ok
-                      ? 'Authorised'
-                      : auth.reason === 'pending'
-                        ? 'Pending'
-                        : auth.reason === 'expired'
-                          ? 'Expired'
-                          : 'Not authorised'}
+                    {auth.ok ? t('myUnit.auth.ok') : t(`creche.authTag.${auth.reason}`)}
                   </Tag>
                 </Card>
               </button>

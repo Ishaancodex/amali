@@ -20,8 +20,10 @@ import { ProgrammeMonth } from './parts/ProgrammeMonth';
 import { SeriesList } from './parts/SeriesList';
 import { OccurrenceSheet } from './parts/OccurrenceSheet';
 import { SeasonSheet } from './parts/SeasonSheet';
+import { useT } from '@/i18n/hooks';
 
 export function ProgrammeScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
   const { pop, push } = useNav(slot);
   const seasons = useStore((s) => s.seasons);
   const now = useStore((s) => s.demo.clock.now);
@@ -31,7 +33,7 @@ export function ProgrammeScreen({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Programme calendar" onBack={pop} />
+      <TopBar title={t('console.programme.title')} onBack={pop} />
       <div className="flex min-h-0 flex-1 gap-5 overflow-y-auto px-6 pb-6">
         <section className="flex min-w-0 flex-1 flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -41,20 +43,20 @@ export function ProgrammeScreen({ slot }: { slot: DeviceSlotId }) {
                 type="button"
                 onClick={() => setView(v)}
                 className={cn(
-                  'rounded-tag text-label-3 px-3 py-1.5 capitalize',
+                  'rounded-tag text-label-3 px-3 py-1.5',
                   view === v ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand',
                 )}
               >
-                {v}
+                {t(`events.view.${v}`)}
               </button>
             ))}
             <div className="ms-auto flex gap-2">
               <Button variant="secondary" onClick={() => setSeasonOpen(true)}>
-                New season
+                {t('console.programme.newSeason')}
               </Button>
               <Button onClick={() => push('programme-edit')}>
                 <Plus className="me-1 inline h-4 w-4" strokeWidth={1.5} />
-                New series
+                {t('console.programme.newSeries')}
               </Button>
             </div>
           </div>

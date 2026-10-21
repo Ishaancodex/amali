@@ -19,10 +19,15 @@ interface UiState {
   toasts: Partial<Record<DeviceSlotId, ToastItem[]>>;
   pushToast: (slot: DeviceSlotId, message: string, variant?: ToastItem['variant']) => void;
   dismissToast: (slot: DeviceSlotId, toastId: string) => void;
+  /** Bumped by Reset — each device plays the logo splash (PRD M28). */
+  resetCount: number;
+  markReset: () => void;
 }
 
 export const useUiStore = create<UiState>()((set) => ({
   toasts: { A: [] },
+  resetCount: 0,
+  markReset: () => set((s) => ({ resetCount: s.resetCount + 1 })),
 
   pushToast: (slot, message, variant = 'neutral') =>
     set((s) => ({

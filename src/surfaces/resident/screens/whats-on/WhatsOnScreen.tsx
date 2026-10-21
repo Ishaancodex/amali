@@ -19,18 +19,17 @@ import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
 import { useSimulatedQuery } from '@/lib/useSimulatedQuery';
 import { buildCalendarDots } from '@/domain/events/calendarDots';
-import { dubaiDateKey, fmtDate, fmtTime, toDubai } from '@/lib/time';
+import { dubaiDateKey, toDubai } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import { startOfWeek, endOfWeek } from 'date-fns';
 import type { DeviceSlotId } from '@/types/demo';
 
 type ViewTab = 'list' | 'month' | 'year';
-const TABS: { id: ViewTab; label: string }[] = [
-  { id: 'list', label: 'List' },
-  { id: 'month', label: 'Month' },
-  { id: 'year', label: 'Year' },
-];
+const TABS: ViewTab[] = ['list', 'month', 'year'];
 
 export function WhatsOnScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
   const { pop, push } = useNav(slot);
   const now = useStore((s) => s.demo.clock.now);
   const seasons = useStore((s) => s.seasons);
@@ -66,28 +65,29 @@ export function WhatsOnScreen({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="What's On" onBack={pop} />
+      <TopBar title={t('resident.home.quick.whatsOn')} onBack={pop} />
       <div className="flex gap-1 px-4 pb-3">
-        {TABS.map((t) => (
+        {TABS.map((id) => (
           <button
-            key={t.id}
+            key={id}
             type="button"
-            onClick={() => setTab(t.id)}
-            aria-pressed={tab === t.id}
+            onClick={() => setTab(id)}
+            aria-pressed={tab === id}
             className={`rounded-tag text-label-3 px-3 py-1.5 transition-colors ${
-              tab === t.id ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand'
+              tab === id ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand'
             }`}
           >
-            {t.label}
+            {t(`events.view.${id}`)}
           </button>
         ))}
         {selectedDay && tab === 'list' && (
           <button
             type="button"
+            aria-label={t('events.clearDay')}
             onClick={() => setSelectedDay(undefined)}
             className="rounded-tag bg-surface border-border-card text-text-muted text-label-3 border px-3 py-1.5"
           >
-            {fmtDate(`${selectedDay}T12:00:00.000Z`, 'EEE d MMM')} ✕
+            {fmt.dateKey(selectedDay, 'EEE d MMM')} ✕
           </button>
         )}
       </div>
@@ -102,9 +102,7 @@ export function WhatsOnScreen({ slot }: { slot: DeviceSlotId }) {
           ) : listed.length === 0 ? (
             <EmptyState
               icon={CalendarDays}
-              message={
-                selectedDay ? 'Nothing on this day.' : 'Nothing on this week yet. Check back soon.'
-              }
+              message={selectedDay ? t('events.nothingThisDay') : t('events.nothingThisWeek')}
             />
           ) : (
             <div className="flex flex-col gap-3">
@@ -127,13 +125,11 @@ export function WhatsOnScreen({ slot }: { slot: DeviceSlotId }) {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-label-2 text-text-title truncate">{event.title}</span>
-                        <Tag variant="brand">
-                          {event.venue === 'screening' ? 'Screening' : 'Music'}
-                        </Tag>
+                        <Tag variant="brand">{t(`amenity.${event.venue}.short`)}</Tag>
                       </div>
                       <p className="text-body-3 text-text-muted mt-0.5">
-                        {fmtDate(showtime.start)} · {fmtTime(showtime.start)}–
-                        {fmtTime(showtime.end)}
+                        {fmt.date(showtime.start)} · {fmt.time(showtime.start)}–
+                        {fmt.time(showtime.end)}
                       </p>
                     </div>
                   </button>

@@ -14,11 +14,14 @@ import { useUiStore } from '@/store/uiStore';
 import { useNav } from '@/navigation/useNav';
 import { rules } from '@/config/rules';
 import { lateFeeFils, lateMinutes } from '@/domain/creche/fees';
-import { fmtTime } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 import { useCrecheStaff } from '../../useCrecheStaff';
 
 export function AttentionList({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const { push } = useNav(slot);
   const { actor, isLead } = useCrecheStaff(slot);
   const dispatch = useStore((s) => s.dispatch);
@@ -52,7 +55,7 @@ export function AttentionList({ slot }: { slot: DeviceSlotId }) {
     );
     pushToast(
       slot,
-      result.ok ? 'Resolved.' : result.error.message,
+      result.ok ? t('creche.resolved') : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
@@ -61,7 +64,7 @@ export function AttentionList({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="text-label-1 text-text-title">Needs attention</h2>
+      <h2 className="text-label-1 text-text-title">{t('creche.needsAttention')}</h2>
       {rows.map(({ booking, child, late, end }) => {
         const approval = booking.pendingApproval;
         return (
@@ -70,25 +73,27 @@ export function AttentionList({ slot }: { slot: DeviceSlotId }) {
             <div className="min-w-0 flex-1">
               <p className="text-label-2 text-text-title">{child?.name}</p>
               {booking.flaggedAtSweep ? (
-                <p className="text-body-3 text-danger">Still checked in at the end-of-day sweep</p>
+                <p className="text-body-3 text-danger">{t('creche.stillAtSweep')}</p>
               ) : late > 0 ? (
                 <p className="text-body-3 text-danger">
-                  Late pickup · {late} min · AED{' '}
-                  {lateFeeFils(end, now, graceMinutes, feePer15MinFils) / 100}
+                  {t('creche.latePickup', {
+                    minutes: late,
+                    amount: fmt.aed(lateFeeFils(end, now, graceMinutes, feePer15MinFils)),
+                  })}
                 </p>
               ) : null}
               {approval && (
                 <p className="text-body-3 text-text-muted">
                   {approval.collectorName} ·{' '}
                   {approval.state === 'pending'
-                    ? `waiting for parent approval since ${fmtTime(approval.requestedAt)}`
-                    : `parent ${approval.state}`}
+                    ? t('creche.waitingParentSince', { time: fmt.time(approval.requestedAt) })
+                    : t(`creche.parentDecision.${approval.state}`)}
                 </p>
               )}
             </div>
             {booking.flaggedAtSweep && isLead ? (
               <Button variant="secondary" onClick={() => resolve(booking.id)}>
-                Resolve
+                {t('creche.resolve')}
               </Button>
             ) : approval ? (
               <Tag
@@ -100,15 +105,11 @@ export function AttentionList({ slot }: { slot: DeviceSlotId }) {
                       : 'warning'
                 }
               >
-                {approval.state === 'pending'
-                  ? 'Waiting'
-                  : approval.state === 'approved'
-                    ? 'Approved'
-                    : 'Denied'}
+                {t(`creche.approvalTag.${approval.state}`)}
               </Tag>
             ) : (
               <Button variant="secondary" onClick={() => push('check', { child: booking.childId })}>
-                Check out
+                {t('creche.checkOut')}
               </Button>
             )}
           </Card>

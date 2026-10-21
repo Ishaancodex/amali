@@ -17,22 +17,20 @@ import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import { useNav } from '@/navigation/useNav';
 import { rules } from '@/config/rules';
-import { fmtAed } from '@/lib/money';
-import { fmtDateTime, fmtTime } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import { forfeitsDeposit, isLateCancellation } from '@/domain/dining/policy';
 import type { DeviceSlotId } from '@/types/demo';
 import { Chip } from './Chip';
 
-const VENUE = { restaurant: 'Restaurant', pdr: 'Private Dining', teppanyaki: 'Teppanyaki' };
-const STATE = {
-  requested: ['Awaiting the manager', 'warning'],
-  confirmed: ['Confirmed', 'success'],
-  seated: ['Seated', 'success'],
-  completed: ['Completed', 'info'],
-  no_show: ['No-show', 'danger'],
-  cancelled: ['Cancelled', 'info'],
-  late_cancelled: ['Cancelled late', 'danger'],
-  declined: ['Declined', 'danger'],
+const STATE_TONE = {
+  requested: 'warning',
+  confirmed: 'success',
+  seated: 'success',
+  completed: 'info',
+  no_show: 'danger',
+  cancelled: 'info',
+  late_cancelled: 'danger',
+  declined: 'danger',
 } as const;
 
 export function ReservationDetailScreen({
@@ -44,6 +42,9 @@ export function ReservationDetailScreen({
   reservationId: string;
   zoneMissed?: boolean;
 }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const { pop } = useNav(slot);
   const r = useStore((s) => s.reservations[reservationId]);
   const hold = useStore((s) => (r?.depositHoldId ? s.walletHolds[r.depositHoldId] : undefined));
@@ -58,43 +59,39 @@ export function ReservationDetailScreen({
   if (!r) {
     return (
       <div className="flex h-full flex-col">
-        <TopBar title="Reservation" onBack={pop} />
-        <EmptyState icon={UtensilsCrossed} message="Reservation not found." />
+        <TopBar title={t('dining.reservation')} onBack={pop} />
+        <EmptyState icon={UtensilsCrossed} message={t('dining.notFound')} />
       </div>
     );
   }
 
   const late = isLateCancellation(r.venue, r.start, now, rules.dining);
   const keepsDeposit = late && forfeitsDeposit(r.venue) && hold?.state === 'active';
-  const zone = r.tableIds.map((t) => tables[t]?.zone).find(Boolean);
+  const zone = r.tableIds.map((id) => tables[id]?.zone).find(Boolean);
 
-  function run(result: { ok: boolean; error?: { message: string } }, done: string) {
-    pushToast(
-      slot,
-      result.ok ? done : (result.error?.message ?? ''),
-      result.ok ? 'success' : 'error',
-    );
+  function run(result: { ok: boolean; error?: { code: string; message: string } }, done: string) {
+    pushToast(slot, result.ok ? done : errorText(result.error), result.ok ? 'success' : 'error');
   }
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title={VENUE[r.venue]} onBack={pop} />
+      <TopBar title={t(`dining.venue.${r.venue}`)} onBack={pop} />
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pt-2 pb-6 [&>*]:shrink-0">
         <Card className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <p className="text-title-l text-text-title">{fmtDateTime(r.start)}</p>
-            <Tag variant={STATE[r.state][1]}>{STATE[r.state][0]}</Tag>
+            <p className="text-title-l text-text-title">{fmt.dateTime(r.start)}</p>
+            <Tag variant={STATE_TONE[r.state]}>{t(`dining.state.${r.state}`)}</Tag>
           </div>
           <p className="text-body-2 text-text-body">
-            {r.partySize} {r.partySize === 1 ? 'guest' : 'guests'} · until {fmtTime(r.end)}
+            {t('dining.partyUntil', { count: r.partySize, time: fmt.time(r.end) })}
             {zone && zone !== 'counter' && zone !== 'private'
-              ? ` · ${zone === 'canal' ? 'canal view' : zone}`
+              ? ` · ${t(`dining.zone.${zone}`)}`
               : ''}
           </p>
           {r.seatingPref && (
             <p className="text-body-3 text-text-muted">
-              Seating requested: {r.seatingPref}{' '}
-              {zoneMissed ? '(not available — we’ve seated you nearby)' : ''}
+              {t('dining.seatingRequested', { zone: t(`dining.zone.${r.seatingPref}`) })}
+              {zoneMissed ? ` ${t('dining.zoneMissed')}` : ''}
             </p>
           )}
           {(r.occasion || r.dietary.length > 0 || r.requests) && (
@@ -104,31 +101,39 @@ export function ReservationDetailScreen({
           )}
           {hold && (
             <p className="text-body-3 text-text-muted">
-              Deposit {fmtAed(hold.fils)} · {hold.state === 'active' ? 'on hold' : hold.state}
+              {t('dining.depositState', {
+                amount: fmt.aed(hold.fils),
+                state: t(`dining.holdState.${hold.state}`),
+              })}
             </p>
           )}
           {r.managerMessage && (
-            <p className="text-body-3 text-text-muted">From the manager: “{r.managerMessage}”</p>
+            <p className="text-body-3 text-text-muted">
+              {t('dining.fromManager', { message: r.managerMessage })}
+            </p>
           )}
         </Card>
 
         {r.bill && (
           <Card className="flex flex-col gap-1">
-            <p className="text-label-1 text-text-title">Receipt</p>
-            <p className="text-body-2 text-text-body">Bill {fmtAed(r.bill.totalFils)}</p>
+            <p className="text-label-1 text-text-title">{t('dining.tag.receipt')}</p>
+            <p className="text-body-2 text-text-body">
+              {t('dining.bill', { amount: fmt.aed(r.bill.totalFils) })}
+            </p>
             {r.bill.minimumSpendTopUpFils && (
               <p className="text-body-2 text-text-body">
-                Minimum spend top-up {fmtAed(r.bill.minimumSpendTopUpFils)}
+                {t('dining.minTopUp', { amount: fmt.aed(r.bill.minimumSpendTopUpFils) })}
               </p>
             )}
             {r.bill.depositAppliedFils && (
               <p className="text-body-2 text-text-body">
-                Deposit applied −{fmtAed(r.bill.depositAppliedFils)}
+                {t('dining.depositApplied', { amount: fmt.aed(r.bill.depositAppliedFils) })}
               </p>
             )}
             <p className="text-label-2 text-text-title">
-              {fmtAed(r.bill.chargedFils)}{' '}
-              {r.bill.method === 'wallet' ? 'from your wallet' : 'invoiced to your unit account'}
+              {t(r.bill.method === 'wallet' ? 'dining.chargedWallet' : 'dining.chargedUnit', {
+                amount: fmt.aed(r.bill.chargedFils),
+              })}
             </p>
           </Card>
         )}
@@ -137,7 +142,7 @@ export function ReservationDetailScreen({
           <>
             {lateOpen ? (
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-label-2 text-text-body">About</span>
+                <span className="text-label-2 text-text-body">{t('dining.about')}</span>
                 {[10, 20, 30].map((m) => (
                   <Chip
                     key={m}
@@ -145,20 +150,20 @@ export function ReservationDetailScreen({
                     onClick={() => {
                       run(
                         dispatch('dining.runningLate', { reservationId: r.id, minutes: m }, actor),
-                        'The host knows.',
+                        t('dining.hostKnows'),
                       );
                       setLateOpen(false);
                     }}
                   >
-                    {m} min
+                    {t('common.minutes', { count: m })}
                   </Chip>
                 ))}
               </div>
             ) : (
               <Button variant="secondary" fullWidth onClick={() => setLateOpen(true)}>
                 {r.runningLateMinutes
-                  ? `Running ~${r.runningLateMinutes} min late — update`
-                  : 'Running late?'}
+                  ? t('dining.runningLateUpdate', { minutes: r.runningLateMinutes })
+                  : t('dining.runningLate')}
               </Button>
             )}
           </>
@@ -167,26 +172,28 @@ export function ReservationDetailScreen({
           <>
             {keepsDeposit && (
               <Banner style="warning">
-                Cancelling within {rules.dining[r.venue].lateCancellationHoursBefore}h keeps the{' '}
-                {fmtAed(hold.fils)} deposit.
+                {t('dining.lateCancelKeeps', {
+                  hours: rules.dining[r.venue].lateCancellationHoursBefore,
+                  amount: fmt.aed(hold.fils),
+                })}
               </Banner>
             )}
             <Button
               variant="destructive"
               fullWidth
               onClick={() =>
-                run(dispatch('dining.cancel', { reservationId: r.id }, actor), 'Cancelled.')
+                run(
+                  dispatch('dining.cancel', { reservationId: r.id }, actor),
+                  t('dining.cancelled'),
+                )
               }
             >
-              Cancel reservation
+              {t('dining.cancelReservation')}
             </Button>
             <p className="text-body-3 text-text-muted text-center">
-              Free cancellation up to {rules.dining[r.venue].lateCancellationHoursBefore}h before.
-              No-shows:{' '}
-              {forfeitsDeposit(r.venue)
-                ? 'the deposit is kept'
-                : 'repeat no-shows need a deposit next time'}
-              .
+              {t(forfeitsDeposit(r.venue) ? 'dining.policyForfeit' : 'dining.policyRepeat', {
+                hours: rules.dining[r.venue].lateCancellationHoursBefore,
+              })}
             </p>
           </>
         )}

@@ -39,6 +39,9 @@ export const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   weight: ['400', '500', '700'],
   variable: '--font-ibm-plex-arabic',
   display: 'swap',
+  // Only the Arabic subset is loaded, and it goes first in the Arabic stack (globals.css): with no
+  // metric fallback of its own, Latin characters fall through to Poppins rather than to Arial.
+  adjustFontFallback: false,
 });
 
 export const fontVariables = [

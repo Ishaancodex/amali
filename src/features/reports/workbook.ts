@@ -12,7 +12,7 @@
  * assigned amenities (no Revenue — PRD §8.11); a role with no report
  * access gets none (and the button is hidden).
  */
-import ExcelJS from 'exceljs';
+import type ExcelJS from 'exceljs';
 import { grantFor } from '@/domain/rbac/can';
 import { REVENUE_SOURCES } from '@/domain/reports/kpis';
 import { dubaiDateTimeToIso, toDubai } from '@/lib/time';
@@ -220,8 +220,10 @@ function dubaiExcelDate(iso: string): Date {
   );
 }
 
-export function buildWorkbook(sheets: SheetSpec[]): ExcelJS.Workbook {
-  const wb = new ExcelJS.Workbook();
+/** ExcelJS (~1 MB) loads only when a workbook is actually built (TRD §14 budget). */
+export async function buildWorkbook(sheets: SheetSpec[]): Promise<ExcelJS.Workbook> {
+  const { default: Excel } = await import('exceljs');
+  const wb = new Excel.Workbook();
   wb.creator = 'Amali Residences';
   for (const spec of sheets) {
     const ws = wb.addWorksheet(spec.name, { views: [{ state: 'frozen', ySplit: 1 }] });
@@ -249,7 +251,7 @@ export function workbookFileName(report: Report): string {
 
 /** Browser-only: writes the file and hands it to the user. */
 export async function downloadWorkbook(report: Report, role: ConsoleRole): Promise<void> {
-  const buffer = await buildWorkbook(reportSheets(report, role)).xlsx.writeBuffer();
+  const buffer = await (await buildWorkbook(reportSheets(report, role))).xlsx.writeBuffer();
   const url = URL.createObjectURL(
     new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

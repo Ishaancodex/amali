@@ -47,6 +47,8 @@ const eslintConfig = [
   {
     ignores: [
       '.next/**',
+      '.next-*/**',
+      'test-results/**',
       'out/**',
       'node_modules/**',
       'coverage/**',

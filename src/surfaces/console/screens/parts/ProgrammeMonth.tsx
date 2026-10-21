@@ -11,9 +11,8 @@ import {
   dubaiDateKey,
   dubaiDateTimeToIso,
   dubaiWeekday,
-  fmtDate,
-  fmtTime,
 } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import { expandOccurrences } from '@/domain/programme/recurrence';
 import { seasonBands } from '@/store/selectors/programme';
 import { cn } from '@/lib/cn';
@@ -31,13 +30,15 @@ const BAND: Record<string, string> = {
   success: 'bg-success/5',
   warning: 'bg-warning/10',
 };
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
 
 export function ProgrammeMonth({
   onOpen,
 }: {
   onOpen: (programmeId: string, originalStart: string) => void;
 }) {
+  const t = useT();
+  const fmt = useFmt();
   const programme = useStore((s) => s.programme);
   const seasons = useStore((s) => s.seasons);
   const now = useStore((s) => s.demo.clock.now);
@@ -70,22 +71,22 @@ export function ProgrammeMonth({
       <div className="flex items-center gap-2">
         <button
           type="button"
-          aria-label="Previous month"
+          aria-label={t('console.month.prev')}
           onClick={() => setOffset(offset - 1)}
           className="text-brand p-1"
         >
-          <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
+          <ChevronLeft className="h-4 w-4 rtl:-scale-x-100" strokeWidth={1.5} />
         </button>
         <p className="text-label-1 text-text-title w-36 text-center">
-          {fmtDate(first, 'MMMM yyyy')}
+          {fmt.date(first, 'MMMM yyyy')}
         </p>
         <button
           type="button"
-          aria-label="Next month"
+          aria-label={t('console.month.next')}
           onClick={() => setOffset(offset + 1)}
           className="text-brand p-1"
         >
-          <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
+          <ChevronRight className="h-4 w-4 rtl:-scale-x-100" strokeWidth={1.5} />
         </button>
         {bands
           .filter((b) => b.to >= dubaiDateKey(first) && b.from < dubaiDateKey(next))
@@ -104,7 +105,7 @@ export function ProgrammeMonth({
             key={d}
             className="text-label-3 text-text-muted border-border-card border-b-[0.5px] px-2 py-1.5"
           >
-            {d}
+            {fmt.weekday(d, 'EEE')}
           </div>
         ))}
         {days.map((day) => {
@@ -130,7 +131,7 @@ export function ProgrammeMonth({
                   today ? 'bg-brand text-on-brand' : 'text-text-muted',
                 )}
               >
-                {fmtDate(day, 'd')}
+                {fmt.date(day, 'd')}
               </span>
               {mine.map((o) => (
                 <button
@@ -143,7 +144,7 @@ export function ProgrammeMonth({
                     o.overridden && 'italic',
                   )}
                 >
-                  {fmtTime(o.start)} {o.item.title}
+                  {fmt.time(o.start)} {o.item.title}
                 </button>
               ))}
             </div>

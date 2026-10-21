@@ -8,7 +8,8 @@
  */
 import { Card } from '@/ui/Card';
 import { rules } from '@/config/rules';
-import { addDaysIso, dubaiDateKey, dubaiDateTimeToIso, fmtDate, fmtTime } from '@/lib/time';
+import { addDaysIso, dubaiDateKey, dubaiDateTimeToIso } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import { periodsFor } from '@/domain/dining/periods';
 import { coversByDay, coversFor, coversForecast } from '@/domain/dining/service';
 import type { ServicePeriod, VenueKey } from '@/types/dining';
@@ -22,13 +23,6 @@ const BAR_GAP = 12;
 /** Headroom above the tallest bar for its value label. */
 const TOP = 16;
 
-const LABEL: Record<ServicePeriod, string> = {
-  breakfast: 'Breakfast',
-  lunch: 'Lunch',
-  iftar: 'Iftar',
-  dinner: 'Dinner',
-};
-
 export function CoversView({
   venue,
   period,
@@ -36,6 +30,8 @@ export function CoversView({
   venue: VenueKey;
   period: ServicePeriod | undefined;
 }) {
+  const t = useT();
+  const fmt = useFmt();
   const { windows, window, all, dateKey } = useService(venue, period);
   const venueRes = all.filter((r) => r.venue === venue);
   const noon = dubaiDateTimeToIso(dateKey, '12:00');
@@ -60,18 +56,18 @@ export function CoversView({
               className={selected ? 'border-brand flex flex-col gap-2' : 'flex flex-col gap-2'}
             >
               <p className="text-label-1 text-text-title">
-                {LABEL[w.period]}{' '}
+                {t(`dining.period.${w.period}`)}{' '}
                 <span className="text-body-3 text-text-muted">
-                  {fmtTime(w.start)}–{fmtTime(w.end)}
+                  {fmt.time(w.start)}–{fmt.time(w.end)}
                 </span>
               </p>
               <div className="grid grid-cols-4 gap-2 text-center">
                 {(
                   [
-                    ['Booked', c.booked],
-                    ['Seated', c.seated],
-                    ['No-show', c.noShow],
-                    ['Walk-in', c.walkIn],
+                    [t('fnb.covers.booked'), c.booked],
+                    [t('fnb.covers.seated'), c.seated],
+                    [t('fnb.covers.noShow'), c.noShow],
+                    [t('fnb.covers.walkIn'), c.walkIn],
                   ] as const
                 ).map(([k, v]) => (
                   <div key={k}>
@@ -82,8 +78,7 @@ export function CoversView({
               </div>
               {selected && (
                 <p className="text-body-3 text-brand">
-                  Forecast {coversForecast(venueRes, w, pastWindows)} covers (bookings + average
-                  walk-ins)
+                  {t('fnb.forecast', { count: coversForecast(venueRes, w, pastWindows) })}
                 </p>
               )}
             </Card>
@@ -91,12 +86,14 @@ export function CoversView({
         })}
       </div>
       <Card className="flex flex-col gap-2">
-        <p className="text-label-1 text-text-title">Covers served, last {HISTORY_DAYS} days</p>
+        <p className="text-label-1 text-text-title">
+          {t('fnb.servedLast', { days: HISTORY_DAYS })}
+        </p>
         <svg
           viewBox={`0 0 ${W} ${TOP + H + 20}`}
           className="h-auto w-full"
           role="img"
-          aria-label={`Covers served over the last ${HISTORY_DAYS} days`}
+          aria-label={t('fnb.servedLast', { days: HISTORY_DAYS })}
         >
           {history.map((d, i) => {
             const h = (d.covers / max) * H;
@@ -128,7 +125,7 @@ export function CoversView({
                   fontSize={11}
                   fill="var(--text-muted)"
                 >
-                  {fmtDate(dubaiDateTimeToIso(d.dateKey, '12:00'), 'EEE')}
+                  {fmt.dateKey(d.dateKey, 'EEE')}
                 </text>
               </g>
             );

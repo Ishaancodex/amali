@@ -12,6 +12,7 @@ import {
   format,
   addMonths,
 } from 'date-fns';
+import { useFmt } from '@/i18n/hooks';
 
 /** A season shaded across its dates (PRD §8.6: "the season appears as a shaded band"). */
 export interface CalendarBand {
@@ -54,10 +55,11 @@ function MiniMonth({
 }) {
   const days = eachDayOfInterval({ start: startOfMonth(monthStart), end: endOfMonth(monthStart) });
   const leadingBlanks = getDay(startOfMonth(monthStart));
+  const fmt = useFmt();
 
   return (
     <div className="rounded-card border-border-card border-[0.5px] p-2.5">
-      <p className="text-label-3 text-text-title mb-1.5">{format(monthStart, 'MMMM')}</p>
+      <p className="text-label-3 text-text-title mb-1.5">{fmt.local(monthStart, 'MMMM')}</p>
       <div className="grid grid-cols-7 gap-0.5">
         {Array.from({ length: leadingBlanks }).map((_, i) => (
           <span key={`b${i}`} />
@@ -109,6 +111,7 @@ export function CalendarYear({
   rolling?: boolean;
   onSelectDay?: (dateKey: string) => void;
 }) {
+  const fmt = useFmt();
   const today = toDubai(now);
   const yearStart = rolling
     ? new Date(today.getFullYear(), today.getMonth(), 1)
@@ -124,7 +127,7 @@ export function CalendarYear({
     <div>
       <p className="text-label-1 text-text-title mb-3">
         {rolling
-          ? `${format(months[0]!, 'MMM yyyy')} – ${format(months[11]!, 'MMM yyyy')}`
+          ? `${fmt.local(months[0]!, 'MMM yyyy')} – ${fmt.local(months[11]!, 'MMM yyyy')}`
           : format(today, 'yyyy')}
       </p>
       {shown.length > 0 && (

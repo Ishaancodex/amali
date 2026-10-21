@@ -12,8 +12,7 @@ import {
   isSameDay,
   format,
 } from 'date-fns';
-
-const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+import { useFmt } from '@/i18n/hooks';
 
 export function CalendarMonth({
   now,
@@ -25,6 +24,7 @@ export function CalendarMonth({
   eventDatesByDay?: Record<string, number>;
   onSelectDay?: (dateKey: string) => void;
 }) {
+  const fmt = useFmt();
   const today = toDubai(now);
   const monthStart = startOfMonth(today);
   const gridStart = startOfWeek(monthStart);
@@ -33,11 +33,11 @@ export function CalendarMonth({
 
   return (
     <div>
-      <p className="text-label-1 text-text-title mb-3">{format(today, 'MMMM yyyy')}</p>
+      <p className="text-label-1 text-text-title mb-3">{fmt.local(today, 'MMMM yyyy')}</p>
       <div className="grid grid-cols-7 gap-y-2 text-center">
-        {WEEKDAY_LABELS.map((d, i) => (
-          <span key={i} className="text-body-3 text-text-muted">
-            {d}
+        {days.slice(0, 7).map((d) => (
+          <span key={d.toISOString()} className="text-body-3 text-text-muted">
+            {fmt.local(d, 'EEEEE')}
           </span>
         ))}
         {days.map((day) => {

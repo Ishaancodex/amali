@@ -13,12 +13,14 @@ import { EmptyState } from '@/ui/EmptyState';
 import { MessageCircle, Megaphone, Eye } from '@/ui/icons';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
-import { fmtDate, fmtTime } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 
 type Tab = 'chats' | 'channel';
 
 export function WhatsAppHomeScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const waMessages = useStore((s) => s.waMessages);
   const channelPosts = useStore((s) => s.channelPosts);
@@ -35,19 +37,19 @@ export function WhatsAppHomeScreen({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="WhatsApp" />
+      <TopBar title={t('resident.profile.whatsapp')} />
       <div className="flex gap-1 px-4 pb-3">
-        {(['chats', 'channel'] as const).map((t) => (
+        {(['chats', 'channel'] as const).map((k) => (
           <button
-            key={t}
+            key={k}
             type="button"
-            onClick={() => setTab(t)}
-            aria-pressed={tab === t}
-            className={`rounded-tag text-label-3 px-3 py-1.5 capitalize transition-colors ${
-              tab === t ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand'
+            onClick={() => setTab(k)}
+            aria-pressed={tab === k}
+            className={`rounded-tag text-label-3 px-3 py-1.5 transition-colors ${
+              tab === k ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand'
             }`}
           >
-            {t}
+            {t(`whatsapp.tab.${k}`)}
           </button>
         ))}
       </div>
@@ -55,7 +57,7 @@ export function WhatsAppHomeScreen({ slot }: { slot: DeviceSlotId }) {
       <div className="flex-1 overflow-y-auto px-4 pb-6">
         {tab === 'chats' &&
           (myMessages.length === 0 ? (
-            <EmptyState icon={MessageCircle} message="No messages yet." />
+            <EmptyState icon={MessageCircle} message={t('whatsapp.noMessages')} />
           ) : (
             <button
               type="button"
@@ -67,25 +69,25 @@ export function WhatsAppHomeScreen({ slot }: { slot: DeviceSlotId }) {
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-label-2 text-text-title">Amali Residences</span>
+                  <span className="text-label-2 text-text-title">{t('whatsapp.business')}</span>
                   <Tag variant="info" className="px-1.5 py-0.5">
-                    business
+                    {t('whatsapp.businessTag')}
                   </Tag>
                 </div>
                 {last && <p className="text-body-3 text-text-muted mt-0.5 truncate">{last.text}</p>}
               </div>
               {last && (
-                <span className="text-body-3 text-text-muted shrink-0">{fmtTime(last.at)}</span>
+                <span className="text-body-3 text-text-muted shrink-0">{fmt.time(last.at)}</span>
               )}
             </button>
           ))}
 
         {tab === 'channel' &&
           (posts.length === 0 ? (
-            <EmptyState icon={Megaphone} message="No channel updates yet." />
+            <EmptyState icon={Megaphone} message={t('whatsapp.noUpdates')} />
           ) : (
             <div className="flex flex-col gap-3">
-              <p className="text-label-2 text-text-title">Amali Residences — Updates</p>
+              <p className="text-label-2 text-text-title">{t('whatsapp.channelName')}</p>
               {posts.map((post) => {
                 const announcement = announcements[post.announcementId];
                 if (!announcement) return null;
@@ -101,7 +103,7 @@ export function WhatsAppHomeScreen({ slot }: { slot: DeviceSlotId }) {
                     <p className="text-body-2 text-text-body">{announcement.body}</p>
                     <div className="text-body-3 text-text-muted mt-1 flex items-center gap-3">
                       <span>
-                        {fmtDate(post.at)} · {fmtTime(post.at)}
+                        {fmt.date(post.at)} · {fmt.time(post.at)}
                       </span>
                       <span className="flex items-center gap-1">
                         <Eye className="h-3.5 w-3.5" strokeWidth={1.5} />

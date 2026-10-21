@@ -36,7 +36,7 @@ Read `documents/prd.md` (what) and `documents/trd.md` (how) before any phase. Bu
 ## Commands
 
 ```
-pnpm dev | pnpm build | pnpm typecheck | pnpm lint | pnpm test | pnpm e2e | pnpm images:map | pnpm tokens:css | pnpm check:tokens
+pnpm dev | pnpm build | pnpm preview | pnpm typecheck | pnpm lint | pnpm test | pnpm e2e | pnpm images:map | pnpm tokens:css | pnpm check:tokens
 ```
 
 ## Phase P0 status (done)
@@ -168,3 +168,20 @@ Reporting, Excel export and role-based access. `seed/history/` (90 days of histo
 - **A comms delivery tick only reschedules while a delivery has a planned step ahead** — a delivered-but-unread message no longer keeps the sweep alive forever.
 
 Deliberate scope cuts: ExcelJS rather than SheetJS, scheduled reports are listed but never run, no Music Room history, the agent's "can request" a fee waiver isn't modelled, no Playwright e2e specs.
+
+## Phase P11 status (done)
+
+Arabic, polish and quality. `src/i18n/` (per-device i18next instances, `DeviceLocale`, `useT`/`useFmt`/`useErrorText`/`useAmenityLabel`, `en.json` + `ar.json`), `documents/motion-audit.md`, overlay and AA colour tokens, lazy role surfaces, `scripts/serve-static.mjs` + `pnpm preview`, and Playwright e2e (`tests/e2e/`) for S1–S8 plus UI flows, with axe on every step. 624 unit tests, 12 e2e specs.
+
+**Worth knowing before touching copy, colours, motion or e2e:**
+
+- **Every device string is a typed key.** Use `useT()` (keys are type-checked against `en.json`), add the key to both `en.json` and `ar.json` (Arabic plurals need `_zero/_one/_two/_few/_many/_other`), and format with `useFmt()` — never `fmtDate`/`fmtAed` directly in a screen. `tests/unit/i18n.test.ts` fails on hard-coded JSX text or literal `label`/`placeholder`/`aria-label` in device code. Stored data (titles, notification text) stays English; translate known values at display time (see `features/creche/activities.ts`).
+- **Show a command error with `useErrorText()`**, not `result.error.message` — English keeps the specific message, Arabic gets `errors.<CODE>`.
+- **A colour that the staff theme must change goes in `@theme inline`** (globals.css) plus `staffColor` — `@theme` (non-inline) resolves at `:root` and a `.staff` override never reaches it. Overlays inside a device use `bg-overlay`/`text-on-overlay`/`bg-scrim`, never `shell-*` (those are undefined inside a device; the stage itself still renders light — see the P11 build log).
+- **Light-theme colours are AA shades**: `brand` is #985A3F (brand book Sand #BE7E63 fails 4.5:1). Check new text/background pairs with axe (`AXE_TRIAGE=1 E2E_SKIP_BUILD=1 npx playwright test tests/e2e/axe-triage.spec.ts`).
+- **Motion tokens are getters** that follow the presenter's Motion speed — read `dur.*`/`spring.*` at render or inside a variant getter, never copy them into a module-level constant.
+- **Logical properties and `rtl:` only.** Mirror directional icons with `rtl:-scale-x-100`; wrap unit numbers, phones and emails in `<bdi>`.
+- **Never `next build` into `.next` while `pnpm dev` runs** — use `NEXT_DIST_DIR=<dir>` (`pnpm preview`, `pnpm e2e` do); the static export then lands in that dir, not `out/`.
+- **E2E runs the static export against installed Chrome** (`channel: 'chrome'`) through the `?e2e` bridge (`shell/e2eBridge.ts`), with motion off (axe samples colours mid-fade otherwise). `E2E_SKIP_BUILD=1` reuses `.next-e2e`; `PERF=1` runs frame timing.
+
+Deliberate scope cuts: Arabic is a TODO-REVIEW draft (`src/i18n/ar.meta.md`); the shell stays English; M8, M20, M30 not built; the dark presentation stage (PRD §5.4) isn't applied; sub-600px mode deferred; no WebP; not deployed to a host.

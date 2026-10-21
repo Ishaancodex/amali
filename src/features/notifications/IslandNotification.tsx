@@ -66,7 +66,7 @@ export function IslandNotification({ slot }: { slot: DeviceSlotId }) {
                 dismiss(notifId);
                 openDeepLink(n.deepLink);
               }}
-              className="rounded-card bg-shell-stage pointer-events-auto absolute w-full max-w-sm px-4 py-3 text-start shadow-xl"
+              className="rounded-card bg-overlay pointer-events-auto absolute w-full max-w-sm px-4 py-3 text-start shadow-xl"
               style={{ zIndex: i }}
               initial={{ opacity: 0, scale: 0.9, y: -16 }}
               animate={{ opacity: 1, scale: 1 - depthFromTop * 0.05, y: depthFromTop * -8 }}
@@ -76,8 +76,8 @@ export function IslandNotification({ slot }: { slot: DeviceSlotId }) {
               <div className="flex items-start gap-2.5">
                 <Bell className="text-brand mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
                 <div className="min-w-0">
-                  <p className="text-label-2 text-shell-stage-active truncate">{n.title}</p>
-                  <p className="text-body-3 text-shell-notes-body line-clamp-2">{n.body}</p>
+                  <p className="text-label-2 text-on-overlay truncate">{n.title}</p>
+                  <p className="text-body-3 text-on-overlay-muted line-clamp-2">{n.body}</p>
                 </div>
               </div>
             </motion.button>

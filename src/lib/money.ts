@@ -19,7 +19,7 @@ const aedFormatterEn = new Intl.NumberFormat('en-AE', {
   maximumFractionDigits: 2,
 });
 
-const aedFormatterAr = new Intl.NumberFormat('ar-AE', {
+const aedFormatterAr = new Intl.NumberFormat('ar-AE-u-nu-latn', {
   style: 'currency',
   currency: 'AED',
   currencyDisplay: 'symbol',

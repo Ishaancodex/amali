@@ -5,15 +5,16 @@ import { Card } from '@/ui/Card';
 import { Tag } from '@/ui/Tag';
 import { EmptyState } from '@/ui/EmptyState';
 import { CalendarDays } from '@/ui/icons';
-import { BAND_LABEL, BAND_ORDER } from '@/domain/creche/bands';
+import { BAND_ORDER } from '@/domain/creche/bands';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
-import { dubaiDateKey, fmtTime } from '@/lib/time';
+import { dubaiDateKey } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 
-const KIND_LABEL = { morning: 'Morning', afternoon: 'Afternoon', dropin: 'Drop-in' };
-
 export function SessionsScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
   const { push } = useNav(slot);
   const crecheSessions = useStore((s) => s.crecheSessions);
   const crecheBookings = useStore((s) => s.crecheBookings);
@@ -28,8 +29,8 @@ export function SessionsScreen({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <div className="flex h-full flex-col gap-5 overflow-y-auto p-5">
-      <h1 className="text-title-l text-text-title">Today’s sessions</h1>
-      {sessions.length === 0 && <EmptyState icon={CalendarDays} message="No sessions today." />}
+      <h1 className="text-title-l text-text-title">{t('creche.todaysSessions')}</h1>
+      {sessions.length === 0 && <EmptyState icon={CalendarDays} message={t('creche.noSessions')} />}
       {sessions.map((session) => {
         const inSession = bookings.filter(
           (b) => b.sessionId === session.id && b.state !== 'cancelled',
@@ -39,10 +40,13 @@ export function SessionsScreen({ slot }: { slot: DeviceSlotId }) {
           <section key={session.id} className="flex flex-col gap-2">
             <div className="flex items-baseline justify-between">
               <h2 className="text-label-1 text-text-title">
-                {KIND_LABEL[session.kind]} · {fmtTime(session.start)}–{fmtTime(session.end)}
+                {t(`creche.kind.${session.kind}`)} · {fmt.time(session.start)}–
+                {fmt.time(session.end)}
               </h2>
               <span className="text-body-3 text-text-muted">
-                {inSession.filter((b) => b.state !== 'waitlisted').length} booked
+                {t('creche.booked', {
+                  count: inSession.filter((b) => b.state !== 'waitlisted').length,
+                })}
               </span>
             </div>
             {BAND_ORDER.map((band) => {
@@ -53,9 +57,9 @@ export function SessionsScreen({ slot }: { slot: DeviceSlotId }) {
               return (
                 <Card key={band} className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-label-2 text-text-title">{BAND_LABEL[band]}</p>
+                    <p className="text-label-2 text-text-title">{t(`kids.band.${band}`)}</p>
                     <span className="text-body-3 text-text-muted">
-                      {arrived} in · {expected} expected
+                      {t('creche.inExpected', { arrived, expected })}
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -84,7 +88,9 @@ export function SessionsScreen({ slot }: { slot: DeviceSlotId }) {
             })}
             {waitlist.length > 0 && (
               <p className="text-body-3 text-warning">
-                Waitlist: {waitlist.map((b) => children[b.childId]?.name.split(' ')[0]).join(', ')}
+                {t('creche.waitlistNames', {
+                  names: waitlist.map((b) => children[b.childId]?.name.split(' ')[0]).join(', '),
+                })}
               </p>
             )}
           </section>

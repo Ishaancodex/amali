@@ -17,6 +17,8 @@ import { rules } from '@/config/rules';
 import type { DeviceSlotId } from '@/types/demo';
 import { useConsoleActor } from '../useConsoleActor';
 import { WaterTrendChart } from './parts/WaterTrendChart';
+import { useErrorText, useT } from '@/i18n/hooks';
+import { Shake } from '@/ui/Shake';
 
 function RangeField({
   label,
@@ -36,12 +38,14 @@ function RangeField({
   range: string;
 }) {
   const outOfRange = value < min || value > max;
+  const id = `water-${label.replace(/\W+/g, '-')}`;
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-label-3 text-text-muted">
+      <label htmlFor={id} className="text-label-3 text-text-muted">
         {label} <span className="text-text-placeholder">({range})</span>
       </label>
       <input
+        id={id}
         type="number"
         value={value}
         step={step}
@@ -53,6 +57,8 @@ function RangeField({
 }
 
 export function WaterReadingScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const errorText = useErrorText();
   const { pop, replace } = useNav(slot);
   const pushToast = useUiStore((s) => s.pushToast);
   const dispatch = useStore((s) => s.dispatch);
@@ -86,7 +92,7 @@ export function WaterReadingScreen({ slot }: { slot: DeviceSlotId }) {
     if (result.ok) {
       setSubmitted(true);
     } else {
-      pushToast(slot, result.error.message, 'error');
+      pushToast(slot, errorText(result.error), 'error');
     }
   }
 
@@ -101,19 +107,19 @@ export function WaterReadingScreen({ slot }: { slot: DeviceSlotId }) {
   if (submitted) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-        <p className="text-title-l text-text-title">Reading logged</p>
-        <Button onClick={() => replace('ops')}>Done</Button>
+        <p className="text-title-l text-text-title">{t('console.water.logged')}</p>
+        <Button onClick={() => replace('ops')}>{t('common.done')}</Button>
       </div>
     );
   }
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Water quality" onBack={pop} />
+      <TopBar title={t('console.water.title')} onBack={pop} />
       <div className="flex-1 overflow-y-auto px-6 pb-8">
         <div className="mx-auto flex max-w-xl flex-col gap-4">
           <RangeField
-            label="pH"
+            label={t('console.water.param.ph')}
             value={ph}
             onChange={setPh}
             min={wq.ph.min}
@@ -122,7 +128,7 @@ export function WaterReadingScreen({ slot }: { slot: DeviceSlotId }) {
             range={`${wq.ph.min}–${wq.ph.max}`}
           />
           <RangeField
-            label="Free chlorine (ppm)"
+            label={t('console.water.freeChlorine')}
             value={freeChlorine}
             onChange={setFreeChlorine}
             min={wq.freeChlorinePpm.min}
@@ -131,7 +137,7 @@ export function WaterReadingScreen({ slot }: { slot: DeviceSlotId }) {
             range={`${wq.freeChlorinePpm.min}–${wq.freeChlorinePpm.max}`}
           />
           <RangeField
-            label="Temperature (°C)"
+            label={t('console.water.temperature')}
             value={tempC}
             onChange={setTempC}
             min={wq.tempC.min}
@@ -141,43 +147,54 @@ export function WaterReadingScreen({ slot }: { slot: DeviceSlotId }) {
           />
 
           <div className="flex flex-col gap-1">
-            <label className="text-label-3 text-text-muted">Clarity</label>
+            <span className="text-label-3 text-text-muted">{t('console.water.param.clarity')}</span>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setClarity('pass')}
                 className={`rounded-tag text-label-3 flex-1 py-2 text-center ${clarity === 'pass' ? 'bg-success/15 text-success' : 'bg-brand-tint text-brand'}`}
               >
-                Pass
+                {t('console.checklist.pass')}
               </button>
               <button
                 type="button"
                 onClick={() => setClarity('fail')}
                 className={`rounded-tag text-label-3 flex-1 py-2 text-center ${clarity === 'fail' ? 'bg-danger/15 text-danger' : 'bg-brand-tint text-brand'}`}
               >
-                Fail
+                {t('console.checklist.fail')}
               </button>
             </div>
           </div>
 
           {prompting && (
-            <Banner style="warning" cta={{ label: 'Cancel', onClick: () => setPrompting(false) }}>
-              Out of range ({outOfRange.join(', ')}). Set pool to Limited and raise an incident?
-            </Banner>
+            <Shake trigger="out-of-range">
+              <Banner
+                style="warning"
+                cta={{ label: t('common.cancel'), onClick: () => setPrompting(false) }}
+              >
+                {t('console.water.outOfRange', {
+                  params: outOfRange
+                    .map((p) =>
+                      t(`console.water.param.${p as 'ph' | 'freeChlorine' | 'tempC' | 'clarity'}`),
+                    )
+                    .join(', '),
+                })}
+              </Banner>
+            </Shake>
           )}
 
           {prompting ? (
             <div className="flex gap-2">
               <Button variant="secondary" fullWidth onClick={() => logReading(false)}>
-                No, just log it
+                {t('console.water.justLog')}
               </Button>
               <Button fullWidth onClick={() => logReading(true)}>
-                Yes
+                {t('common.yes')}
               </Button>
             </div>
           ) : (
             <Button fullWidth onClick={handleSubmit}>
-              Log reading
+              {t('console.ops.logReading')}
             </Button>
           )}
 

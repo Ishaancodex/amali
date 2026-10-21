@@ -14,8 +14,14 @@ import { useUiStore } from '@/store/uiStore';
 import { useNav } from '@/navigation/useNav';
 import type { DeviceSlotId } from '@/types/demo';
 import { useConsoleActor } from '../useConsoleActor';
+import { useAmenityLabel, useErrorText, useT } from '@/i18n/hooks';
+import { motion } from 'motion/react';
+import { dur, ease } from '@/design/motion';
 
 export function ChecklistScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const errorText = useErrorText();
+  const amenityLabel = useAmenityLabel();
   const { pop, replace } = useNav(slot);
   const pushToast = useUiStore((s) => s.pushToast);
   const dispatch = useStore((s) => s.dispatch);
@@ -47,45 +53,48 @@ export function ChecklistScreen({ slot }: { slot: DeviceSlotId }) {
     if (result.ok) {
       setSubmitted({ late: result.value.late });
     } else {
-      pushToast(slot, result.error.message, 'error');
+      pushToast(slot, errorText(result.error), 'error');
     }
   }
 
   if (submitted) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-        <p className="text-title-l text-text-title">Checklist submitted</p>
-        {submitted.late && <Banner style="warning">Submitted late.</Banner>}
-        <Button onClick={() => replace('ops')}>Done</Button>
+        <p className="text-title-l text-text-title">{t('console.checklist.submitted')}</p>
+        {submitted.late && <Banner style="warning">{t('console.checklist.late')}</Banner>}
+        <Button onClick={() => replace('ops')}>{t('common.done')}</Button>
       </div>
     );
   }
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Checklists" onBack={pop} />
+      <TopBar title={t('console.checklist.title')} onBack={pop} />
       <div className="flex-1 overflow-y-auto px-6 pb-8">
         <div className="mx-auto flex max-w-2xl flex-col gap-5">
           <div className="flex flex-wrap gap-2">
-            {templateList.map((t) => (
+            {templateList.map((tpl) => (
               <button
-                key={t.id}
+                key={tpl.id}
                 type="button"
+                aria-pressed={templateId === tpl.id}
                 onClick={() => {
-                  setTemplateId(t.id);
+                  setTemplateId(tpl.id);
                   setResults({});
                   setNotes({});
                 }}
-                className={`rounded-tag text-label-3 px-3 py-1.5 capitalize ${templateId === t.id ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand'}`}
+                className={`rounded-tag text-label-3 px-3 py-1.5 ${templateId === tpl.id ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand'}`}
               >
-                {t.amenity} · {t.kind}
+                {amenityLabel(tpl.amenity, 'short')} · {t(`console.checklist.kind.${tpl.kind}`)}
               </button>
             ))}
           </div>
 
           {template && (
             <>
-              <p className="text-body-3 text-text-muted">Due {template.dueTime}</p>
+              <p className="text-body-3 text-text-muted">
+                {t('console.checklist.due', { time: template.dueTime })}
+              </p>
               <div className="flex flex-col gap-3">
                 {template.items.map((item) => {
                   const result = results[item.id] ?? 'pass';
@@ -97,20 +106,26 @@ export function ChecklistScreen({ slot }: { slot: DeviceSlotId }) {
                       <div className="flex items-center justify-between">
                         <span className="text-label-2 text-text-title">{item.label}</span>
                         <div className="flex gap-1.5">
-                          <button
+                          <motion.button
                             type="button"
+                            aria-pressed={result === 'pass'}
                             onClick={() => setResult(item.id, 'pass')}
+                            animate={result === 'pass' ? { scale: [0.8, 1.1, 1] } : { scale: 1 }}
+                            transition={{ duration: dur.base, ease: ease.standard }}
                             className={`rounded-tag text-label-3 px-3 py-1 ${result === 'pass' ? 'bg-success/15 text-success' : 'bg-brand-tint text-brand'}`}
                           >
-                            Pass
-                          </button>
-                          <button
+                            {t('console.checklist.pass')}
+                          </motion.button>
+                          <motion.button
                             type="button"
+                            aria-pressed={result === 'fail'}
                             onClick={() => setResult(item.id, 'fail')}
+                            animate={result === 'fail' ? { scale: [0.8, 1.1, 1] } : { scale: 1 }}
+                            transition={{ duration: dur.base, ease: ease.standard }}
                             className={`rounded-tag text-label-3 px-3 py-1 ${result === 'fail' ? 'bg-danger/15 text-danger' : 'bg-brand-tint text-brand'}`}
                           >
-                            Fail
-                          </button>
+                            {t('console.checklist.fail')}
+                          </motion.button>
                         </div>
                       </div>
                       {result === 'fail' && (
@@ -119,7 +134,8 @@ export function ChecklistScreen({ slot }: { slot: DeviceSlotId }) {
                           onChange={(e) =>
                             setNotes((prev) => ({ ...prev, [item.id]: e.target.value }))
                           }
-                          placeholder="Note (optional)"
+                          placeholder={t('console.checklist.note')}
+                          aria-label={t('console.checklist.note')}
                           className="rounded-input border-border-card bg-surface text-body-3 mt-2 h-9 w-full border px-2.5"
                         />
                       )}
@@ -128,7 +144,7 @@ export function ChecklistScreen({ slot }: { slot: DeviceSlotId }) {
                 })}
               </div>
               <Button fullWidth onClick={submit}>
-                Submit
+                {t('console.checklist.submit')}
               </Button>
             </>
           )}

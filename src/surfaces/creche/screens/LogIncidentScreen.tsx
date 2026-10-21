@@ -18,7 +18,8 @@ import type { CrecheIncidentType } from '@/types/creche';
 import type { IncidentSeverity } from '@/types/ops';
 import type { DeviceSlotId } from '@/types/demo';
 import { useCrecheStaff } from '../useCrecheStaff';
-import { INCIDENT_TYPE_LABEL } from './parts/incidentTypes';
+import { INCIDENT_TYPES } from './parts/incidentTypes';
+import { useErrorText, useT } from '@/i18n/hooks';
 
 const SEVERITIES: IncidentSeverity[] = ['low', 'medium', 'high'];
 
@@ -42,7 +43,7 @@ function Chip({
       type="button"
       onClick={onClick}
       className={cn(
-        'rounded-tag text-label-3 px-3 py-1.5 capitalize',
+        'rounded-tag text-label-3 px-3 py-1.5',
         active ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand',
       )}
     >
@@ -58,6 +59,8 @@ export function LogIncidentScreen({
   slot: DeviceSlotId;
   childId?: string;
 }) {
+  const t = useT();
+  const errorText = useErrorText();
   const { pop } = useNav(slot);
   const { actor } = useCrecheStaff(slot);
   const dispatch = useStore((s) => s.dispatch);
@@ -95,14 +98,12 @@ export function LogIncidentScreen({
       actor,
     );
     if (!result.ok) {
-      setError(result.error.message);
+      setError(errorText(result.error));
       return;
     }
     pushToast(
       slot,
-      severity === 'low'
-        ? 'Logged. The parent sees it at check-out.'
-        : 'Logged. The parent has been notified.',
+      severity === 'low' ? t('creche.loggedLow') : t('creche.loggedNotified'),
       'success',
     );
     pop();
@@ -110,23 +111,25 @@ export function LogIncidentScreen({
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Log incident" onBack={pop} />
+      <TopBar title={t('creche.logIncident')} onBack={pop} />
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6 [&>*]:shrink-0">
         <section className="flex flex-col gap-2 pt-2">
-          <h2 className="text-label-1 text-text-title">Type</h2>
+          <h2 className="text-label-1 text-text-title">{t('creche.type')}</h2>
           <div className="flex flex-wrap gap-2">
-            {(Object.keys(INCIDENT_TYPE_LABEL) as CrecheIncidentType[]).map((t) => (
-              <Chip key={t} active={type === t} onClick={() => setType(t)}>
-                {INCIDENT_TYPE_LABEL[t]}
+            {INCIDENT_TYPES.map((k) => (
+              <Chip key={k} active={type === k} onClick={() => setType(k)}>
+                {t(`creche.incidentType.${k}`)}
               </Chip>
             ))}
           </div>
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-label-1 text-text-title">Child{needsChild ? '' : ' (optional)'}</h2>
+          <h2 className="text-label-1 text-text-title">
+            {needsChild ? t('creche.child') : t('creche.childOptional')}
+          </h2>
           {inRoom.length === 0 ? (
-            <p className="text-body-3 text-text-muted">No children in the room.</p>
+            <p className="text-body-3 text-text-muted">{t('creche.noneInRoom')}</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {inRoom.map((b) => (
@@ -143,11 +146,11 @@ export function LogIncidentScreen({
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-label-1 text-text-title">Severity</h2>
+          <h2 className="text-label-1 text-text-title">{t('guard.severity')}</h2>
           <div className="flex gap-2">
             {SEVERITIES.map((s) => (
               <Chip key={s} active={severity === s} onClick={() => setSeverity(s)}>
-                {s}
+                {t(`kids.severity.${s}`)}
               </Chip>
             ))}
           </div>
@@ -155,7 +158,7 @@ export function LogIncidentScreen({
 
         <div className="flex flex-col gap-1.5">
           <label className="text-label-3 text-text-muted" htmlFor="incident-description">
-            What happened
+            {t('creche.whatHappened')}
           </label>
           <textarea
             id="incident-description"
@@ -163,12 +166,12 @@ export function LogIncidentScreen({
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
             className="rounded-input border-border-card bg-surface text-body-2 text-text-body placeholder:text-text-placeholder border px-3 py-2.5"
-            placeholder="e.g. Minor scrape on the knee, plaster applied."
+            placeholder={t('creche.whatHappenedHint')}
           />
         </div>
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-label-1 text-text-title">Staff witness</h2>
+          <h2 className="text-label-1 text-text-title">{t('creche.staffWitness')}</h2>
           <div className="flex flex-wrap gap-2">
             {colleagues.map((c) => (
               <Chip
@@ -189,7 +192,7 @@ export function LogIncidentScreen({
             onChange={(e) => setFirstAid(e.target.checked)}
             className="accent-brand h-5 w-5"
           />
-          <span className="text-label-2 text-text-title">First aid given</span>
+          <span className="text-label-2 text-text-title">{t('creche.firstAidGiven')}</span>
         </label>
 
         {error && <Banner style="urgent">{error}</Banner>}
@@ -198,7 +201,7 @@ export function LogIncidentScreen({
           disabled={!description.trim() || (needsChild && !childId)}
           onClick={submit}
         >
-          Log incident
+          {t('creche.logIncident')}
         </Button>
       </div>
     </div>

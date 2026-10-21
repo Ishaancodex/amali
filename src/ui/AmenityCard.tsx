@@ -9,11 +9,15 @@
  * within a shared container so Book still visually overlaps the image.
  */
 import { useState } from 'react';
+import { motion } from 'motion/react';
+import { dur, ease } from '@/design/motion';
 import type { LucideIcon } from './icons';
 import { AmenityStatusTag } from '@/features/status/AmenityStatusTag';
 import type { AmenityStatus } from '@/types/amenity';
+import { useT } from '@/i18n/hooks';
 
 const IMAGE_HEIGHT_PX = 132;
+const DIMMED: AmenityStatus[] = ['closed', 'maintenance', 'emergency'];
 
 export function AmenityCard({
   image,
@@ -36,6 +40,7 @@ export function AmenityCard({
   onOpen: () => void;
   onBook?: () => void;
 }) {
+  const t = useT();
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
@@ -51,11 +56,14 @@ export function AmenityCard({
               <Icon className="text-brand h-9 w-9" strokeWidth={1.5} />
             </div>
           ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            // M15: closed or under maintenance, the photo desaturates to 60%.
+            <motion.img
               src={image}
               alt=""
               className="h-full w-full object-cover"
+              initial={false}
+              animate={{ filter: `saturate(${DIMMED.includes(status) ? 0.6 : 1})` }}
+              transition={{ duration: dur.slower, ease: ease.standard }}
               onError={() => setImageFailed(true)}
             />
           )}
@@ -77,7 +85,7 @@ export function AmenityCard({
           className="rounded-button bg-brand-tint text-button text-brand shadow-card-hover absolute end-3 px-4 py-2"
           style={{ top: IMAGE_HEIGHT_PX - 14 }}
         >
-          Book
+          {t('ui.book')}
         </button>
       )}
     </div>

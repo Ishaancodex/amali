@@ -8,6 +8,7 @@
  * acknowledge. Upcoming bookings show with Cancel.
  */
 import { useStore } from '@/store';
+import { useT } from '@/i18n/hooks';
 import {
   selectBandLoads,
   selectBoardSession,
@@ -18,6 +19,7 @@ import { ChildLiveCard } from './ChildLiveCard';
 import { IncidentAckList } from './IncidentAckList';
 
 export function CrecheParentCard({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const unitId = useStore((s) => s.residents[actorId]?.unitId);
   const children = useStore((s) => s.children);
@@ -29,11 +31,7 @@ export function CrecheParentCard({ slot }: { slot: DeviceSlotId }) {
 
   const mine = Object.values(children).filter((c) => c.unitId === unitId);
   if (mine.length === 0) {
-    return (
-      <p className="text-body-3 text-text-muted">
-        Register a child under My Unit to book the Kids’ Club.
-      </p>
-    );
+    return <p className="text-body-3 text-text-muted">{t('kids.registerFirst')}</p>;
   }
 
   const inRoom = Object.values(crecheBookings).filter((b) => b.state === 'checked_in').length;
@@ -57,7 +55,7 @@ export function CrecheParentCard({ slot }: { slot: DeviceSlotId }) {
             slot={slot}
             child={child}
             booking={booking}
-            roomSummary={`${inRoom} ${inRoom === 1 ? 'child' : 'children'} · ${carers} ${carers === 1 ? 'carer' : 'carers'}`}
+            roomSummary={`${t('kids.children', { count: inRoom })} · ${t('kids.carers', { count: carers })}`}
           />
         ) : null;
       })}

@@ -4,19 +4,19 @@
  */
 import { RingGauge } from '@/ui/RingGauge';
 import type { OccupancyEstimate } from '@/domain/ops/occupancyEstimate';
-
-const BAND_LABEL = { quiet: 'Quiet', moderate: 'Moderate', busy: 'Busy' } as const;
+import { useT } from '@/i18n/hooks';
 
 export function OccupancyRing({ estimate }: { estimate: OccupancyEstimate }) {
+  const t = useT();
   return (
     <div className="flex items-center gap-4">
       <RingGauge fraction={estimate.fraction} band={estimate.band} size={64} strokeWidth={6}>
         <span className="text-label-2 text-text-title tabular-nums">{estimate.count}</span>
       </RingGauge>
       <div>
-        <p className="text-label-2 text-text-title">{BAND_LABEL[estimate.band]}</p>
+        <p className="text-label-2 text-text-title">{t(`ui.occupancy.${estimate.band}`)}</p>
         <p className="text-body-3 text-text-muted">
-          {estimate.count} of {estimate.capacity}
+          {t('ui.occupancy.countOf', { count: estimate.count, capacity: estimate.capacity })}
         </p>
       </div>
     </div>

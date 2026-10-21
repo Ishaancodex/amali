@@ -10,9 +10,11 @@ import { motion } from 'motion/react';
 import { RotateCcw } from 'lucide-react';
 import { dur } from '@/design/motion';
 import { hydrateFromSeed } from '@/store/bootstrap';
+import { useUiStore } from '@/store/uiStore';
 
 export function ResetButton() {
   const [spinCount, setSpinCount] = useState(0);
+  const markReset = useUiStore((s) => s.markReset);
 
   function handleReset() {
     const confirmed = window.confirm(
@@ -21,6 +23,7 @@ export function ResetButton() {
     if (!confirmed) return;
     setSpinCount((n) => n + 1);
     hydrateFromSeed();
+    markReset();
   }
 
   return (

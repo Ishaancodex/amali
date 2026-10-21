@@ -18,10 +18,9 @@ import {
   dubaiDateKey,
   dubaiDateTimeToIso,
   dubaiWeekday,
-  fmtDate,
-  fmtTime,
   startOfDubaiDay,
 } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 import { useConsoleActor } from '../useConsoleActor';
 
@@ -34,6 +33,9 @@ const ROLE_TAG: Record<string, 'brand' | 'info' | 'success' | 'warning'> = {
 };
 
 export function RosterScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const { pop } = useNav(slot);
   const pushToast = useUiStore((s) => s.pushToast);
   const dispatch = useStore((s) => s.dispatch);
@@ -82,28 +84,32 @@ export function RosterScreen({ slot }: { slot: DeviceSlotId }) {
     const result = dispatch('roster.markSick', { shiftId }, actor);
     pushToast(
       slot,
-      result.ok ? 'Marked sick.' : result.error.message,
+      result.ok ? t('console.roster.markedSick') : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Roster" onBack={pop} />
+      <TopBar title={t('console.roster.title')} onBack={pop} />
       <div className="flex-1 overflow-auto px-6 pb-8">
         <table className="w-full min-w-[840px] border-collapse">
           <thead>
             <tr>
-              <th className="text-body-3 text-text-muted bg-bg-page sticky left-0 w-40 px-2 py-2 text-start">
-                Staff
+              <th className="text-body-3 text-text-muted bg-bg-page sticky start-0 w-40 px-2 py-2 text-start">
+                {t('console.roster.staff')}
               </th>
               {days.map((d) => (
                 <th
                   key={d}
                   className={`text-body-3 px-2 py-2 text-start ${(gapsByDay.get(d) ?? 0) > 0 ? 'text-danger' : 'text-text-muted'}`}
                 >
-                  {fmtDate(dubaiDateTimeToIso(d, '12:00'), 'EEE d')}
-                  {(gapsByDay.get(d) ?? 0) > 0 && <span className="ms-1">⚠</span>}
+                  {fmt.dateKey(d, 'EEE d')}
+                  {(gapsByDay.get(d) ?? 0) > 0 && (
+                    <span className="ms-1" aria-label={t('console.roster.gap')}>
+                      ⚠
+                    </span>
+                  )}
                 </th>
               ))}
             </tr>
@@ -111,10 +117,10 @@ export function RosterScreen({ slot }: { slot: DeviceSlotId }) {
           <tbody>
             {rosterStaff.map((member) => (
               <tr key={member.id} className="border-border-card border-t">
-                <td className="bg-bg-page sticky left-0 px-2 py-2">
+                <td className="bg-bg-page sticky start-0 px-2 py-2">
                   <p className="text-label-3 text-text-title">{member.name}</p>
                   <Tag variant={ROLE_TAG[member.role] ?? 'brand'} className="mt-0.5">
-                    {member.role.replace(/_/g, ' ')}
+                    {t(`staffRole.${member.role}`)}
                   </Tag>
                 </td>
                 {days.map((d) => {
@@ -131,8 +137,8 @@ export function RosterScreen({ slot }: { slot: DeviceSlotId }) {
                           className={`text-body-3 rounded-tag px-2 py-1 ${shift.state === 'sick' ? 'bg-danger/15 text-danger' : 'bg-brand-tint text-brand'}`}
                         >
                           {shift.state === 'sick'
-                            ? 'Sick'
-                            : `${fmtTime(shift.start)}–${fmtTime(shift.end)}`}
+                            ? t('console.roster.sick')
+                            : `${fmt.time(shift.start)}–${fmt.time(shift.end)}`}
                         </button>
                       ) : (
                         <span className="text-text-placeholder">—</span>

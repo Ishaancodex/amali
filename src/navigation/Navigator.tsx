@@ -10,6 +10,7 @@ import { useRef } from 'react';
 import { AnimatePresence, motion, type PanInfo } from 'motion/react';
 import { dur, ease } from '@/design/motion';
 import { useNav } from './useNav';
+import { useLocale } from '@/i18n/hooks';
 import type { DeviceSlotId, NavStackEntry } from '@/types/demo';
 
 export type RouteComponent = (params: Record<string, string>) => React.ReactNode;
@@ -18,8 +19,6 @@ export interface NavigatorProps {
   slot: DeviceSlotId;
   routes: Record<string, RouteComponent>;
   notFound?: React.ReactNode;
-  /** RTL mirrors the push direction (TRD §14). */
-  dir?: 'ltr' | 'rtl';
 }
 
 const MAX_MOUNTED = 4;
@@ -30,9 +29,10 @@ function entryKey(depth: number, entry: NavStackEntry): string {
   return `${depth}:${entry.route}:${JSON.stringify(entry.params)}`;
 }
 
-export function Navigator({ slot, routes, notFound, dir = 'ltr' }: NavigatorProps) {
+export function Navigator({ slot, routes, notFound }: NavigatorProps) {
   const { stack, pop } = useNav(slot);
-  const mirror = dir === 'rtl' ? -1 : 1;
+  // RTL mirrors the push direction and the swipe-back edge (PRD M3, §14). Arabic is the only RTL locale.
+  const mirror = useLocale() === 'ar' ? -1 : 1;
   const containerRef = useRef<HTMLDivElement>(null);
 
   if (stack.length === 0) {
@@ -77,7 +77,7 @@ export function Navigator({ slot, routes, notFound, dir = 'ltr' }: NavigatorProp
               transition={{ duration: dur.slow, ease: ease.standard }}
               drag={isTop && canPop ? 'x' : false}
               dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={{ left: 0, right: 0.5 }}
+              dragElastic={mirror === 1 ? { left: 0, right: 0.5 } : { left: 0.5, right: 0 }}
               onDragEnd={handleDragEnd}
               aria-hidden={!isTop}
               inert={!isTop}

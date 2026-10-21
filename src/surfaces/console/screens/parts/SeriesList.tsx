@@ -14,23 +14,15 @@ import { useUiStore } from '@/store/uiStore';
 import { useNav } from '@/navigation/useNav';
 import { describeRule } from '@/domain/programme/recurrence';
 import { programmeConflicts } from '@/store/selectors/programme';
-import { fmtDate, fmtTime } from '@/lib/time';
+import { useAmenityLabel, useErrorText, useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 import { useConsoleActor } from '../../useConsoleActor';
 
-const EFFECT = {
-  limited: 'Limits the amenity',
-  blackout: 'Blocks the court',
-  event: 'Bookable class',
-};
-const VENUE: Record<string, string> = {
-  pool: 'Pool',
-  padel: 'Padel court',
-  music: 'Music Room',
-  screening: 'Screening Room',
-};
-
 export function SeriesList({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
+  const amenityLabel = useAmenityLabel();
   const { push } = useNav(slot);
   const programme = useStore((s) => s.programme);
   const blackouts = useStore((s) => s.blackouts);
@@ -62,16 +54,16 @@ export function SeriesList({ slot }: { slot: DeviceSlotId }) {
       slot,
       result.ok
         ? decision === 'skip'
-          ? 'Class skipped that day.'
-          : 'Class kept.'
-        : result.error.message,
+          ? t('console.series.skipped')
+          : t('console.series.kept')
+        : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-label-1 text-text-title">Series</h2>
+      <h2 className="text-label-1 text-text-title">{t('console.series.title')}</h2>
       {rows.map(({ p, c }) => {
         const pendingHolidays = c.holidays.filter((h) => !h.decision);
         return (
@@ -83,38 +75,41 @@ export function SeriesList({ slot }: { slot: DeviceSlotId }) {
             >
               <p className="text-label-2 text-text-title">{p.title}</p>
               <p className="text-body-3 text-text-muted">
-                {describeRule(p.rrule, p.dtstart)} · {fmtTime(p.dtstart)} · {p.durationMins} min
+                {describeRule(p.rrule, p.dtstart)} · {fmt.time(p.dtstart)} ·{' '}
+                {t('common.minutes', { count: p.durationMins })}
               </p>
               <p className="text-body-3 text-text-muted">
-                {VENUE[p.amenity] ?? p.amenity} · {EFFECT[p.effect]}
+                {amenityLabel(p.amenity, 'short')} · {t(`console.series.effect.${p.effect}`)}
                 {p.note ? ` · ${p.note}` : ''}
               </p>
             </button>
             {c.hours.length > 0 && (
               <div className="bg-warning/10 rounded-card flex flex-col gap-1 p-2">
                 <Tag variant="warning">
-                  {c.hours.length} {c.hours.length === 1 ? 'class falls' : 'classes fall'} outside
-                  opening hours
+                  {t('console.series.outsideHours', { count: c.hours.length })}
                 </Tag>
                 <p className="text-body-3 text-text-body">
-                  From {fmtDate(c.hours[0]!.occurrence.start)} the pool opens {c.hours[0]!.open}
+                  {t('console.series.opensAt', {
+                    date: fmt.date(c.hours[0]!.occurrence.start),
+                    time: c.hours[0]!.open,
+                  })}
                   {c.hours[0]!.suggestedStart
-                    ? ` — move the class to ${fmtTime(c.hours[0]!.suggestedStart)}?`
-                    : '.'}
+                    ? ` ${t('console.series.moveTo', { time: fmt.time(c.hours[0]!.suggestedStart) })}`
+                    : ''}
                 </p>
               </div>
             )}
             {pendingHolidays.slice(0, 3).map((h) => (
               <div key={h.date} className="flex items-center justify-between gap-2">
                 <span className="text-body-3 text-text-body">
-                  {fmtDate(h.occurrence.start)} · {h.name}
+                  {fmt.date(h.occurrence.start)} · {h.name}
                 </span>
                 <div className="flex gap-1">
                   <Button variant="secondary" onClick={() => decide(p.id, h.date, 'skip')}>
-                    Skip
+                    {t('console.series.skip')}
                   </Button>
                   <Button variant="tertiary" onClick={() => decide(p.id, h.date, 'keep')}>
-                    Keep
+                    {t('console.series.keep')}
                   </Button>
                 </div>
               </div>

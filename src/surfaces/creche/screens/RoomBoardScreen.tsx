@@ -12,7 +12,7 @@ import { EmptyState } from '@/ui/EmptyState';
 import { Baby } from '@/ui/icons';
 import { useStore } from '@/store';
 import { selectBandLoads, selectBoardSession, selectInRoom } from '@/store/selectors/creche';
-import { fmtTime } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import type { AgeBand } from '@/types/creche';
 import type { DeviceSlotId } from '@/types/demo';
 import { useCrecheStaff } from '../useCrecheStaff';
@@ -21,13 +21,9 @@ import { AddCoverSheet } from './parts/AddCoverSheet';
 import { ActivityPicker } from './parts/ActivityPicker';
 import { AttentionList } from './parts/AttentionList';
 
-const SESSION_LABEL = {
-  morning: 'Morning session',
-  afternoon: 'Afternoon session',
-  dropin: 'Drop-in',
-};
-
 export function RoomBoardScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
   const { staffMember, isLead } = useCrecheStaff(slot);
   const crecheSessions = useStore((s) => s.crecheSessions);
   const crecheBookings = useStore((s) => s.crecheBookings);
@@ -51,15 +47,14 @@ export function RoomBoardScreen({ slot }: { slot: DeviceSlotId }) {
   return (
     <div className="flex h-full flex-col gap-5 overflow-y-auto p-5">
       <div>
-        <span className="text-tag font-secondary text-brand">Kids’ Club</span>
+        <span className="text-tag font-secondary text-brand">{t('amenity.creche.short')}</span>
         <h1 className="text-title-l text-text-title">{staffMember.name}</h1>
         <p className="text-body-3 text-text-muted">
           {session
-            ? `${SESSION_LABEL[session.kind]} · ${fmtTime(session.start)}–${fmtTime(session.end)}${running ? '' : ' (next)'}`
-            : 'No more sessions today'}
+            ? `${t(`creche.session.${session.kind}`)} · ${fmt.time(session.start)}–${fmt.time(session.end)}${running ? '' : ` ${t('creche.next')}`}`
+            : t('creche.noMoreSessions')}
           {' · '}
-          {inRoom.length} {inRoom.length === 1 ? 'child' : 'children'} · {carers}{' '}
-          {carers === 1 ? 'carer' : 'carers'}
+          {t('kids.children', { count: inRoom.length })} · {t('kids.carers', { count: carers })}
         </p>
       </div>
 
@@ -76,7 +71,7 @@ export function RoomBoardScreen({ slot }: { slot: DeviceSlotId }) {
           ))}
         </section>
       ) : (
-        <EmptyState icon={Baby} message="The playroom is closed for today." />
+        <EmptyState icon={Baby} message={t('creche.closedToday')} />
       )}
 
       {inRoom.length > 0 && <ActivityPicker slot={slot} inRoom={inRoom} />}

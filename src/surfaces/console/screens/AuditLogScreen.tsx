@@ -10,10 +10,12 @@ import { EmptyState } from '@/ui/EmptyState';
 import { ClipboardCheck } from '@/ui/icons';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
-import { fmtDateTime } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 
 export function AuditLogScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
   const { pop } = useNav(slot);
   const auditLog = useStore((s) => s.auditLog);
   const residents = useStore((s) => s.residents);
@@ -24,16 +26,16 @@ export function AuditLogScreen({ slot }: { slot: DeviceSlotId }) {
   function actorName(entry: (typeof entries)[number]): string {
     if (entry.actor.kind === 'resident') return residents[entry.actor.id]?.name ?? entry.actor.id;
     if (entry.actor.kind === 'staff') return staff[entry.actor.id]?.name ?? entry.actor.id;
-    return 'System';
+    return t('console.audit.system');
   }
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Audit log" onBack={pop} />
+      <TopBar title={t('console.audit.title')} onBack={pop} />
       <div className="flex-1 overflow-y-auto px-6 pb-8">
         <div className="mx-auto flex max-w-3xl flex-col gap-1.5">
           {entries.length === 0 ? (
-            <EmptyState icon={ClipboardCheck} message="Nothing logged yet." />
+            <EmptyState icon={ClipboardCheck} message={t('console.audit.empty')} />
           ) : (
             entries.map((entry) => (
               <div
@@ -41,7 +43,7 @@ export function AuditLogScreen({ slot }: { slot: DeviceSlotId }) {
                 className="border-border-card flex items-center gap-3 border-b py-2"
               >
                 <span className="text-body-3 text-text-muted w-36 shrink-0">
-                  {fmtDateTime(entry.at)}
+                  {fmt.dateTime(entry.at)}
                 </span>
                 <span className="text-label-3 text-text-title w-32 shrink-0 truncate">
                   {actorName(entry)}

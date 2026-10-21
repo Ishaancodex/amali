@@ -9,7 +9,8 @@ import { useState } from 'react';
 import { Sheet } from '@/ui/Sheet';
 import { Button } from '@/ui/Button';
 import { CreditCard, CircleAlert } from '@/ui/icons';
-import { fmtAed, aedToFils } from '@/lib/money';
+import { aedToFils } from '@/lib/money';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import type { DeviceSlotId } from '@/types/demo';
@@ -30,6 +31,9 @@ export function TopUpSheet({
   actor: Actor;
   slot: DeviceSlotId;
 }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const [amountAed, setAmountAed] = useState(PRESETS_AED[0] ?? 500);
   const [simulateDecline, setSimulateDecline] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -49,16 +53,16 @@ export function TopUpSheet({
       );
       setLoading(false);
       if (result.ok) {
-        pushToast(slot, `Wallet topped up ${fmtAed(aedToFils(amountAed))}`, 'success');
+        pushToast(slot, t('wallet.toppedUp', { amount: fmt.aed(aedToFils(amountAed)) }), 'success');
         onClose();
       } else {
-        setError(result.error.message);
+        setError(errorText(result.error));
       }
     }, 500);
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Top up wallet">
+    <Sheet open={open} onClose={onClose} title={t('wallet.topUpTitle')}>
       <div className="flex flex-col gap-5 pb-2">
         <div className="grid grid-cols-3 gap-2">
           {PRESETS_AED.map((preset) => (
@@ -73,14 +77,14 @@ export function TopUpSheet({
                   : 'border-border-card text-text-body'
               }`}
             >
-              AED {preset.toLocaleString()}
+              {fmt.aed(aedToFils(preset))}
             </button>
           ))}
         </div>
 
         <div className="rounded-input border-border-card text-body-2 text-text-muted flex items-center gap-2 border px-3 py-2.5">
           <CreditCard className="text-brand h-4 w-4" strokeWidth={1.5} />
-          Mock card •••• 4242
+          {t('wallet.mockCard')}
         </div>
 
         <label className="text-body-3 text-text-muted flex items-center gap-2">
@@ -90,7 +94,7 @@ export function TopUpSheet({
             onChange={(e) => setSimulateDecline(e.target.checked)}
             className="accent-brand h-4 w-4"
           />
-          Simulate card declined (demo)
+          {t('wallet.simulateDecline')}
         </label>
 
         {error && (
@@ -101,7 +105,7 @@ export function TopUpSheet({
         )}
 
         <Button variant="primary" fullWidth loading={loading} onClick={handleConfirm}>
-          Top up {fmtAed(aedToFils(amountAed))}
+          {t('wallet.topUpAmount', { amount: fmt.aed(aedToFils(amountAed)) })}
         </Button>
       </div>
     </Sheet>

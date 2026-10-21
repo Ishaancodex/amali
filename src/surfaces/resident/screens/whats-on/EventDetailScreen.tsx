@@ -16,20 +16,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TopBar } from '@/ui/TopBar';
 import { Button } from '@/ui/Button';
-import { Stepper } from '@/ui/Stepper';
 import { Banner } from '@/ui/Banner';
 import { Tag } from '@/ui/Tag';
-import { CheckCircle2 } from '@/ui/icons';
+import { Shake } from '@/ui/Shake';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
 import { rules } from '@/config/rules';
-import { fmtDate, fmtTime } from '@/lib/time';
-import { allSeatIds, confirmedSeats, heldSeats } from '@/domain/events/seats';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
+import { confirmedSeats, heldSeats } from '@/domain/events/seats';
 import { rsvpsForShowtime } from '@/domain/events/capacity';
 import { partyFeeFils } from '@/domain/events/pricing';
 import type { DeviceSlotId } from '@/types/demo';
 import type { AttendeeCategory } from '@/types/event';
 import type { Rsvp } from '@/types/event';
+import { SeatGrid } from './parts/SeatGrid';
+import { PartySteppers, ShowtimePicker, type Party } from './parts/RsvpParty';
+import { MyRsvp, RsvpConfirmed } from './parts/RsvpStatus';
 
 type SubmitState =
   | { kind: 'idle' }
@@ -46,6 +48,9 @@ export function EventDetailScreen({
   eventId: string;
   showtimeId?: string;
 }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const { pop, replace } = useNav(slot);
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const resident = useStore((s) => s.residents[actorId]);
@@ -59,9 +64,8 @@ export function EventDetailScreen({
     .sort((a, b) => a.start.localeCompare(b.start));
 
   const [showtimeId, setShowtimeId] = useState(initialShowtimeId ?? showtimes[0]?.id);
-  const [household, setHousehold] = useState(0);
-  const [guestAdult, setGuestAdult] = useState(0);
-  const [guestChild, setGuestChild] = useState(0);
+  const [party, setParty] = useState<Party>({ household: 0, guestAdult: 0, guestChild: 0 });
+  const { household, guestAdult, guestChild } = party;
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
 
@@ -132,16 +136,18 @@ export function EventDetailScreen({
     return attendeeCategories.map((category, i) => {
       const seat = isSeatMode ? selectedSeats[i] : undefined;
       if (category === 'resident') return { category, name: me.name, seat };
-      if (category === 'household') return { category, name: `Household ${++householdN}`, seat };
-      if (category === 'guest_adult') return { category, name: `Guest ${++guestAdultN}`, seat };
-      return { category, name: `Child guest ${++guestChildN}`, seat };
+      if (category === 'household')
+        return { category, name: t('events.attendee.household', { n: ++householdN }), seat };
+      if (category === 'guest_adult')
+        return { category, name: t('events.attendee.guest', { n: ++guestAdultN }), seat };
+      return { category, name: t('events.attendee.child', { n: ++guestChildN }), seat };
     });
   }
 
   function handleBook() {
     if (!showtimeId) return;
     if (isSeatMode && selectedSeats.length !== totalAttendees) {
-      setSubmit({ kind: 'error', message: 'Choose one seat per attendee.' });
+      setSubmit({ kind: 'error', message: t('events.seatPerAttendee') });
       return;
     }
     const result = dispatch(
@@ -152,9 +158,9 @@ export function EventDetailScreen({
     if (result.ok) {
       setSubmit({ kind: 'success', rsvp: result.value });
     } else if (result.error.code === 'SHOWTIME_FULL' || result.error.code === 'SHOWTIME_HELD') {
-      setSubmit({ kind: 'full', message: result.error.message });
+      setSubmit({ kind: 'full', message: errorText(result.error) });
     } else {
-      setSubmit({ kind: 'error', message: result.error.message });
+      setSubmit({ kind: 'error', message: errorText(result.error) });
     }
   }
 
@@ -168,7 +174,7 @@ export function EventDetailScreen({
     if (result.ok) {
       replace('whats-on');
     } else {
-      setSubmit({ kind: 'error', message: result.error.message });
+      setSubmit({ kind: 'error', message: errorText(result.error) });
     }
   }
 
@@ -178,23 +184,7 @@ export function EventDetailScreen({
   }
 
   if (submit.kind === 'success') {
-    return (
-      <div className="flex h-full flex-col">
-        <TopBar title="RSVP confirmed" />
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-          <CheckCircle2 className="text-success h-14 w-14" strokeWidth={1.5} />
-          <p className="text-title-l text-text-title">You&apos;re on the list</p>
-          {showtime && (
-            <p className="text-body-2 text-text-muted">
-              {fmtDate(showtime.start)} · {fmtTime(showtime.start)}
-            </p>
-          )}
-          <Button fullWidth onClick={() => replace('whats-on')}>
-            Done
-          </Button>
-        </div>
-      </div>
-    );
+    return <RsvpConfirmed showtime={showtime} onDone={() => replace('whats-on')} />;
   }
 
   return (
@@ -202,119 +192,51 @@ export function EventDetailScreen({
       <TopBar title={event.title} onBack={pop} />
       <div className="flex-1 overflow-y-auto px-4 pb-6">
         <div className="mt-4 flex items-center gap-2">
-          <Tag variant="brand">{event.venue === 'screening' ? 'Screening Room' : 'Music Room'}</Tag>
+          <Tag variant="brand">{t(`amenity.${event.venue}.name`)}</Tag>
           <Tag variant="info">{event.ageRating}</Tag>
         </div>
         <p className="text-body-2 text-text-body mt-3">{event.description}</p>
 
-        {myRsvp && (
-          <div className="mt-4">
-            <Banner style="success">
-              You&apos;re {myRsvp.state === 'held' ? 'holding a spot' : 'going'} —{' '}
-              {myRsvp.attendees.length} attendee
-              {myRsvp.attendees.length === 1 ? '' : 's'}.
-            </Banner>
-            {myRsvp.state === 'confirmed' && (
-              <Button variant="destructive" fullWidth className="mt-3" onClick={handleCancelRsvp}>
-                Cancel RSVP
-              </Button>
-            )}
-          </div>
-        )}
+        {myRsvp && <MyRsvp rsvp={myRsvp} onCancel={handleCancelRsvp} />}
 
         {!myRsvp && (
           <>
-            <h2 className="text-label-1 text-text-title mt-5 mb-2">Showtime</h2>
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {showtimes.map((sh) => (
-                <button
-                  key={sh.id}
-                  type="button"
-                  onClick={() => {
-                    setShowtimeId(sh.id);
-                    setSelectedSeats([]);
-                    setSubmit({ kind: 'idle' });
-                  }}
-                  className={`rounded-input text-body-3 shrink-0 border px-3 py-2 text-center ${
-                    sh.id === showtimeId
-                      ? 'bg-brand text-on-brand border-brand'
-                      : 'border-border-card text-text-body'
-                  }`}
-                >
-                  {fmtDate(sh.start, 'EEE d MMM')} · {fmtTime(sh.start)}
-                </button>
-              ))}
-            </div>
-
-            <h2 className="text-label-1 text-text-title mt-5 mb-2">Who&apos;s coming</h2>
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <span className="text-body-2 text-text-body">You</span>
-                <span className="text-label-2 text-text-muted">1</span>
-              </div>
-              <Stepper
-                label="Household members"
-                value={household}
-                min={0}
-                max={6}
-                onChange={setHousehold}
-              />
-              <Stepper
-                label="Guest adults"
-                value={guestAdult}
-                min={0}
-                max={maxCombinedGuests - guestChild}
-                onChange={setGuestAdult}
-              />
-              {childrenAllowed && (
-                <Stepper
-                  label="Guest children"
-                  value={guestChild}
-                  min={0}
-                  max={maxCombinedGuests - guestAdult}
-                  onChange={setGuestChild}
-                />
-              )}
-            </div>
+            <ShowtimePicker
+              showtimes={showtimes}
+              value={showtimeId}
+              onChange={(id) => {
+                setShowtimeId(id);
+                setSelectedSeats([]);
+                setSubmit({ kind: 'idle' });
+              }}
+            />
+            <PartySteppers
+              value={party}
+              onChange={setParty}
+              maxGuests={maxCombinedGuests}
+              childrenAllowed={childrenAllowed}
+            />
 
             {isSeatMode && showtime && (
               <>
                 <h2 className="text-label-1 text-text-title mt-5 mb-2">
-                  Choose {totalAttendees} seat{totalAttendees === 1 ? '' : 's'}
+                  {t('events.chooseSeats', { count: totalAttendees })}
                 </h2>
-                <div className="grid grid-cols-6 gap-1.5">
-                  {allSeatIds().map((seatId) => {
-                    const taken = takenSeats.has(seatId);
-                    const selected = selectedSeats.includes(seatId);
-                    return (
-                      <button
-                        key={seatId}
-                        type="button"
-                        disabled={taken}
-                        onClick={() => toggleSeat(seatId)}
-                        className={`text-body-3 rounded-[6px] border py-1.5 text-center tabular-nums disabled:cursor-not-allowed disabled:opacity-30 ${
-                          selected
-                            ? 'bg-brand text-on-brand border-brand'
-                            : 'border-border-card text-text-body'
-                        }`}
-                      >
-                        {seatId}
-                      </button>
-                    );
-                  })}
-                </div>
+                <SeatGrid taken={takenSeats} selected={selectedSeats} onToggle={toggleSeat} />
               </>
             )}
 
             {feeFils > 0 && (
               <p className="text-body-3 text-text-muted mt-4">
-                AED {feeFils / 100} guest fee, charged on RSVP.
+                {t('events.guestFee', { amount: fmt.aed(feeFils) })}
               </p>
             )}
 
             {submit.kind === 'error' && (
               <div className="mt-4">
-                <Banner style="warning">{submit.message}</Banner>
+                <Shake trigger={submit.message}>
+                  <Banner style="warning">{submit.message}</Banner>
+                </Shake>
               </div>
             )}
 
@@ -322,14 +244,14 @@ export function EventDetailScreen({
               <div className="mt-4 flex flex-col gap-2">
                 <Banner style="info">{submit.message}</Banner>
                 <Button variant="secondary" fullWidth onClick={handleJoinWaitlist}>
-                  Join waitlist
+                  {t('padel.joinWaitlist')}
                 </Button>
               </div>
             )}
 
             <div className="mt-6">
               <Button fullWidth disabled={!showtimeId} onClick={handleBook}>
-                RSVP
+                {t('events.rsvp')}
               </Button>
             </div>
           </>

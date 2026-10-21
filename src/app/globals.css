@@ -7,16 +7,23 @@
  * Source of truth is src/design/tokens.ts — regenerate tokens.css with
  * `pnpm tokens:css`.
  *
- * The 8 tokens the staff theme overrides (brand, bg-page, surface,
- * border-card, text-title/body/muted/placeholder — see `.staff` in
- * tokens.css) are deliberately NOT mapped here. Tailwind v4's @theme
+ * The 8 tokens the staff theme overrides as plain utilities (brand, bg-page,
+ * surface, border-card, text-title/body/muted/placeholder — see `.staff` in
+ * tokens.css) are deliberately NOT mapped here; the tint, on-brand and status
+ * tokens it also overrides are mapped `@theme inline` below. Tailwind v4's @theme
  * resolution constant-folds a `var(--color-x: var(--raw-x))` indirection to
  * raw-x's :root value at build time (via its Lightning CSS pipeline), which
  * would make `.staff`'s override invisible to any `bg-*`/`text-*` utility
  * using it. These utility classes are hand-written as `@utility` rules
  * below instead, which aren't subject to that folding.
  */
-@theme {
+/*
+ * Tokens the staff theme also overrides, mapped `inline`: utilities then
+ * read the raw variable at the element (`var(--success)`), so `.staff`'s
+ * value applies inside a staff device, and opacity modifiers
+ * (`bg-success/15`) still work. P11 accessibility pass.
+ */
+@theme inline {
   --color-brand-tint: var(--brand-tint);
   --color-on-brand: var(--on-brand);
   --color-success: var(--success);
@@ -24,6 +31,12 @@
   --color-danger: var(--danger);
   --color-info: var(--info);
   --color-maintenance: var(--maintenance);
+}
+@theme {
+  --color-overlay: var(--overlay);
+  --color-on-overlay: var(--on-overlay);
+  --color-on-overlay-muted: var(--on-overlay-muted);
+  --color-scrim: var(--scrim);
 
   --color-browser-chrome-frame: var(--browser-chrome-frame);
   --color-browser-chrome-toolbar: var(--browser-chrome-toolbar);
@@ -130,6 +143,14 @@ body {
 }
 @utility font-arabic {
   font-family: var(--font-ibm-plex-arabic), ui-sans-serif, sans-serif;
+}
+/* PRD §14: Arabic text in IBM Plex Sans Arabic, Latin runs (names, numbers) stay in the brand face.
+   Plex goes first — Poppins' metric fallback is local Arial, which has Arabic glyphs and would
+   otherwise draw the Arabic. Plex only covers the Arabic range, so Latin falls through to Poppins. */
+[lang='ar'],
+[lang='ar'] .font-secondary {
+  font-family:
+    var(--font-ibm-plex-arabic), var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
 
 .sos-gradient {

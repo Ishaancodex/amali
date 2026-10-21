@@ -6,6 +6,7 @@
  */
 import { ChevronLeft } from './icons';
 import type { LucideIcon } from './icons';
+import { useT } from '@/i18n/hooks';
 
 export function TopBar({
   title,
@@ -18,16 +19,27 @@ export function TopBar({
   rightIcon?: LucideIcon;
   onRightClick?: () => void;
 }) {
+  const t = useT();
   return (
     <div className="flex h-14 shrink-0 items-center gap-1 px-4">
       {onBack && (
-        <button type="button" onClick={onBack} aria-label="Back" className="-ms-1 shrink-0 p-1">
-          <ChevronLeft className="text-text-body h-5 w-5" strokeWidth={1.5} />
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label={t('common.back')}
+          className="-ms-1 shrink-0 p-1"
+        >
+          <ChevronLeft className="text-text-body h-5 w-5 rtl:-scale-x-100" strokeWidth={1.5} />
         </button>
       )}
       <h1 className="text-title-l text-text-title min-w-0 flex-1 truncate text-start">{title}</h1>
       {RightIcon && (
-        <button type="button" onClick={onRightClick} aria-label="More" className="shrink-0 p-1">
+        <button
+          type="button"
+          onClick={onRightClick}
+          aria-label={t('ui.more')}
+          className="shrink-0 p-1"
+        >
           <RightIcon className="text-brand h-5 w-5" strokeWidth={1.5} />
         </button>
       )}

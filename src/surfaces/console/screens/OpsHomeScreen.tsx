@@ -25,7 +25,8 @@ import { findCoverageGaps } from '@/domain/ops/roster';
 import { effectiveHoursForDate } from '@/domain/booking/hours';
 import { OpsAlerts } from './parts/OpsAlerts';
 import { rules } from '@/config/rules';
-import { dubaiDateKey, dubaiDateTimeToIso, fmtTime } from '@/lib/time';
+import { dubaiDateKey, dubaiDateTimeToIso } from '@/lib/time';
+import { useAmenityLabel, useErrorText, useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 import type { AmenityKey, AmenityStatus } from '@/types/amenity';
 import { useConsoleActor } from '../useConsoleActor';
@@ -39,10 +40,13 @@ const STATUS_OPTIONS: Exclude<AmenityStatus, 'emergency'>[] = [
 ];
 
 export function OpsHomeScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
+  const amenityLabel = useAmenityLabel();
   const { push } = useNav(slot);
   const pushToast = useUiStore((s) => s.pushToast);
   const dispatch = useStore((s) => s.dispatch);
-  const amenities = useStore((s) => s.amenities);
   const amenityStatus = useStore((s) => s.amenityStatus);
   const shifts = useStore((s) => s.shifts);
   const staff = useStore((s) => s.staff);
@@ -83,26 +87,31 @@ export function OpsHomeScreen({ slot }: { slot: DeviceSlotId }) {
     const result = dispatch('amenity.setStatus', { amenity, status }, actor, { assignedAmenities });
     pushToast(
       slot,
-      result.ok ? `${amenities[amenity]?.name} set to ${status}.` : result.error.message,
+      result.ok
+        ? t('console.wo.statusSet', {
+            amenity: amenityLabel(amenity),
+            status: t(`status.${status}`),
+          })
+        : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
 
   const quickLinks = [
-    { route: 'checklist', label: 'Checklists', icon: ClipboardCheck },
-    { route: 'water', label: 'Water quality', icon: Waves },
-    { route: 'roster', label: 'Roster', icon: Users },
-    { route: 'incidents', label: 'Incidents', icon: CircleAlert },
-    { route: 'work-orders', label: 'Work orders', icon: Wrench },
-    { route: 'vendors', label: 'Vendors', icon: Building2 },
-    { route: 'blackout', label: 'Padel blackout', icon: CalendarDays },
-    { route: 'audit-log', label: 'Audit log', icon: ScrollText },
+    { route: 'checklist', label: 'console.checklist.title', icon: ClipboardCheck },
+    { route: 'water', label: 'console.water.title', icon: Waves },
+    { route: 'roster', label: 'console.roster.title', icon: Users },
+    { route: 'incidents', label: 'creche.nav.incidents', icon: CircleAlert },
+    { route: 'work-orders', label: 'console.wo.title', icon: Wrench },
+    { route: 'vendors', label: 'console.vendors.title', icon: Building2 },
+    { route: 'blackout', label: 'console.blackout.title', icon: CalendarDays },
+    { route: 'audit-log', label: 'console.audit.title', icon: ScrollText },
   ] as const;
 
   return (
     <div className="flex h-full flex-col">
       <div className="border-border-card border-b px-6 py-4">
-        <h1 className="text-title-l text-text-title">Operations</h1>
+        <h1 className="text-title-l text-text-title">{t('console.nav.ops')}</h1>
       </div>
       <div className="flex-1 overflow-y-auto px-6 py-4">
         <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -115,9 +124,7 @@ export function OpsHomeScreen({ slot }: { slot: DeviceSlotId }) {
               return (
                 <Card key={key} className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-label-1 text-text-title">
-                      {amenities[key]?.name ?? key}
-                    </span>
+                    <span className="text-label-1 text-text-title">{amenityLabel(key)}</span>
                     <Tag
                       variant={
                         entry?.status === 'open' || !entry
@@ -127,14 +134,21 @@ export function OpsHomeScreen({ slot }: { slot: DeviceSlotId }) {
                             : 'brand'
                       }
                     >
-                      {entry?.status ?? 'open'}
+                      {t(`status.${entry?.status ?? 'open'}`)}
                     </Tag>
                   </div>
                   {entry?.reason && <p className="text-body-3 text-text-muted">{entry.reason}</p>}
                   {gaps.length > 0 && (
                     <p className="text-body-3 text-danger">
-                      No {key === 'pool' ? 'lifeguard' : 'attendant'} {fmtTime(gaps[0]!.start)}–
-                      {fmtTime(gaps[0]!.end)}
+                      {t(
+                        key === 'pool'
+                          ? 'console.ops.noLifeguardGap'
+                          : 'console.ops.noAttendantGap',
+                        {
+                          from: fmt.time(gaps[0]!.start),
+                          to: fmt.time(gaps[0]!.end),
+                        },
+                      )}
                     </p>
                   )}
                   <div className="mt-1 flex flex-wrap gap-1.5">
@@ -143,9 +157,9 @@ export function OpsHomeScreen({ slot }: { slot: DeviceSlotId }) {
                         key={s}
                         type="button"
                         onClick={() => setStatus(key, s)}
-                        className="rounded-tag bg-brand-tint text-brand text-label-3 px-2.5 py-1 capitalize"
+                        className="rounded-tag bg-brand-tint text-brand text-label-3 px-2.5 py-1"
                       >
-                        {s}
+                        {t(`status.${s}`)}
                       </button>
                     ))}
                   </div>
@@ -155,7 +169,7 @@ export function OpsHomeScreen({ slot }: { slot: DeviceSlotId }) {
           </section>
 
           <section>
-            <h2 className="text-label-1 text-text-title mb-2">Operations</h2>
+            <h2 className="text-label-1 text-text-title mb-2">{t('console.nav.ops')}</h2>
             <div className="grid grid-cols-3 gap-3">
               {quickLinks
                 .filter((l) => canOpenRoute(consoleRole, l.route))
@@ -167,7 +181,7 @@ export function OpsHomeScreen({ slot }: { slot: DeviceSlotId }) {
                     className="rounded-card border-border-card bg-surface flex flex-col items-center gap-2 border-[0.5px] px-3 py-4"
                   >
                     <l.icon className="text-brand h-5 w-5" strokeWidth={1.5} />
-                    <span className="text-label-3 text-text-body">{l.label}</span>
+                    <span className="text-label-3 text-text-body">{t(l.label)}</span>
                   </button>
                 ))}
             </div>

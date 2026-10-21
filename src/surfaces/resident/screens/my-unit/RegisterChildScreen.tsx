@@ -14,11 +14,14 @@ import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import { useNav } from '@/navigation/useNav';
 import { rules } from '@/config/rules';
-import { BAND_LABEL, bandForChild } from '@/domain/creche/bands';
+import { bandForChild } from '@/domain/creche/bands';
+import { useErrorText, useT } from '@/i18n/hooks';
 import { dubaiDateKey } from '@/lib/time';
 import type { DeviceSlotId } from '@/types/demo';
 
 export function RegisterChildScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const errorText = useErrorText();
   const { pop, replace } = useNav(slot);
   const pushToast = useUiStore((s) => s.pushToast);
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
@@ -53,34 +56,40 @@ export function RegisterChildScreen({ slot }: { slot: DeviceSlotId }) {
       { kind: 'resident', id: actorId },
     );
     if (!result.ok) {
-      setError(result.error.message);
+      setError(errorText(result.error));
       return;
     }
-    pushToast(slot, `${result.value.name} registered.`, 'success');
+    pushToast(slot, t('myUnit.registered', { name: result.value.name }), 'success');
     replace('child-detail', { id: result.value.id });
   }
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Register a child" onBack={pop} />
+      <TopBar title={t('myUnit.registerTitle')} onBack={pop} />
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pt-2 pb-6 [&>*]:shrink-0">
-        <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} />
         <Input
-          label="Date of birth"
+          label={t('myUnit.fullName')}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <Input
+          label={t('myUnit.dob')}
           type="date"
           value={dob}
           onChange={(e) => setDob(e.target.value)}
         />
         {band && (
           <p className={band.ok ? 'text-body-3 text-text-muted' : 'text-body-3 text-danger'}>
-            {band.ok ? `${BAND_LABEL[band.band]} band (age ${band.age})` : band.message}
+            {band.ok
+              ? t('myUnit.bandAge', { band: t(`kids.band.${band.band}`), age: band.age })
+              : t(`kids.bandReason.${band.reason}`, { age: rules.creche.minAcceptedAge })}
           </p>
         )}
         <Input
-          label="Allergies / medical notes"
+          label={t('myUnit.allergies')}
           value={allergy}
           onChange={(e) => setAllergy(e.target.value)}
-          placeholder="Leave blank if none"
+          placeholder={t('myUnit.blankIfNone')}
         />
         {allergy.trim() && (
           <label className="flex items-center gap-3">
@@ -90,13 +99,11 @@ export function RegisterChildScreen({ slot }: { slot: DeviceSlotId }) {
               checked={severe}
               onChange={(e) => setSevere(e.target.checked)}
             />
-            <span className="text-label-2 text-text-body">
-              Severe — staff must confirm the allergy plan at check-in
-            </span>
+            <span className="text-label-2 text-text-body">{t('myUnit.severe')}</span>
           </label>
         )}
         <Input
-          label="Dietary restrictions"
+          label={t('myUnit.dietary')}
           value={dietary}
           onChange={(e) => setDietary(e.target.value)}
         />
@@ -107,15 +114,14 @@ export function RegisterChildScreen({ slot }: { slot: DeviceSlotId }) {
             checked={photoConsent}
             onChange={(e) => setPhotoConsent(e.target.checked)}
           />
-          <span className="text-label-2 text-text-body">Photo consent</span>
+          <span className="text-label-2 text-text-body">{t('myUnit.photoConsent')}</span>
         </label>
         <p className="text-body-3 text-text-muted">
-          Registered to {resident.unitId}. Your household are the default guardians; emergency
-          contact is you.
+          {t('myUnit.registerNote', { unit: resident.unitId })}
         </p>
         {error && <Banner style="urgent">{error}</Banner>}
         <Button fullWidth disabled={!name.trim() || !band?.ok} onClick={submit}>
-          Register
+          {t('myUnit.register')}
         </Button>
       </div>
     </div>

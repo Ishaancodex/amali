@@ -13,16 +13,19 @@ import { Button } from '@/ui/Button';
 import { Banner } from '@/ui/Banner';
 import { UserPlus } from '@/ui/icons';
 import { ChildAvatar } from '@/features/creche/ChildAvatar';
-import { BAND_LABEL, ageOnDate, bandForChild } from '@/domain/creche/bands';
+import { ageOnDate, bandForChild } from '@/domain/creche/bands';
+import { useFmt, useT } from '@/i18n/hooks';
 import { guardianAuthorisation } from '@/domain/creche/guardians';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
 import { rules } from '@/config/rules';
-import { dubaiDateKey, fmtDate, fmtDateKey } from '@/lib/time';
+import { dubaiDateKey } from '@/lib/time';
 import type { DeviceSlotId } from '@/types/demo';
 import { AddGuardianSheet } from './AddGuardianSheet';
 
 export function ChildDetailScreen({ slot, childId }: { slot: DeviceSlotId; childId: string }) {
+  const t = useT();
+  const fmt = useFmt();
   const { pop, push } = useNav(slot);
   const child = useStore((s) => s.children[childId]);
   const guardians = useStore((s) => s.guardians);
@@ -43,41 +46,56 @@ export function ChildDetailScreen({ slot, childId }: { slot: DeviceSlotId; child
           <div>
             <p className="text-title-l text-text-title">{child.name}</p>
             <p className="text-body-2 text-text-muted">
-              {ageOnDate(child.dob, today)} yrs ·{' '}
-              {band.ok ? `${BAND_LABEL[band.band]} band` : band.message}
+              {t('myUnit.years', { age: ageOnDate(child.dob, today) })} ·{' '}
+              {band.ok
+                ? t('myUnit.band', { band: t(`kids.band.${band.band}`) })
+                : t(`kids.bandReason.${band.reason}`, { age: rules.creche.minAcceptedAge })}
             </p>
           </div>
         </div>
 
         {child.allergies && (
           <Banner style={child.allergies.severe ? 'urgent' : 'warning'}>
-            {child.allergies.severe ? 'Severe allergy: ' : 'Allergy: '}
-            {child.allergies.text}
+            {t(child.allergies.severe ? 'myUnit.severeAllergy' : 'myUnit.allergy', {
+              text: child.allergies.text,
+            })}
           </Banner>
         )}
 
         <Card className="flex flex-col gap-1">
-          <p className="text-body-3 text-text-muted">Born {fmtDateKey(child.dob)}</p>
-          {child.dietary && <p className="text-body-3 text-text-muted">Diet: {child.dietary}</p>}
           <p className="text-body-3 text-text-muted">
-            Photo consent: {child.photoConsent ? 'yes' : 'no'}
+            {t('myUnit.born', { date: fmt.dateKey(child.dob) })}
+          </p>
+          {child.dietary && (
+            <p className="text-body-3 text-text-muted">
+              {t('myUnit.diet', { text: child.dietary })}
+            </p>
+          )}
+          <p className="text-body-3 text-text-muted">
+            {t('myUnit.photoConsentValue', {
+              value: child.photoConsent ? t('common.yes') : t('common.no'),
+            })}
           </p>
           <p className="text-body-3 text-text-muted">
-            Emergency contact: {child.emergencyContact.name} · {child.emergencyContact.phone}
+            {t('myUnit.emergency', { name: child.emergencyContact.name })} ·{' '}
+            <bdi>{child.emergencyContact.phone}</bdi>
           </p>
         </Card>
 
         {band.ok && (
           <Button fullWidth onClick={() => push('creche-book', { child: child.id })}>
-            Book a session
+            {t('myUnit.bookSession')}
           </Button>
         )}
 
         <section className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-label-1 text-text-title">Authorised guardians</h2>
+            <h2 className="text-label-1 text-text-title">{t('myUnit.guardians')}</h2>
             <span className="text-body-3 text-text-muted">
-              {child.guardianIds.length} of {rules.creche.guardians.max}
+              {t('ui.occupancy.countOf', {
+                count: child.guardianIds.length,
+                capacity: rules.creche.guardians.max,
+              })}
             </span>
           </div>
           {child.guardianIds.map((gId) => {
@@ -91,26 +109,28 @@ export function ChildDetailScreen({ slot, childId }: { slot: DeviceSlotId; child
                   <p className="text-label-2 text-text-body">{g.name}</p>
                   <p className="text-body-3 text-text-muted">
                     {g.relation}
-                    {g.validUntil ? ` · until ${fmtDate(g.validUntil)}` : ''}
+                    {g.validUntil
+                      ? ` · ${t('myUnit.until', { date: fmt.date(g.validUntil) })}`
+                      : ''}
                   </p>
                 </div>
                 <Tag
                   variant={auth.ok ? 'success' : auth.reason === 'pending' ? 'warning' : 'danger'}
                 >
                   {auth.ok
-                    ? 'Authorised'
+                    ? t('myUnit.auth.ok')
                     : auth.reason === 'pending'
-                      ? 'Pending approval'
+                      ? t('myUnit.auth.pending')
                       : auth.reason === 'expired'
-                        ? 'Expired'
-                        : 'Not approved'}
+                        ? t('myUnit.auth.expired')
+                        : t('myUnit.auth.denied')}
                 </Tag>
               </Card>
             );
           })}
           <Button variant="secondary" fullWidth disabled={full} onClick={() => setAdding(true)}>
             <UserPlus className="me-2 inline h-4 w-4" strokeWidth={1.5} />
-            {full ? 'Guardian limit reached' : 'Add a guardian'}
+            {full ? t('myUnit.guardianLimit') : t('myUnit.addGuardian')}
           </Button>
         </section>
       </div>

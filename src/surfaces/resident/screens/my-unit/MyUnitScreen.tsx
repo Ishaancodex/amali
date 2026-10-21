@@ -9,7 +9,8 @@ import { ChildAvatar } from '@/features/creche/ChildAvatar';
 import { ageOnDate } from '@/domain/creche/bands';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
-import { dubaiDateKey, fmtDate } from '@/lib/time';
+import { dubaiDateKey } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 
 function SectionHeader({ icon: Icon, label }: { icon: typeof Users; label: string }) {
@@ -22,7 +23,8 @@ function SectionHeader({ icon: Icon, label }: { icon: typeof Users; label: strin
 }
 
 export function MyUnitScreen({ slot }: { slot: DeviceSlotId }) {
-  useNav(slot);
+  const t = useT();
+  const fmt = useFmt();
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const resident = useStore((s) => s.residents[actorId]);
   const unit = useStore((s) => (resident ? s.units[resident.unitId] : undefined));
@@ -47,14 +49,16 @@ export function MyUnitScreen({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="My Unit" />
+      <TopBar title={t('resident.nav.myUnit')} />
       <div className="flex-1 overflow-y-auto pb-6">
         <div className="px-4 pt-4">
-          <p className="text-display text-text-title">{unit.id}</p>
-          <p className="text-body-2 text-text-muted capitalize">{unit.kind}</p>
+          <p className="text-display text-text-title">
+            <bdi>{unit.id}</bdi>
+          </p>
+          <p className="text-body-2 text-text-muted">{t(`myUnit.kind.${unit.kind}`)}</p>
         </div>
 
-        <SectionHeader icon={Users} label="Household" />
+        <SectionHeader icon={Users} label={t('myUnit.household')} />
         <div className="flex flex-col gap-2 px-4">
           {householdMembers.map((m) => (
             <Card key={m.id} className="flex items-center gap-3">
@@ -63,16 +67,16 @@ export function MyUnitScreen({ slot }: { slot: DeviceSlotId }) {
               </span>
               <div>
                 <p className="text-label-2 text-text-body">{m.name}</p>
-                <p className="text-body-3 text-text-muted capitalize">{m.type}</p>
+                <p className="text-body-3 text-text-muted">{t(`myUnit.type.${m.type}`)}</p>
               </div>
             </Card>
           ))}
         </div>
 
-        <SectionHeader icon={Baby} label="Children & guardians" />
+        <SectionHeader icon={Baby} label={t('myUnit.children')} />
         <div className="flex flex-col gap-2 px-4">
           {children.length === 0 && (
-            <p className="text-body-3 text-text-muted">No children registered to this unit.</p>
+            <p className="text-body-3 text-text-muted">{t('myUnit.noChildren')}</p>
           )}
           {children.map((child) => (
             <button
@@ -86,14 +90,19 @@ export function MyUnitScreen({ slot }: { slot: DeviceSlotId }) {
                 <div className="min-w-0 flex-1">
                   <p className="text-label-2 text-text-body">{child.name}</p>
                   <p className="text-body-3 text-text-muted">
-                    {ageOnDate(child.dob, dubaiDateKey(now))} yrs · Guardians:{' '}
-                    {child.guardianIds
-                      .map((gId) => guardians[gId]?.name.split(' ')[0])
-                      .filter(Boolean)
-                      .join(', ')}
+                    {t('myUnit.childLine', {
+                      age: ageOnDate(child.dob, dubaiDateKey(now)),
+                      names: child.guardianIds
+                        .map((gId) => guardians[gId]?.name.split(' ')[0])
+                        .filter(Boolean)
+                        .join('، '),
+                    })}
                   </p>
                 </div>
-                <ChevronRight className="text-text-muted h-4 w-4" strokeWidth={1.5} />
+                <ChevronRight
+                  className="text-text-muted h-4 w-4 rtl:-scale-x-100"
+                  strokeWidth={1.5}
+                />
               </Card>
             </button>
           ))}
@@ -102,15 +111,15 @@ export function MyUnitScreen({ slot }: { slot: DeviceSlotId }) {
             onClick={() => push('child-register')}
             className="text-label-3 text-brand self-start py-1"
           >
-            + Register a child
+            {t('myUnit.registerChild')}
           </button>
         </div>
 
-        <SectionHeader icon={WalletIcon} label="Wallet" />
+        <SectionHeader icon={WalletIcon} label={t('resident.home.quick.wallet')} />
         <div className="px-4">
           <Card className="flex items-center justify-between">
             <div>
-              <p className="text-body-3 text-text-muted">Balance</p>
+              <p className="text-body-3 text-text-muted">{t('wallet.balance')}</p>
               <BalanceChip balanceFils={wallet?.balanceFils ?? 0} />
             </div>
             <button
@@ -118,24 +127,25 @@ export function MyUnitScreen({ slot }: { slot: DeviceSlotId }) {
               onClick={() => push('wallet')}
               className="text-label-3 text-brand"
             >
-              Manage
+              {t('myUnit.manage')}
             </button>
           </Card>
         </div>
 
-        <SectionHeader icon={UserPlus} label="Guests" />
-        <p className="text-body-3 text-text-muted px-4">Guest management lands in a later phase.</p>
+        <SectionHeader icon={UserPlus} label={t('myUnit.guests')} />
+        <p className="text-body-3 text-text-muted px-4">{t('myUnit.guestsSoon')}</p>
 
-        <SectionHeader icon={Shield} label="Amenity rights" />
+        <SectionHeader icon={Shield} label={t('myUnit.rights')} />
         <div className="px-4">
           <Card>
             <p className="text-body-2 text-text-body">
-              Held by {rightsHolder?.name ?? 'Unknown'}
-              {rightsHolder?.id === resident.id ? ' (you)' : ''}
+              {t(rightsHolder?.id === resident.id ? 'myUnit.heldByYou' : 'myUnit.heldBy', {
+                name: rightsHolder?.name ?? t('myUnit.unknown'),
+              })}
             </p>
             {unit.leaseEnd && (
               <p className="text-body-3 text-text-muted mt-1">
-                Rights transfer back {fmtDate(unit.leaseEnd)}.
+                {t('myUnit.transferBack', { date: fmt.date(unit.leaseEnd) })}
               </p>
             )}
           </Card>

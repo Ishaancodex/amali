@@ -7,7 +7,7 @@ import { Button } from '@/ui/Button';
 import { RingGauge } from '@/ui/RingGauge';
 import { ChildAvatar } from '@/features/creche/ChildAvatar';
 import { ratioGauge } from '@/features/creche/ratioGauge';
-import { BAND_LABEL } from '@/domain/creche/bands';
+import { useT } from '@/i18n/hooks';
 import { rules } from '@/config/rules';
 import type { BandLoad } from '@/domain/creche/capacity';
 import type { Staff } from '@/types/community';
@@ -23,6 +23,7 @@ export function BandCard({
   canAddCover: boolean;
   onAddCover: () => void;
 }) {
+  const t = useT();
   const gauge = ratioGauge(load);
   const { minAge, maxAge, ratioStaffToChildren } = rules.creche.bands[load.band];
   const over = load.overBy > 0;
@@ -37,24 +38,23 @@ export function BandCard({
         </RingGauge>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="text-label-1 text-text-title">{BAND_LABEL[load.band]}</p>
+            <p className="text-label-1 text-text-title">{t(`kids.band.${load.band}`)}</p>
             <span className="text-body-3 text-text-placeholder">
               {minAge}–{maxAge} · 1:{ratioStaffToChildren}
             </span>
           </div>
           {over ? (
             <Tag variant="danger" className="mt-1">
-              Over ratio by {load.overBy}
+              {t('creche.overRatio', { count: load.overBy })}
             </Tag>
           ) : (
             <p className="text-body-3 text-text-muted mt-1">
-              {load.capacity - load.inRoom} {load.capacity - load.inRoom === 1 ? 'place' : 'places'}{' '}
-              left
+              {t('kids.placesLeft', { count: load.capacity - load.inRoom })}
             </p>
           )}
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {load.staffIds.length === 0 ? (
-              <span className="text-body-3 text-danger">No carer on this band</span>
+              <span className="text-body-3 text-danger">{t('creche.noCarer')}</span>
             ) : (
               load.staffIds.map((id) => (
                 <span key={id} className="text-body-3 text-text-body flex items-center gap-1">
@@ -68,8 +68,8 @@ export function BandCard({
       </div>
       {over && (
         <div className="flex items-center justify-between gap-3">
-          <p className="text-body-3 text-danger">New check-ins are blocked.</p>
-          {canAddCover && <Button onClick={onAddCover}>Add cover</Button>}
+          <p className="text-body-3 text-danger">{t('creche.checkInsBlocked')}</p>
+          {canAddCover && <Button onClick={onAddCover}>{t('creche.addCover')}</Button>}
         </div>
       )}
     </Card>

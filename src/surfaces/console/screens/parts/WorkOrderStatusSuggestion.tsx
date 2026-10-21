@@ -13,6 +13,7 @@ import { selectCurrentStatusEntry } from '@/store/selectors/amenities';
 import type { DeviceSlotId } from '@/types/demo';
 import type { WorkOrder } from '@/types/ops';
 import { useConsoleActor } from '../../useConsoleActor';
+import { useAmenityLabel, useErrorText, useT } from '@/i18n/hooks';
 
 export function WorkOrderStatusSuggestion({
   slot,
@@ -21,10 +22,13 @@ export function WorkOrderStatusSuggestion({
   slot: DeviceSlotId;
   workOrder: WorkOrder;
 }) {
+  const t = useT();
+  const errorText = useErrorText();
+  const amenityLabel = useAmenityLabel();
   const pushToast = useUiStore((s) => s.pushToast);
   const dispatch = useStore((s) => s.dispatch);
   const amenityStatus = useStore((s) => s.amenityStatus);
-  const amenityName = useStore((s) => s.amenities[workOrder.amenity]?.name ?? workOrder.amenity);
+  const amenityName = amenityLabel(workOrder.amenity);
   const now = useStore((s) => s.demo.clock.now);
   const { actor, assignedAmenities } = useConsoleActor(slot);
 
@@ -53,8 +57,8 @@ export function WorkOrderStatusSuggestion({
     pushToast(
       slot,
       result.ok
-        ? `${amenityName} set to ${next === 'open' ? 'Open' : 'Under maintenance'}.`
-        : result.error.message,
+        ? t('console.wo.statusSet', { amenity: amenityName, status: t(`status.${next}`) })
+        : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
@@ -63,9 +67,12 @@ export function WorkOrderStatusSuggestion({
     return (
       <Banner
         style="warning"
-        cta={{ label: 'Set Under maintenance', onClick: () => setStatus('maintenance') }}
+        cta={{
+          label: t('console.wo.setMaintenance'),
+          onClick: () => setStatus('maintenance'),
+        }}
       >
-        A P1 work order is open on the {amenityName}.
+        {t('console.wo.p1Open', { amenity: amenityName })}
       </Banner>
     );
   }
@@ -73,9 +80,16 @@ export function WorkOrderStatusSuggestion({
     return (
       <Banner
         style="success"
-        cta={{ label: `Reopen ${amenityName}`, onClick: () => setStatus('open') }}
+        cta={{
+          label: t('console.wo.reopen', { amenity: amenityName }),
+          onClick: () => setStatus('open'),
+        }}
       >
-        Work order {workOrder.state}. The {amenityName} is still {status}.
+        {t('console.wo.stillStatus', {
+          state: t(`console.woState.${workOrder.state}`),
+          amenity: amenityName,
+          status: t(`status.${status}`),
+        })}
       </Banner>
     );
   }

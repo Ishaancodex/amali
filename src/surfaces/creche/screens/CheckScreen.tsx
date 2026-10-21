@@ -12,7 +12,7 @@ import { Button } from '@/ui/Button';
 import { EmptyState } from '@/ui/EmptyState';
 import { QrCode, Search } from '@/ui/icons';
 import { ChildAvatar } from '@/features/creche/ChildAvatar';
-import { BAND_LABEL } from '@/domain/creche/bands';
+import { useT } from '@/i18n/hooks';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
 import { selectBoardSession } from '@/store/selectors/creche';
@@ -20,13 +20,13 @@ import type { DeviceSlotId } from '@/types/demo';
 import { ScanSheet } from './parts/ScanSheet';
 import { ChildCheckCard } from './parts/ChildCheckCard';
 
-const STATE_TAG = {
-  confirmed: ['Expected', 'brand'],
-  waitlisted: ['Waitlisted', 'warning'],
-  checked_in: ['In room', 'success'],
-  checked_out: ['Collected', 'info'],
-  cancelled: ['Cancelled', 'danger'],
-  no_show: ['No-show', 'danger'],
+const STATE_TONE = {
+  confirmed: 'brand',
+  waitlisted: 'warning',
+  checked_in: 'success',
+  checked_out: 'info',
+  cancelled: 'danger',
+  no_show: 'danger',
 } as const;
 
 export function CheckScreen({
@@ -39,6 +39,7 @@ export function CheckScreen({
   /** Set when the child was reached by scanning a guardian's pass. */
   guardianId?: string;
 }) {
+  const t = useT();
   const { replace } = useNav(slot);
   const children = useStore((s) => s.children);
   const crecheBookings = useStore((s) => s.crecheBookings);
@@ -74,20 +75,20 @@ export function CheckScreen({
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-5">
-      <h1 className="text-title-l text-text-title">Check-in / out</h1>
+      <h1 className="text-title-l text-text-title">{t('creche.checkTitle')}</h1>
       <Button fullWidth onClick={() => setScanning(true)}>
         <QrCode className="me-2 inline h-4 w-4" strokeWidth={1.5} />
-        Scan drop-off pass
+        {t('creche.scanPass')}
       </Button>
       <Input
-        placeholder="Search a child by name"
+        placeholder={t('creche.searchChild')}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
       {list.length === 0 ? (
         <EmptyState
           icon={Search}
-          message={q ? 'No child by that name.' : 'No children expected right now.'}
+          message={q ? t('creche.noChildByName') : t('creche.noneExpected')}
         />
       ) : (
         <div className="flex flex-col gap-2">
@@ -103,16 +104,19 @@ export function CheckScreen({
                 <div className="min-w-0 flex-1">
                   <p className="text-label-2 text-text-title">{child.name}</p>
                   <p className="text-body-3 text-text-muted">
-                    {booking ? BAND_LABEL[booking.band] : 'No booking now'}
+                    {booking ? t(`kids.band.${booking.band}`) : t('creche.noBookingNow')}
                     {child.allergies && (
                       <span className={child.allergies.severe ? 'text-danger' : ''}>
-                        {' · '}Allergy
+                        {' · '}
+                        {t('creche.allergy')}
                       </span>
                     )}
                   </p>
                 </div>
                 {booking && (
-                  <Tag variant={STATE_TAG[booking.state][1]}>{STATE_TAG[booking.state][0]}</Tag>
+                  <Tag variant={STATE_TONE[booking.state]}>
+                    {t(`creche.state.${booking.state}`)}
+                  </Tag>
                 )}
               </Card>
             </button>

@@ -11,16 +11,20 @@ import { Tag } from '@/ui/Tag';
 import { Button } from '@/ui/Button';
 import { Input } from '@/ui/Input';
 import { ChildAvatar } from '@/features/creche/ChildAvatar';
-import { BAND_LABEL, ageOnDate, bandForChild } from '@/domain/creche/bands';
+import { ageOnDate, bandForChild } from '@/domain/creche/bands';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import { guardianAuthorisation } from '@/domain/creche/guardians';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import { rules } from '@/config/rules';
-import { dubaiDateKey, fmtDateKey } from '@/lib/time';
+import { dubaiDateKey } from '@/lib/time';
 import type { DeviceSlotId } from '@/types/demo';
 import { useCrecheStaff } from '../useCrecheStaff';
 
 export function ChildrenScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const { actor, isLead } = useCrecheStaff(slot);
   const dispatch = useStore((s) => s.dispatch);
   const pushToast = useUiStore((s) => s.pushToast);
@@ -42,18 +46,18 @@ export function ChildrenScreen({ slot }: { slot: DeviceSlotId }) {
     const result = dispatch('creche.decideGuardian', { guardianId, decision }, actor);
     pushToast(
       slot,
-      result.ok ? `Guardian ${decision}.` : result.error.message,
+      result.ok ? t(`creche.guardian.${decision}`) : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-5">
-      <h1 className="text-title-l text-text-title">Children</h1>
+      <h1 className="text-title-l text-text-title">{t('creche.nav.children')}</h1>
 
       {pending.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h2 className="text-label-1 text-text-title">Pending approval</h2>
+          <h2 className="text-label-1 text-text-title">{t('myUnit.auth.pending')}</h2>
           {pending.map((g) => (
             <Card key={g.id} className="flex flex-col gap-2">
               <div className="flex items-center gap-3">
@@ -61,23 +65,25 @@ export function ChildrenScreen({ slot }: { slot: DeviceSlotId }) {
                 <div className="min-w-0 flex-1">
                   <p className="text-label-2 text-text-title">{g.name}</p>
                   <p className="text-body-3 text-text-muted">
-                    {g.relation} of{' '}
-                    {g.childIds.map((id) => children[id]?.name.split(' ')[0]).join(', ')} · ID ••
-                    {g.idLast4}
+                    {t('creche.guardian.of', {
+                      relation: g.relation,
+                      names: g.childIds.map((id) => children[id]?.name.split(' ')[0]).join(', '),
+                    })}{' '}
+                    · <bdi>{t('creche.guardian.id', { last4: g.idLast4 })}</bdi>
                   </p>
                 </div>
               </div>
               {isLead ? (
                 <div className="flex gap-2">
                   <Button variant="secondary" fullWidth onClick={() => decide(g.id, 'rejected')}>
-                    Reject
+                    {t('creche.reject')}
                   </Button>
                   <Button fullWidth onClick={() => decide(g.id, 'approved')}>
-                    Approve
+                    {t('kids.approve')}
                   </Button>
                 </div>
               ) : (
-                <p className="text-body-3 text-text-muted">Waiting for the Creche Lead.</p>
+                <p className="text-body-3 text-text-muted">{t('creche.waitingLead')}</p>
               )}
             </Card>
           ))}
@@ -85,7 +91,7 @@ export function ChildrenScreen({ slot }: { slot: DeviceSlotId }) {
       )}
 
       <Input
-        placeholder="Search children"
+        placeholder={t('creche.searchChildren')}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
@@ -106,17 +112,26 @@ export function ChildrenScreen({ slot }: { slot: DeviceSlotId }) {
                   <div className="min-w-0 flex-1">
                     <p className="text-label-2 text-text-title">{c.name}</p>
                     <p className="text-body-3 text-text-muted">
-                      {ageOnDate(c.dob, today)} yrs ·{' '}
-                      {band.ok ? BAND_LABEL[band.band] : band.message} · {c.unitId}
+                      {t('myUnit.years', { age: ageOnDate(c.dob, today) })} ·{' '}
+                      {band.ok
+                        ? t(`kids.band.${band.band}`)
+                        : t(`kids.bandReason.${band.reason}`, {
+                            age: rules.creche.minAcceptedAge,
+                          })}{' '}
+                      · <bdi>{c.unitId}</bdi>
                     </p>
                   </div>
                   {c.allergies && (
-                    <Tag variant={c.allergies.severe ? 'danger' : 'warning'}>Allergy</Tag>
+                    <Tag variant={c.allergies.severe ? 'danger' : 'warning'}>
+                      {t('creche.allergy')}
+                    </Tag>
                   )}
                 </div>
                 {expanded && (
                   <div className="border-border-card flex flex-col gap-1 border-t-[0.5px] pt-2">
-                    <p className="text-body-3 text-text-body">Born {fmtDateKey(c.dob)}</p>
+                    <p className="text-body-3 text-text-body">
+                      {t('myUnit.born', { date: fmt.dateKey(c.dob) })}
+                    </p>
                     {c.allergies && (
                       <p
                         className={
@@ -125,15 +140,22 @@ export function ChildrenScreen({ slot }: { slot: DeviceSlotId }) {
                             : 'text-body-3 text-text-body'
                         }
                       >
-                        Allergies: {c.allergies.text}
+                        {t('myUnit.allergy', { text: c.allergies.text })}
                       </p>
                     )}
-                    {c.dietary && <p className="text-body-3 text-text-body">Diet: {c.dietary}</p>}
+                    {c.dietary && (
+                      <p className="text-body-3 text-text-body">
+                        {t('myUnit.diet', { text: c.dietary })}
+                      </p>
+                    )}
                     <p className="text-body-3 text-text-body">
-                      Photo consent: {c.photoConsent ? 'yes' : 'no'}
+                      {t('myUnit.photoConsentValue', {
+                        value: c.photoConsent ? t('common.yes') : t('common.no'),
+                      })}
                     </p>
                     <p className="text-body-3 text-text-body">
-                      Emergency: {c.emergencyContact.name} · {c.emergencyContact.phone}
+                      {t('myUnit.emergency', { name: c.emergencyContact.name })} ·{' '}
+                      <bdi>{c.emergencyContact.phone}</bdi>
                     </p>
                     {c.guardianIds.map((gId) => {
                       const g = guardians[gId];
@@ -141,7 +163,8 @@ export function ChildrenScreen({ slot }: { slot: DeviceSlotId }) {
                       const auth = guardianAuthorisation(g, c, now);
                       return (
                         <p key={gId} className="text-body-3 text-text-muted">
-                          {g.name} ({g.relation}) — {auth.ok ? 'authorised' : auth.message}
+                          {g.name} ({g.relation}) —{' '}
+                          {auth.ok ? t('myUnit.auth.ok') : t(`creche.auth.${auth.reason}`)}
                         </p>
                       );
                     })}

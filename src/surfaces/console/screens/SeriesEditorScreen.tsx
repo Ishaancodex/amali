@@ -17,6 +17,7 @@ import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import { useNav } from '@/navigation/useNav';
 import { addDaysIso, dubaiDateKey, dubaiDateTimeToIso, fmtTime } from '@/lib/time';
+import { useAmenityLabel, useErrorText, useT } from '@/i18n/hooks';
 import { cn } from '@/lib/cn';
 import { buildRule, describeRule, parseRule, type RuleSpec } from '@/domain/programme/recurrence';
 import { blockingConflicts } from '@/domain/programme/conflicts';
@@ -29,11 +30,11 @@ import { useConsoleActor } from '../useConsoleActor';
 import { RuleBuilder, type EndMode } from './parts/RuleBuilder';
 import { ProgrammePreview } from './parts/ProgrammePreview';
 
-const VENUES: { key: AmenityKey; label: string; effect: ProgrammeEffect }[] = [
-  { key: 'pool', label: 'Pool', effect: 'limited' },
-  { key: 'padel', label: 'Padel court', effect: 'blackout' },
-  { key: 'music', label: 'Music Room', effect: 'event' },
-  { key: 'screening', label: 'Screening Room', effect: 'event' },
+const VENUES: { key: AmenityKey; effect: ProgrammeEffect }[] = [
+  { key: 'pool', effect: 'limited' },
+  { key: 'padel', effect: 'blackout' },
+  { key: 'music', effect: 'event' },
+  { key: 'screening', effect: 'event' },
 ];
 const DURATION_STEP = 15;
 
@@ -44,6 +45,9 @@ export function SeriesEditorScreen({
   slot: DeviceSlotId;
   programmeId?: string;
 }) {
+  const t = useT();
+  const errorText = useErrorText();
+  const amenityLabel = useAmenityLabel();
   const { pop } = useNav(slot);
   const existing = useStore((s) => (programmeId ? s.programme[programmeId] : undefined));
   const now = useStore((s) => s.demo.clock.now);
@@ -79,7 +83,7 @@ export function SeriesEditorScreen({
   const rrule = buildRule(ruleSpec, dtstart);
   const candidate = {
     id: existing?.id ?? 'draft',
-    title: title || 'New series',
+    title: title || t('console.programme.newSeries'),
     amenity,
     effect,
     rrule,
@@ -129,23 +133,34 @@ export function SeriesEditorScreen({
           { assignedAmenities },
         );
     if (!result.ok) {
-      pushToast(slot, result.error.message, 'error');
+      pushToast(slot, errorText(result.error), 'error');
       return;
     }
-    pushToast(slot, `${title} saved · ${result.value.occurrences} occurrences.`, 'success');
+    pushToast(
+      slot,
+      t('console.seriesEditor.saved', { title, count: result.value.occurrences }),
+      'success',
+    );
     pop();
   }
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title={existing ? `Edit ${existing.title}` : 'New series'} onBack={pop} />
+      <TopBar
+        title={
+          existing
+            ? t('console.seriesEditor.edit', { title: existing.title })
+            : t('console.programme.newSeries')
+        }
+        onBack={pop}
+      />
       <div className="flex min-h-0 flex-1 gap-6 overflow-y-auto px-6 pb-6">
         <section className="flex max-w-md flex-1 flex-col gap-4 [&>*]:shrink-0">
           <Input
-            label="Name"
+            label={t('console.schedule.name')}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Aqua Aerobics"
+            placeholder={t('console.seriesEditor.nameHint')}
           />
           <div className="flex flex-wrap gap-2">
             {VENUES.map((v) => (
@@ -159,44 +174,46 @@ export function SeriesEditorScreen({
                   amenity === v.key ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand',
                 )}
               >
-                {v.label}
+                {amenityLabel(v.key, 'short')}
               </button>
             ))}
           </div>
           <p className="text-body-3 text-text-muted">
-            {effect === 'limited'
-              ? 'The pool reads “Limited” during each class.'
-              : effect === 'blackout'
-                ? 'The court can’t be booked during each session.'
-                : 'Each occurrence is bookable, like an event.'}
+            {t(`console.seriesEditor.effectNote.${effect}`)}
           </p>
           {effect === 'limited' && (
             <Input
-              label="Shown as"
+              label={t('console.seriesEditor.shownAs')}
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="e.g. lanes 1–3 reserved"
+              placeholder={t('console.seriesEditor.shownAsHint')}
             />
           )}
           {effect === 'event' && (
-            <Stepper label="Spaces" value={capacity} min={1} max={40} onChange={setCapacity} />
+            <Stepper
+              label={t('console.seriesEditor.spaces')}
+              value={capacity}
+              min={1}
+              max={40}
+              onChange={setCapacity}
+            />
           )}
           <div className="flex gap-3">
             <Input
-              label="First date"
+              label={t('console.seriesEditor.firstDate')}
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />
             <Input
-              label="Start"
+              label={t('console.seriesEditor.start')}
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
             />
           </div>
           <Stepper
-            label={`Duration (${duration} min)`}
+            label={t('console.seriesEditor.duration', { minutes: duration })}
             value={duration / DURATION_STEP}
             min={1}
             max={16}
@@ -219,7 +236,7 @@ export function SeriesEditorScreen({
             disabled={!title.trim() || occurrences.length === 0 || blocked}
             onClick={save}
           >
-            {existing ? 'Save all occurrences' : 'Create series'}
+            {existing ? t('console.seriesEditor.saveAll') : t('console.seriesEditor.create')}
           </Button>
         </section>
       </div>

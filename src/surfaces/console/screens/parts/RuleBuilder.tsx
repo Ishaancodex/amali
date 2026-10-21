@@ -9,9 +9,9 @@ import { Stepper } from '@/ui/Stepper';
 import { Input } from '@/ui/Input';
 import { cn } from '@/lib/cn';
 import type { Freq, RuleSpec } from '@/domain/programme/recurrence';
+import { useFmt, useT } from '@/i18n/hooks';
 
-const DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAYS = [0, 1, 2, 3, 4, 5, 6];
 
 function Chip({
   active,
@@ -52,7 +52,8 @@ export function RuleBuilder({
   endMode: EndMode;
   onEndMode: (mode: EndMode) => void;
 }) {
-  const unit = spec.freq === 'daily' ? 'day' : spec.freq === 'weekly' ? 'week' : 'month';
+  const t = useT();
+  const fmt = useFmt();
   const toggleDay = (d: number) =>
     onChange({
       ...spec,
@@ -63,16 +64,16 @@ export function RuleBuilder({
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-label-1 text-text-title">Repeats</h2>
+      <h2 className="text-label-1 text-text-title">{t('console.rule.repeats')}</h2>
       <div className="flex flex-wrap gap-2">
         {(['daily', 'weekly', 'monthly'] as Freq[]).map((f) => (
           <Chip key={f} active={spec.freq === f} onClick={() => onChange({ ...spec, freq: f })}>
-            {f[0]!.toUpperCase() + f.slice(1)}
+            {t(`console.rule.freq.${f}`)}
           </Chip>
         ))}
       </div>
       <Stepper
-        label={`Every … ${unit}${spec.interval > 1 ? 's' : ''}`}
+        label={t(`console.rule.every.${spec.freq}`)}
         value={spec.interval}
         min={1}
         max={12}
@@ -80,14 +81,14 @@ export function RuleBuilder({
       />
       {spec.freq === 'weekly' && (
         <div className="flex gap-1.5">
-          {DAYS.map((d, i) => (
+          {DAYS.map((d) => (
             <Chip
-              key={i}
-              label={DAY_NAMES[i]}
-              active={spec.byWeekday.includes(i)}
-              onClick={() => toggleDay(i)}
+              key={d}
+              label={fmt.weekday(d)}
+              active={spec.byWeekday.includes(d)}
+              onClick={() => toggleDay(d)}
             >
-              {d}
+              {fmt.weekday(d, 'EEEEE')}
             </Chip>
           ))}
         </div>
@@ -98,30 +99,30 @@ export function RuleBuilder({
             active={spec.monthlyMode === 'date'}
             onClick={() => onChange({ ...spec, monthlyMode: 'date' })}
           >
-            On the same date
+            {t('console.rule.sameDate')}
           </Chip>
           <Chip
             active={spec.monthlyMode === 'weekday'}
             onClick={() => onChange({ ...spec, monthlyMode: 'weekday' })}
           >
-            On the same weekday
+            {t('console.rule.sameWeekday')}
           </Chip>
         </div>
       )}
       <div className="flex flex-wrap items-end gap-2">
         <Chip active={endMode === 'never'} onClick={() => onEndMode('never')}>
-          No end
+          {t('console.rule.noEnd')}
         </Chip>
         <Chip active={endMode === 'until'} onClick={() => onEndMode('until')}>
-          Until a date
+          {t('console.rule.until')}
         </Chip>
         <Chip active={endMode === 'count'} onClick={() => onEndMode('count')}>
-          After a number of times
+          {t('console.rule.count')}
         </Chip>
       </div>
       {endMode === 'until' && (
         <Input
-          label="Last date"
+          label={t('console.rule.lastDate')}
           type="date"
           value={spec.untilDate ?? ''}
           onChange={(e) => onChange({ ...spec, untilDate: e.target.value || undefined })}
@@ -129,7 +130,7 @@ export function RuleBuilder({
       )}
       {endMode === 'count' && (
         <Stepper
-          label="Occurrences"
+          label={t('console.rule.occurrences')}
           value={spec.count ?? 10}
           min={1}
           max={200}

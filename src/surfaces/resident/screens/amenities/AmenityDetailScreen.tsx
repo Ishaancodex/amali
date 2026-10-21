@@ -26,25 +26,38 @@ import { selectCurrentStatusEntry } from '@/store/selectors/amenities';
 import { rules } from '@/config/rules';
 import type { DeviceSlotId } from '@/types/demo';
 import type { AmenityKey } from '@/types/amenity';
+import { useAmenityLabel, useFmt, useT, type T } from '@/i18n/hooks';
 
 const HOURS_TABLE_KEYS: readonly AmenityKey[] = ['padel', 'pool', 'gym'];
 
-function rulesSummaryFor(key: AmenityKey): string {
+function rulesSummaryFor(key: AmenityKey, t: T, aed: (fils: number) => string): string {
+  const r = 'resident.amenityDetail.rules';
   switch (key) {
     case 'padel':
-      return `${rules.padel.durationsMinutes.join('/')} min · ${rules.padel.bookingWindowDays}-day window · ${rules.padel.quota.maxBookings} per week`;
+      return t(`${r}.padel`, {
+        durations: rules.padel.durationsMinutes.join('/'),
+        days: rules.padel.bookingWindowDays,
+        perWeek: rules.padel.quota.maxBookings,
+      });
     case 'screening':
-      return `Seat map · up to ${rules.screening.maxGuestsPerUnitPerShowtime} guests per showtime`;
+      return t(`${r}.screening`, { guests: rules.screening.maxGuestsPerUnitPerShowtime });
     case 'music':
-      return `Headcount cap ${rules.music.capacity} · up to ${rules.music.maxGuestsPerUnitPerShowtime} guests`;
+      return t(`${r}.music`, {
+        capacity: rules.music.capacity,
+        guests: rules.music.maxGuestsPerUnitPerShowtime,
+      });
     case 'creche':
-      return `Sessions ${rules.creche.sessions.morning.start}-${rules.creche.sessions.morning.end} & ${rules.creche.sessions.afternoon.start}-${rules.creche.sessions.afternoon.end} · owners free, tenants AED ${rules.creche.tenantFeePerHourFils / 100}/hr`;
+      return t(`${r}.creche`, {
+        morning: `${rules.creche.sessions.morning.start}–${rules.creche.sessions.morning.end}`,
+        afternoon: `${rules.creche.sessions.afternoon.start}–${rules.creche.sessions.afternoon.end}`,
+        fee: aed(rules.creche.tenantFeePerHourFils),
+      });
     case 'dining':
-      return `Restaurant · Private Dining · Teppanyaki · party size 1-${rules.dining.restaurant.partySize.max}`;
+      return t(`${r}.dining`, { max: rules.dining.restaurant.partySize.max });
     case 'pool':
-      return `Adults ${rules.pool.minAge}+ · capacity ${rules.pool.capacity}`;
+      return t(`${r}.pool`, { age: rules.pool.minAge, capacity: rules.pool.capacity });
     case 'gym':
-      return `Open 24h · capacity ${rules.gym.capacity}`;
+      return t(`${r}.gym`, { capacity: rules.gym.capacity });
   }
 }
 
@@ -56,6 +69,9 @@ export function AmenityDetailScreen({
   amenityKey: string;
 }) {
   const amenityKey = amenityKeyProp as AmenityKey;
+  const t = useT();
+  const fmt = useFmt();
+  const amenityLabel = useAmenityLabel();
   const { pop, push } = useNav(slot);
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const resident = useStore((s) => s.residents[actorId]);
@@ -81,8 +97,9 @@ export function AmenityDetailScreen({
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title={amenity.name} onBack={pop} />
-      <div className="flex-1 overflow-y-auto">
+      <TopBar title={amenityLabel(amenityKey)} onBack={pop} />
+      {/* Focusable so the page can be scrolled from the keyboard (axe scrollable-region-focusable). */}
+      <div className="flex-1 overflow-y-auto" tabIndex={0}>
         <div className="relative h-48 w-full">
           {imageFailed ? (
             <div className="from-brand-tint to-gradient-placeholder-end flex h-full w-full items-center justify-center bg-gradient-to-br">
@@ -115,29 +132,36 @@ export function AmenityDetailScreen({
 
           {accessBlocked && unit?.leaseEnd && (
             <Banner style="warning">
-              Access is with your tenant until {new Date(unit.leaseEnd).toLocaleDateString('en-GB')}
-              .
+              {t('resident.amenityDetail.tenantAccess', {
+                date: fmt.date(unit.leaseEnd, 'd MMM yyyy'),
+              })}
             </Banner>
           )}
 
-          <p className="text-body-2 text-text-muted">{rulesSummaryFor(amenityKey)}</p>
+          <p className="text-body-2 text-text-muted">{rulesSummaryFor(amenityKey, t, fmt.aed)}</p>
 
           {amenityKey === 'pool' && (
             <div>
-              <h2 className="text-label-1 text-text-title mb-2">Live occupancy</h2>
+              <h2 className="text-label-1 text-text-title mb-2">
+                {t('resident.amenityDetail.liveOccupancy')}
+              </h2>
               <OccupancyRing estimate={buildOccupancyEstimate(poolOccupancy, amenity.capacity)} />
             </div>
           )}
           {amenityKey === 'gym' && (
             <div>
-              <h2 className="text-label-1 text-text-title mb-2">Live occupancy</h2>
+              <h2 className="text-label-1 text-text-title mb-2">
+                {t('resident.amenityDetail.liveOccupancy')}
+              </h2>
               <OccupancyRing estimate={estimateOccupancy(now, amenity.capacity)} />
             </div>
           )}
 
           {HOURS_TABLE_KEYS.includes(amenityKey) && (
             <div>
-              <h2 className="text-label-1 text-text-title mb-2">Hours this week</h2>
+              <h2 className="text-label-1 text-text-title mb-2">
+                {t('resident.amenityDetail.hoursThisWeek')}
+              </h2>
               <HoursTable hours={hours} exceptions={exceptions} now={now} />
             </div>
           )}
@@ -153,12 +177,12 @@ export function AmenityDetailScreen({
               disabled={accessBlocked}
               onClick={() => push('padel-book')}
             >
-              {accessBlocked ? 'Booking unavailable' : 'Book'}
+              {accessBlocked ? t('resident.amenityDetail.unavailable') : t('ui.book')}
             </Button>
           ) : amenityKey === 'creche' ? (
             <div className="flex gap-2">
               <Button variant="secondary" fullWidth onClick={() => push('creche-pass')}>
-                Drop-off pass
+                {t('resident.amenityDetail.dropOffPass')}
               </Button>
               <Button
                 variant="primary"
@@ -166,7 +190,7 @@ export function AmenityDetailScreen({
                 disabled={accessBlocked}
                 onClick={() => push('creche-book')}
               >
-                {accessBlocked ? 'Booking unavailable' : 'Book'}
+                {accessBlocked ? t('resident.amenityDetail.unavailable') : t('ui.book')}
               </Button>
             </div>
           ) : amenityKey === 'screening' || amenityKey === 'music' ? (
@@ -176,7 +200,9 @@ export function AmenityDetailScreen({
               disabled={accessBlocked}
               onClick={() => push('whats-on')}
             >
-              {accessBlocked ? 'Booking unavailable' : "See what's on"}
+              {accessBlocked
+                ? t('resident.amenityDetail.unavailable')
+                : t('resident.amenityDetail.seeWhatsOn')}
             </Button>
           ) : amenityKey === 'dining' ? (
             <Button
@@ -185,7 +211,9 @@ export function AmenityDetailScreen({
               disabled={accessBlocked}
               onClick={() => push('dining-book')}
             >
-              {accessBlocked ? 'Booking unavailable' : 'Reserve a table'}
+              {accessBlocked
+                ? t('resident.amenityDetail.unavailable')
+                : t('resident.amenityDetail.reserve')}
             </Button>
           ) : null}
         </div>

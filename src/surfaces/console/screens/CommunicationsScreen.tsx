@@ -14,26 +14,20 @@ import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import { useNav } from '@/navigation/useNav';
 import { can, grantFor } from '@/domain/rbac/can';
-import { fmtDateTime } from '@/lib/time';
+import { useAmenityLabel, useErrorText, useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 import type { AmenityKey } from '@/types/amenity';
-import type { AnnouncementType } from '@/types/comms';
 import { useConsoleActor } from '../useConsoleActor';
 
-const TYPE_LABEL: Record<AnnouncementType, string> = {
-  daily: 'Daily update',
-  event: 'Event',
-  closure: 'Closure',
-  urgent: 'Urgent',
-  general: 'General',
-};
-
 export function CommunicationsScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
+  const amenityLabel = useAmenityLabel();
   const { push } = useNav(slot);
   const pushToast = useUiStore((s) => s.pushToast);
   const dispatch = useStore((s) => s.dispatch);
   const announcements = useStore((s) => s.announcements);
-  const amenities = useStore((s) => s.amenities);
   const amenityStatus = useStore((s) => s.amenityStatus);
   const { actor, consoleRole, assignedAmenities } = useConsoleActor(slot);
   const [closing, setClosing] = useState<AmenityKey | undefined>();
@@ -65,8 +59,8 @@ export function CommunicationsScreen({ slot }: { slot: DeviceSlotId }) {
     pushToast(
       slot,
       result.ok
-        ? `${amenities[amenity]?.name ?? amenity} closed and residents notified.`
-        : result.error.message,
+        ? t('console.comms.closedNotified', { amenity: amenityLabel(amenity) })
+        : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
     setClosing(undefined);
@@ -77,7 +71,9 @@ export function CommunicationsScreen({ slot }: { slot: DeviceSlotId }) {
     const result = dispatch('amenity.reopen', { amenity }, actor, { assignedAmenities });
     pushToast(
       slot,
-      result.ok ? `${amenities[amenity]?.name ?? amenity} reopened.` : result.error.message,
+      result.ok
+        ? t('console.comms.reopened', { amenity: amenityLabel(amenity) })
+        : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
@@ -89,26 +85,26 @@ export function CommunicationsScreen({ slot }: { slot: DeviceSlotId }) {
   return (
     <div className="flex h-full flex-col">
       <div className="border-border-card flex items-center justify-between border-b px-6 py-4">
-        <h1 className="text-title-l text-text-title">Communications</h1>
+        <h1 className="text-title-l text-text-title">{t('console.nav.comms')}</h1>
         {canCompose && (
           <Button variant="primary" onClick={() => push('composer')}>
-            New
+            {t('console.comms.new')}
           </Button>
         )}
       </div>
 
       {canChangeStatus && emergencyTargets.length > 0 && (
         <div className="border-border-card flex flex-wrap items-center gap-2 border-b px-6 py-3">
-          <span className="text-body-3 text-text-muted">Urgent closure:</span>
+          <span className="text-body-3 text-text-muted">{t('console.comms.urgentClosure')}</span>
           {emergencyTargets.map((key) => {
             const isClosed = isEmergencyClosed(key);
             return isClosed ? (
               <Button key={key} variant="secondary" onClick={() => reopen(key)}>
-                Reopen {amenities[key]?.name ?? key}
+                {t('console.wo.reopen', { amenity: amenityLabel(key) })}
               </Button>
             ) : (
               <Button key={key} variant="destructive" onClick={() => setClosing(key)}>
-                Emergency close {amenities[key]?.name ?? key}
+                {t('console.comms.emergencyClose', { amenity: amenityLabel(key) })}
               </Button>
             );
           })}
@@ -120,13 +116,13 @@ export function CommunicationsScreen({ slot }: { slot: DeviceSlotId }) {
           <div className="flex items-center gap-2.5">
             <CircleAlert className="text-danger h-4 w-4 shrink-0" strokeWidth={1.5} />
             <p className="text-body-2 text-text-body flex-1">
-              Close {amenities[closing]?.name} now, for everyone, on every channel?
+              {t('console.comms.confirmQuestion', { amenity: amenityLabel(closing) })}
             </p>
             <Button variant="destructive" onClick={() => emergencyClose(closing)}>
-              Confirm close
+              {t('console.comms.confirmClose')}
             </Button>
             <Button variant="tertiary" onClick={() => setClosing(undefined)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </div>
@@ -134,7 +130,7 @@ export function CommunicationsScreen({ slot }: { slot: DeviceSlotId }) {
 
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {list.length === 0 ? (
-          <EmptyState icon={Megaphone} message="No announcements yet." />
+          <EmptyState icon={Megaphone} message={t('console.comms.none')} />
         ) : (
           <div className="flex flex-col gap-2">
             {list.map((a) => (
@@ -147,15 +143,20 @@ export function CommunicationsScreen({ slot }: { slot: DeviceSlotId }) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <Tag variant={a.type === 'urgent' ? 'danger' : 'brand'}>
-                      {TYPE_LABEL[a.type]}
+                      {t(`console.comms.type.${a.type}`)}
                     </Tag>
                     <span className="text-label-2 text-text-title truncate">{a.title}</span>
                   </div>
                   <p className="text-body-3 text-text-muted mt-0.5">
                     {a.sentAt
-                      ? `Sent ${fmtDateTime(a.sentAt)}`
-                      : `${a.state === 'scheduled' ? 'Scheduled' : 'Draft'}`}{' '}
-                    · {(a.resolvedRecipientIds ?? []).length} recipients
+                      ? t('console.comms.sentAt', { date: fmt.dateTime(a.sentAt) })
+                      : t(
+                          `console.comms.state.${a.state === 'scheduled' ? 'scheduled' : 'draft'}`,
+                        )}{' '}
+                    ·{' '}
+                    {t('console.comms.recipients', {
+                      count: (a.resolvedRecipientIds ?? []).length,
+                    })}
                   </p>
                 </div>
                 <Tag
@@ -163,7 +164,7 @@ export function CommunicationsScreen({ slot }: { slot: DeviceSlotId }) {
                     a.state === 'recalled' ? 'warning' : a.state === 'sent' ? 'success' : 'info'
                   }
                 >
-                  {a.state}
+                  {t(`console.comms.state.${a.state}`)}
                 </Tag>
               </button>
             ))}

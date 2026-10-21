@@ -14,7 +14,8 @@ import { fnbTimeline as G } from '@/design/tokens';
 import { spring } from '@/design/motion';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
-import { minutesBetween, fmtTime, addMinutesIso } from '@/lib/time';
+import { minutesBetween, addMinutesIso } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import { rules } from '@/config/rules';
 import { cn } from '@/lib/cn';
 import type { Reservation, ServicePeriod, VenueKey } from '@/types/dining';
@@ -54,6 +55,9 @@ export function Timeline({
   period: ServicePeriod | undefined;
   onOpen: (id: string) => void;
 }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const { window, tables, inService, now } = useService(venue, period);
   const residents = useStore((s) => s.residents);
   const dispatch = useStore((s) => s.dispatch);
@@ -89,7 +93,9 @@ export function Timeline({
     );
     pushToast(
       slot,
-      result.ok ? `Moved to ${target.id} (${target.zone})` : result.error.message,
+      result.ok
+        ? t('fnb.movedTo', { table: target.id, zone: t(`dining.zone.${target.zone}`) })
+        : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
@@ -103,7 +109,7 @@ export function Timeline({
         >
           {Array.from({ length: columns }, (_, i) => (
             <span key={i} className="shrink-0" style={{ width: G.colWidth }}>
-              {i % 2 === 0 ? fmtTime(addMinutesIso(window.start, i * STEP)) : ''}
+              {i % 2 === 0 ? fmt.time(addMinutesIso(window.start, i * STEP)) : ''}
             </span>
           ))}
         </div>
@@ -164,8 +170,8 @@ export function Timeline({
                     {r.occasion && <Gift className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />}
                     <span className="truncate">
                       {r.walkIn
-                        ? 'Walk-in'
-                        : (residents[r.residentId]?.name.split(' ')[0] ?? 'Guest')}{' '}
+                        ? t('fnb.walkIn')
+                        : (residents[r.residentId]?.name.split(' ')[0] ?? t('fnb.guest'))}{' '}
                       · {r.partySize}
                     </span>
                   </motion.button>

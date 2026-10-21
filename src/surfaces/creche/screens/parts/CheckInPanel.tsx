@@ -6,7 +6,7 @@ import { Button } from '@/ui/Button';
 import { Banner } from '@/ui/Banner';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
-import { fmtTime } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import type { Child } from '@/types/creche';
 import type { DeviceSlotId } from '@/types/demo';
 import { useCrecheStaff } from '../../useCrecheStaff';
@@ -20,6 +20,9 @@ export function CheckInPanel({
   child: Child;
   guardianId: string;
 }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const { actor } = useCrecheStaff(slot);
   const dispatch = useStore((s) => s.dispatch);
   const pushToast = useUiStore((s) => s.pushToast);
@@ -34,11 +37,14 @@ export function CheckInPanel({
       setBlocked(undefined);
       pushToast(
         slot,
-        `${child.name.split(' ')[0]} checked in at ${fmtTime(result.value.checkIn!.at)}.`,
+        t('creche.checkedInAt', {
+          name: child.name.split(' ')[0],
+          time: fmt.time(result.value.checkIn!.at),
+        }),
         'success',
       );
     } else {
-      setBlocked(result.error.message);
+      setBlocked(errorText(result.error));
     }
   }
 
@@ -52,12 +58,12 @@ export function CheckInPanel({
             onChange={(e) => setAllergyAck(e.target.checked)}
             className="accent-brand h-5 w-5"
           />
-          <span className="text-label-2 text-text-title">Allergy plan noted</span>
+          <span className="text-label-2 text-text-title">{t('creche.allergyNoted')}</span>
         </label>
       )}
       {blocked && <Banner style="urgent">{blocked}</Banner>}
       <Button fullWidth disabled={!guardianId || (needsAck && !allergyAck)} onClick={checkIn}>
-        Check in
+        {t('padel.checkIn')}
       </Button>
     </section>
   );

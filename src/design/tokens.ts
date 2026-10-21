@@ -12,23 +12,29 @@
  * Brand palette, aligned to `documents/Amali Properties_Brand Guidelines.pdf`
  * (base palette: Amali Sand #BE7E63, Pearl #F1ECE2, Stone #57585B, Ember
  * #000000 — sampled directly from the brand book's colour-swatch page).
+ *
+ * P11 accessibility pass (WCAG AA, axe "zero serious"): on the light theme
+ * the brand-book Sand is 2.8:1 on Pearl and 3.3:1 under white text, and the
+ * status colours were 2–4:1 on their own tints. Each is darkened along its
+ * own hue just enough to reach 4.5:1 on every surface it's used on — the
+ * brand-book value is noted beside it. The staff (dark) theme keeps Sand.
  */
 export const appColor = {
-  brand: '#BE7E63', // Amali Sand
+  brand: '#985A3F', // Amali Sand, AA shade (brand book #BE7E63)
   brandTint: '#F1ECE2', // Amali Pearl
   onBrand: '#FFFFFF',
   textTitle: '#57585B', // Amali Stone
   textBody: '#31383C',
-  textMuted: '#6F7A80',
-  textPlaceholder: '#868686',
+  textMuted: '#616B70', // was #6F7A80
+  textPlaceholder: '#6E6E6E', // was #868686
   borderCard: '#E2DDDB',
   surface: '#FFFFFF',
   bgPage: '#F7F4F0',
-  success: '#19B27A',
-  warning: '#C98A2E',
-  danger: '#D2493A',
-  info: '#4F7A94',
-  maintenance: '#8A7F72',
+  success: '#0F6E4B', // was #19B27A
+  warning: '#81591E', // was #C98A2E
+  danger: '#AC3527', // was #D2493A
+  info: '#41657A', // was #4F7A94
+  maintenance: '#686056', // was #8A7F72
 } as const;
 
 export const sosGradient = {
@@ -72,7 +78,30 @@ export const staffColor = {
   border: '#2F2D2A',
   textPrimary: '#F5F1E8',
   textMuted: '#A3A09A',
-  brand: '#BE7E63', // Amali Sand
+  brand: '#BE7E63', // Amali Sand — 5.6:1 on the dark background
+  // P11 accessibility pass: the light theme's tint, on-brand and status shades are tuned for
+  // light surfaces; on dark ones they need their own (each ≥ 4.5:1 on the surface and its tint).
+  brandTint: '#251E17',
+  onBrand: '#14130F',
+  success: '#19B27A',
+  warning: '#CC8C2F',
+  danger: '#DF7D72',
+  info: '#779EB6',
+  maintenance: '#A1988D',
+} as const;
+
+/**
+ * Overlays inside a device (P11): toasts, island notifications and the sheet
+ * scrim — a dark card in the stage's colours on any theme. They used the
+ * `shell-*` tokens before, which are only defined under a `.shell` scope
+ * that Tailwind's @theme folding can't see (the P1 footgun), so they
+ * rendered transparent. These live on :root, where folding works.
+ */
+export const overlayColor = {
+  overlay: '#1C1B18',
+  onOverlay: '#F5F1E8',
+  onOverlayMuted: '#B2AA9A',
+  scrim: '#0E0D0B',
 } as const;
 
 // ---------------------------------------------------------------------------

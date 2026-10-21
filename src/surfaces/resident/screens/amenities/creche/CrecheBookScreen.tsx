@@ -15,10 +15,11 @@ import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import { useNav } from '@/navigation/useNav';
 import { rules } from '@/config/rules';
-import { BAND_LABEL, bandForChild } from '@/domain/creche/bands';
+import { bandForChild } from '@/domain/creche/bands';
 import { countActiveInWindow, staffOnBand } from '@/domain/creche/capacity';
 import { crecheSessionId as sessionId } from '@/domain/creche/sessionIds';
-import { addDaysIso, addHoursIso, dubaiDateKey, dubaiDateTimeToIso, fmtDate } from '@/lib/time';
+import { addDaysIso, addHoursIso, dubaiDateKey, dubaiDateTimeToIso } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import { cn } from '@/lib/cn';
 import type { DeviceSlotId } from '@/types/demo';
 
@@ -59,6 +60,9 @@ function Chip({
 }
 
 export function CrecheBookScreen({ slot, childId }: { slot: DeviceSlotId; childId?: string }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const { pop } = useNav(slot);
   const pushToast = useUiStore((s) => s.pushToast);
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
@@ -100,7 +104,10 @@ export function CrecheBookScreen({ slot, childId }: { slot: DeviceSlotId; childI
 
   function placesLeft(childDob: string) {
     const band = bandForChild(childDob, day, rules.creche.bands, rules.creche.minAcceptedAge);
-    if (!band.ok || !window.start) return band.ok ? '' : band.message;
+    if (!band.ok || !window.start)
+      return band.ok
+        ? ''
+        : t(`kids.bandReason.${band.reason}`, { age: rules.creche.minAcceptedAge });
     const staff = staffOnBand(
       bandAssignments,
       Object.values(shifts),
@@ -119,7 +126,7 @@ export function CrecheBookScreen({ slot, childId }: { slot: DeviceSlotId; childI
         window.start,
         window.end,
       );
-    return `${BAND_LABEL[band.band]} · ${left > 0 ? `${left} ${left === 1 ? 'place' : 'places'} left` : 'full — waitlist'}`;
+    return `${t(`kids.band.${band.band}`)} · ${left > 0 ? t('kids.placesLeft', { count: left }) : t('kids.fullWaitlist')}`;
   }
 
   function book() {
@@ -129,13 +136,14 @@ export function CrecheBookScreen({ slot, childId }: { slot: DeviceSlotId; childI
         : { childIds: picked, sessionId: sessionId(day, kind) };
     const result = dispatch('creche.book', input, { kind: 'resident', id: actorId });
     if (!result.ok) {
-      setError(result.error.message);
+      setError(errorText(result.error));
       return;
     }
     const summary = result.value
-      .map(
-        (b) =>
-          `${childrenRecord[b.childId]?.name.split(' ')[0]} ${b.state === 'confirmed' ? 'confirmed' : 'on the waitlist'}`,
+      .map((b) =>
+        t(b.state === 'confirmed' ? 'kids.bookedConfirmed' : 'kids.bookedWaitlist', {
+          name: childrenRecord[b.childId]?.name.split(' ')[0],
+        }),
       )
       .join(' · ');
     pushToast(
@@ -148,10 +156,10 @@ export function CrecheBookScreen({ slot, childId }: { slot: DeviceSlotId; childI
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Book Kids’ Club" onBack={pop} />
+      <TopBar title={t('kids.bookTitle')} onBack={pop} />
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-4 pb-6 [&>*]:shrink-0">
         <section className="flex flex-col gap-2 pt-2">
-          <h2 className="text-label-1 text-text-title">Who’s going?</h2>
+          <h2 className="text-label-1 text-text-title">{t('kids.whosGoing')}</h2>
           {children.map((c) => (
             <label key={c.id} className="flex items-center gap-3">
               <input
@@ -169,41 +177,40 @@ export function CrecheBookScreen({ slot, childId }: { slot: DeviceSlotId; childI
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-label-1 text-text-title">Day</h2>
+          <h2 className="text-label-1 text-text-title">{t('kids.day')}</h2>
           <div className="flex flex-wrap gap-2">
             {days.map((d) => (
               <Chip key={d} active={day === d} onClick={() => setDay(d)}>
-                {fmtDate(dubaiDateTimeToIso(d, '12:00'), 'EEE d')}
+                {fmt.dateKey(d, 'EEE d')}
               </Chip>
             ))}
           </div>
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-label-1 text-text-title">Session</h2>
+          <h2 className="text-label-1 text-text-title">{t('kids.session')}</h2>
           <div className="flex flex-wrap gap-2">
             <Chip active={kind === 'morning'} onClick={() => setKind('morning')}>
-              Morning {rules.creche.sessions.morning.start}–{rules.creche.sessions.morning.end}
+              {t('kids.morning', rules.creche.sessions.morning)}
             </Chip>
             <Chip active={kind === 'afternoon'} onClick={() => setKind('afternoon')}>
-              Afternoon {rules.creche.sessions.afternoon.start}–
-              {rules.creche.sessions.afternoon.end}
+              {t('kids.afternoon', rules.creche.sessions.afternoon)}
             </Chip>
             <Chip active={kind === 'dropin'} onClick={() => setKind('dropin')}>
-              Drop-in
+              {t('kids.dropIn')}
             </Chip>
           </div>
           {kind === 'dropin' && (
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap gap-2">
-                {DROP_IN_STARTS.map((t) => (
-                  <Chip key={t} active={dropStart === t} onClick={() => setDropStart(t)}>
-                    {t}
+                {DROP_IN_STARTS.map((time) => (
+                  <Chip key={time} active={dropStart === time} onClick={() => setDropStart(time)}>
+                    {time}
                   </Chip>
                 ))}
               </div>
               <Stepper
-                label="Hours"
+                label={t('kids.hours')}
                 value={hours}
                 min={rules.creche.sessions.dropIn.minHours}
                 max={rules.creche.sessions.dropIn.maxHours}
@@ -215,15 +222,20 @@ export function CrecheBookScreen({ slot, childId }: { slot: DeviceSlotId; childI
 
         <p className="text-body-3 text-text-muted">
           {tenant
-            ? `AED ${rules.creche.tenantFeePerHourFils / 100}/hr, charged to your wallet at check-out on actual time (rounded up to ${rules.creche.feeRoundingMinutes} min).`
-            : 'Free for owners.'}{' '}
-          Late pickup after {rules.creche.latePickup.graceMinutes} min: AED{' '}
-          {rules.creche.latePickup.feePer15MinFils / 100} per 15 min.
+            ? t('kids.tenantFee', {
+                amount: fmt.aed(rules.creche.tenantFeePerHourFils),
+                rounding: rules.creche.feeRoundingMinutes,
+              })
+            : t('kids.ownersFree')}{' '}
+          {t('kids.lateFee', {
+            grace: rules.creche.latePickup.graceMinutes,
+            amount: fmt.aed(rules.creche.latePickup.feePer15MinFils),
+          })}
         </p>
 
         {error && <Banner style="urgent">{error}</Banner>}
         <Button fullWidth disabled={picked.length === 0} onClick={book}>
-          Book
+          {t('ui.book')}
         </Button>
       </div>
     </div>

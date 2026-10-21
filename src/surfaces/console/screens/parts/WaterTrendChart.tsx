@@ -9,16 +9,13 @@
 import { useState } from 'react';
 import { useStore } from '@/store';
 import { rules } from '@/config/rules';
-import { addDaysIso, fmtDate, secondsBetween } from '@/lib/time';
+import { addDaysIso, secondsBetween } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import { cn } from '@/lib/cn';
 
 type Param = 'ph' | 'freeChlorine' | 'tempC';
 
-const PARAMS: { key: Param; label: string }[] = [
-  { key: 'ph', label: 'pH' },
-  { key: 'freeChlorine', label: 'Chlorine (ppm)' },
-  { key: 'tempC', label: 'Temp (°C)' },
-];
+const PARAMS: Param[] = ['ph', 'freeChlorine', 'tempC'];
 
 const DAYS = 7;
 // SVG user units (the chart scales to its container via viewBox), not CSS pixels.
@@ -28,6 +25,8 @@ const PAD_X = 8;
 const PAD_Y = 12;
 
 export function WaterTrendChart() {
+  const t = useT();
+  const fmt = useFmt();
   const waterReadings = useStore((s) => s.waterReadings);
   const now = useStore((s) => s.demo.clock.now);
   const [param, setParam] = useState<Param>('ph');
@@ -53,32 +52,40 @@ export function WaterTrendChart() {
   return (
     <section className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <h2 className="text-label-1 text-text-title">Last 7 days</h2>
+        <h2 className="text-label-1 text-text-title">
+          {t('console.water.lastDays', { days: DAYS })}
+        </h2>
         <div className="flex gap-1">
           {PARAMS.map((p) => (
             <button
-              key={p.key}
+              key={p}
               type="button"
-              onClick={() => setParam(p.key)}
+              onClick={() => setParam(p)}
+              aria-pressed={param === p}
               className={cn(
                 'rounded-tag text-label-3 px-2.5 py-1',
-                param === p.key ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand',
+                param === p ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand',
               )}
             >
-              {p.label}
+              {t(`console.water.param.${p}`)}
             </button>
           ))}
         </div>
       </div>
       {readings.length === 0 ? (
-        <p className="text-body-3 text-text-muted">No readings in the last 7 days.</p>
+        <p className="text-body-3 text-text-muted">
+          {t('console.water.noReadings', { days: DAYS })}
+        </p>
       ) : (
         <div className="rounded-card border-border-card border-[0.5px] p-2">
           <svg
             viewBox={`0 0 ${W} ${H}`}
             className="h-auto w-full"
             role="img"
-            aria-label={`${PARAMS.find((p) => p.key === param)?.label} over the last 7 days`}
+            aria-label={t('console.water.chartLabel', {
+              param: t(`console.water.param.${param}`),
+              days: DAYS,
+            })}
           >
             <rect
               x={PAD_X}
@@ -109,11 +116,9 @@ export function WaterTrendChart() {
             })}
           </svg>
           <div className="text-body-3 text-text-placeholder flex justify-between px-1">
-            <span>{fmtDate(from)}</span>
-            <span>
-              Band {band.min}–{band.max}
-            </span>
-            <span>{fmtDate(now)}</span>
+            <span>{fmt.date(from)}</span>
+            <span>{t('console.water.band', { min: band.min, max: band.max })}</span>
+            <span>{fmt.date(now)}</span>
           </div>
         </div>
       )}

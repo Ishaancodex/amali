@@ -8,6 +8,7 @@ import { motion } from 'motion/react';
 import { CircleAlert, Info, CheckCircle2, X } from './icons';
 import { dur, ease } from '@/design/motion';
 import { cn } from '@/lib/cn';
+import { useT } from '@/i18n/hooks';
 
 export type BannerStyle = 'info' | 'warning' | 'urgent' | 'success';
 
@@ -33,6 +34,7 @@ const STYLE_ICON = {
 } as const;
 
 export function Banner({ style = 'info', children, onDismiss, cta }: BannerProps) {
+  const t = useT();
   const Icon = STYLE_ICON[style];
   return (
     <motion.div
@@ -43,7 +45,17 @@ export function Banner({ style = 'info', children, onDismiss, cta }: BannerProps
       transition={{ duration: dur.base, ease: ease.enter }}
       className="overflow-hidden"
     >
-      <div className={cn('flex items-start gap-2.5 px-4 py-3', STYLE_CLASSES[style])}>
+      <div className={cn('relative flex items-start gap-2.5 px-4 py-3', STYLE_CLASSES[style])}>
+        {style === 'urgent' && (
+          // M14: an urgent banner glows once — an opacity pulse, nothing moves.
+          <motion.span
+            aria-hidden
+            className="bg-danger/15 pointer-events-none absolute inset-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 0] }}
+            transition={{ duration: dur.slower * 2, ease: ease.standard, delay: dur.base }}
+          />
+        )}
         <Icon className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
         <div className="text-body-2 flex-1">{children}</div>
         {cta && (
@@ -52,7 +64,12 @@ export function Banner({ style = 'info', children, onDismiss, cta }: BannerProps
           </button>
         )}
         {onDismiss && (
-          <button type="button" onClick={onDismiss} aria-label="Dismiss" className="shrink-0">
+          <button
+            type="button"
+            onClick={onDismiss}
+            aria-label={t('ui.dismiss')}
+            className="shrink-0"
+          >
             <X className="h-4 w-4" strokeWidth={1.5} />
           </button>
         )}

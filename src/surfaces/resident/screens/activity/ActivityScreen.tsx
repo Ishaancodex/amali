@@ -6,12 +6,14 @@ import { TopBar } from '@/ui/TopBar';
 import { EmptyState } from '@/ui/EmptyState';
 import { Bell, CalendarDays } from '@/ui/icons';
 import { useStore } from '@/store';
-import { fmtDateTime } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 
 type Tab = 'notifications' | 'bookings';
 
 export function ActivityScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const notificationsRecord = useStore((s) => s.notifications);
   const notifications = Object.values(notificationsRecord)
@@ -21,26 +23,26 @@ export function ActivityScreen({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar title="Activity" />
+      <TopBar title={t('resident.nav.activity')} />
       <div className="flex gap-1 px-4 pb-3">
-        {(['notifications', 'bookings'] as const).map((t) => (
+        {(['notifications', 'bookings'] as const).map((k) => (
           <button
-            key={t}
+            key={k}
             type="button"
-            onClick={() => setTab(t)}
-            aria-pressed={tab === t}
-            className={`rounded-tag text-label-3 px-3 py-1.5 capitalize transition-colors ${
-              tab === t ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand'
+            onClick={() => setTab(k)}
+            aria-pressed={tab === k}
+            className={`rounded-tag text-label-3 px-3 py-1.5 transition-colors ${
+              tab === k ? 'bg-brand text-on-brand' : 'bg-brand-tint text-brand'
             }`}
           >
-            {t}
+            {t(`resident.activity.tab.${k}`)}
           </button>
         ))}
       </div>
       <div className="flex-1 overflow-y-auto px-4 pb-6">
         {tab === 'notifications' &&
           (notifications.length === 0 ? (
-            <EmptyState icon={Bell} message="No notifications yet." />
+            <EmptyState icon={Bell} message={t('resident.activity.noNotifications')} />
           ) : (
             <ul className="divide-border-card flex flex-col divide-y">
               {notifications.map((n) => (
@@ -48,20 +50,17 @@ export function ActivityScreen({ slot }: { slot: DeviceSlotId }) {
                   {!n.read && (
                     <span className="bg-brand mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" />
                   )}
-                  <div className={n.read ? 'pl-3.5' : ''}>
+                  <div className={n.read ? 'ps-3.5' : ''}>
                     <p className="text-label-2 text-text-body">{n.title}</p>
                     <p className="text-body-3 text-text-muted">{n.body}</p>
-                    <p className="text-body-3 text-text-placeholder mt-0.5">{fmtDateTime(n.at)}</p>
+                    <p className="text-body-3 text-text-placeholder mt-0.5">{fmt.dateTime(n.at)}</p>
                   </div>
                 </li>
               ))}
             </ul>
           ))}
         {tab === 'bookings' && (
-          <EmptyState
-            icon={CalendarDays}
-            message="No bookings yet. Book the padel court once booking opens."
-          />
+          <EmptyState icon={CalendarDays} message={t('resident.activity.noBookings')} />
         )}
       </div>
     </div>

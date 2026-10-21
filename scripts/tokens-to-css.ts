@@ -8,6 +8,7 @@ import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
   appColor,
+  overlayColor,
   sosGradient,
   browserChrome,
   skeletonColor,
@@ -83,6 +84,7 @@ const rootLines: string[] = [
   ':root {',
   '  /* App colour tokens — PRD §5.2 */',
   ...colorVars(appColor),
+  ...colorVars(overlayColor),
   `  --sos-gradient-from: ${sosGradient.from};`,
   `  --sos-gradient-to: ${sosGradient.to};`,
   `  --browser-chrome-frame: ${browserChrome.frame};`,
@@ -138,6 +140,13 @@ const staffLines: string[] = [
   `  --text-muted: ${staffColor.textMuted};`,
   `  --text-placeholder: ${staffColor.textMuted};`,
   `  --brand: ${staffColor.brand};`,
+  `  --brand-tint: ${staffColor.brandTint};`,
+  `  --on-brand: ${staffColor.onBrand};`,
+  `  --success: ${staffColor.success};`,
+  `  --warning: ${staffColor.warning};`,
+  `  --danger: ${staffColor.danger};`,
+  `  --info: ${staffColor.info};`,
+  `  --maintenance: ${staffColor.maintenance};`,
   '}',
 ];
 

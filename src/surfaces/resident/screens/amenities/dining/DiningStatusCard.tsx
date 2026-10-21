@@ -5,13 +5,15 @@ import { Card } from '@/ui/Card';
 import { Tag } from '@/ui/Tag';
 import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
-import { addDaysIso, fmtDateTime } from '@/lib/time';
+import { addDaysIso } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 
-const VENUE = { restaurant: 'Restaurant', pdr: 'Private Dining', teppanyaki: 'Teppanyaki' };
 const RECENT_DAYS = 2;
 
 export function DiningStatusCard({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
   const { push } = useNav(slot);
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const unitId = useStore((s) => s.residents[actorId]?.unitId);
@@ -30,7 +32,7 @@ export function DiningStatusCard({ slot }: { slot: DeviceSlotId }) {
 
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="text-label-1 text-text-title">Your reservations</h2>
+      <h2 className="text-label-1 text-text-title">{t('dining.yourReservations')}</h2>
       {mine.map((r) => (
         <button
           key={r.id}
@@ -41,9 +43,9 @@ export function DiningStatusCard({ slot }: { slot: DeviceSlotId }) {
           <Card className="flex items-center justify-between gap-2">
             <div>
               <p className="text-label-2 text-text-title">
-                {VENUE[r.venue]} · {r.partySize}
+                {t(`dining.venue.${r.venue}`)} · {r.partySize}
               </p>
-              <p className="text-body-3 text-text-muted">{fmtDateTime(r.start)}</p>
+              <p className="text-body-3 text-text-muted">{fmt.dateTime(r.start)}</p>
             </div>
             <Tag
               variant={
@@ -51,12 +53,12 @@ export function DiningStatusCard({ slot }: { slot: DeviceSlotId }) {
               }
             >
               {r.state === 'completed'
-                ? 'Receipt'
+                ? t('dining.tag.receipt')
                 : r.state === 'requested'
-                  ? 'Request'
+                  ? t('dining.tag.request')
                   : r.state === 'seated'
-                    ? 'Seated'
-                    : 'Confirmed'}
+                    ? t('dining.tag.seated')
+                    : t('dining.tag.confirmed')}
             </Tag>
           </Card>
         </button>

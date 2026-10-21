@@ -10,6 +10,7 @@ import { Camera } from '@/ui/icons';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import type { DeviceSlotId } from '@/types/demo';
+import { useErrorText, useT } from '@/i18n/hooks';
 
 export function AddGuardianSheet({
   slot,
@@ -22,6 +23,8 @@ export function AddGuardianSheet({
   open: boolean;
   onClose: () => void;
 }) {
+  const t = useT();
+  const errorText = useErrorText();
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const dispatch = useStore((s) => s.dispatch);
   const pushToast = useUiStore((s) => s.pushToast);
@@ -47,14 +50,14 @@ export function AddGuardianSheet({
       { kind: 'resident', id: actorId },
     );
     if (!result.ok) {
-      setError(result.error.message);
+      setError(errorText(result.error));
       return;
     }
     pushToast(
       slot,
       result.value.approval === 'pending'
-        ? `${result.value.name} added — pending Creche Lead approval.`
-        : `${result.value.name} added.`,
+        ? t('myUnit.guardianPending', { name: result.value.name })
+        : t('myUnit.guardianAdded', { name: result.value.name }),
       'success',
     );
     setName('');
@@ -66,18 +69,26 @@ export function AddGuardianSheet({
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Add a guardian">
+    <Sheet open={open} onClose={onClose} title={t('myUnit.addGuardian')}>
       <div className="flex flex-col gap-3 pb-2">
-        <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} />
-        <Input label="Relation" value={relation} onChange={(e) => setRelation(e.target.value)} />
         <Input
-          label="Mobile"
+          label={t('myUnit.fullName')}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <Input
+          label={t('myUnit.relation')}
+          value={relation}
+          onChange={(e) => setRelation(e.target.value)}
+        />
+        <Input
+          label={t('myUnit.mobile')}
           inputMode="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
         <Input
-          label="Emirates ID (last 4 digits)"
+          label={t('myUnit.idLast4')}
           inputMode="numeric"
           maxLength={4}
           value={idLast4}
@@ -90,15 +101,12 @@ export function AddGuardianSheet({
           disabled={!name.trim()}
         >
           <Camera className="me-2 inline h-4 w-4" strokeWidth={1.5} />
-          {photoTaken ? `Photo added (${initials})` : 'Take a photo'}
+          {photoTaken ? t('myUnit.photoAdded', { initials }) : t('myUnit.takePhoto')}
         </Button>
-        <p className="text-body-3 text-text-muted">
-          Anyone who isn’t a resident of your unit needs Creche Lead approval before they can
-          collect.
-        </p>
+        <p className="text-body-3 text-text-muted">{t('myUnit.guardianNote')}</p>
         {error && <Banner style="urgent">{error}</Banner>}
         <Button fullWidth disabled={!name.trim() || idLast4.length !== 4} onClick={submit}>
-          Add guardian
+          {t('myUnit.addGuardianButton')}
         </Button>
       </div>
     </Sheet>

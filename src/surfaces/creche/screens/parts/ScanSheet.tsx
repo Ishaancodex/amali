@@ -10,6 +10,7 @@ import { Card } from '@/ui/Card';
 import { ChildAvatar } from '@/features/creche/ChildAvatar';
 import { useStore } from '@/store';
 import { selectBoardSession } from '@/store/selectors/creche';
+import { useT } from '@/i18n/hooks';
 
 export function ScanSheet({
   open,
@@ -20,6 +21,7 @@ export function ScanSheet({
   onClose: () => void;
   onScan: (guardianId: string, childId: string) => void;
 }) {
+  const t = useT();
   const children = useStore((s) => s.children);
   const guardians = useStore((s) => s.guardians);
   const crecheBookings = useStore((s) => s.crecheBookings);
@@ -42,8 +44,8 @@ export function ScanSheet({
     .sort((a, b) => a.guardian.name.localeCompare(b.guardian.name));
 
   return (
-    <Sheet open={open} onClose={onClose} title="Scan drop-off pass">
-      <p className="text-body-3 text-text-muted pb-3">Hold the guardian’s pass to the camera.</p>
+    <Sheet open={open} onClose={onClose} title={t('creche.scanPass')}>
+      <p className="text-body-3 text-text-muted pb-3">{t('creche.holdPass')}</p>
       <div className="flex flex-col gap-2 pb-2">
         {passes.map(({ guardian, child }) => (
           <button
@@ -57,7 +59,7 @@ export function ScanSheet({
               <div>
                 <p className="text-label-2 text-text-title">{guardian.name}</p>
                 <p className="text-body-3 text-text-muted">
-                  {guardian.relation} of {child.name}
+                  {t('creche.guardian.of', { relation: guardian.relation, names: child.name })}
                 </p>
               </div>
             </Card>

@@ -15,29 +15,9 @@ import type { Tower } from '@/types/community';
 import type { DeviceSlotId } from '@/types/demo';
 import { useConsoleActor } from '../../useConsoleActor';
 import { grantFor } from '@/domain/rbac/can';
+import { useAmenityLabel, useT } from '@/i18n/hooks';
 
-const SECTION_LABEL: Record<ReportSection, string> = {
-  utilisation: 'Utilisation & occupancy',
-  peak: 'Peak times',
-  noshow: 'No-shows',
-  trends: 'Booking trends',
-  revenue: 'Revenue',
-  comms: 'Communication reach',
-  ops: 'Ops & SLAs',
-};
-const AMENITY_LABEL: Record<string, string> = {
-  padel: 'Padel',
-  screening: 'Screening',
-  music: 'Music',
-  dining: 'Restaurant',
-  pool: 'Pool',
-  gym: 'Gym',
-  creche: 'Kids’ Club',
-};
-const TOWERS: { key: Tower; label: string }[] = [
-  { key: 'east', label: 'East' },
-  { key: 'west', label: 'West' },
-];
+const TOWERS: Tower[] = ['east', 'west'];
 
 function Chip({
   active,
@@ -76,6 +56,8 @@ export function ReportForm({
   onGenerate: (r: ReportRequest) => void;
   busy: boolean;
 }) {
+  const t = useT();
+  const amenityLabel = useAmenityLabel();
   const now = useStore((s) => s.demo.clock.now);
   const { consoleRole } = useConsoleActor(slot);
   const revenueAllowed = !!consoleRole && grantFor(consoleRole, 'revenue.view')?.scope === 'all';
@@ -102,56 +84,61 @@ export function ReportForm({
             active={sections.includes(x)}
             onClick={() => setSections(toggle(sections, x))}
           >
-            {SECTION_LABEL[x]}
+            {t(`console.report.section.${x}`)}
           </Chip>
         ))}
       </div>
       <div className="flex flex-wrap items-end gap-2">
         {rules.reports.rangePresetsDays.map((d) => (
           <Chip key={d} active={days === d} onClick={() => setDays(d)}>
-            Last {d} days
+            {t('console.water.lastDays', { days: d })}
           </Chip>
         ))}
         <Chip active={days === 'custom'} onClick={() => setDays('custom')}>
-          Custom
+          {t('console.report.custom')}
         </Chip>
         {days === 'custom' && (
           <>
             <Input
               type="date"
-              label="From"
+              label={t('console.from')}
               value={from}
               onChange={(e) => setFrom(e.target.value)}
             />
-            <Input type="date" label="To" value={to} onChange={(e) => setTo(e.target.value)} />
+            <Input
+              type="date"
+              label={t('console.to')}
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+            />
           </>
         )}
       </div>
       <div className="flex flex-wrap gap-2">
         {amenities.map((a) => (
           <Chip key={a} active={chosen.includes(a)} onClick={() => setChosen(toggle(chosen, a))}>
-            {AMENITY_LABEL[a] ?? a}
+            {amenityLabel(a, 'short')}
           </Chip>
         ))}
         <span className="border-border-card mx-1 border-s" />
-        {TOWERS.map((t) => (
+        {TOWERS.map((tower) => (
           <Chip
-            key={t.key}
-            active={towers.includes(t.key)}
-            onClick={() => setTowers(toggle(towers, t.key))}
+            key={tower}
+            active={towers.includes(tower)}
+            onClick={() => setTowers(toggle(towers, tower))}
           >
-            {t.label} tower
+            {t(`console.tower.${tower}`)}
           </Chip>
         ))}
         <span className="text-body-3 text-text-muted self-center">
-          {towers.length ? '' : 'All towers'}
+          {towers.length ? '' : t('console.tower.all')}
         </span>
       </div>
       <Button
         disabled={busy || chosen.length === 0 || sections.length === 0 || range.from > range.to}
         onClick={() => onGenerate({ ...range, amenities: chosen, towers, sections })}
       >
-        {busy ? 'Generating…' : 'Generate report'}
+        {busy ? t('console.report.generating') : t('console.report.generate')}
       </Button>
     </Card>
   );

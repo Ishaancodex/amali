@@ -12,12 +12,17 @@ import { Tag } from '@/ui/Tag';
 import { useStore } from '@/store';
 import { useUiStore } from '@/store/uiStore';
 import { rules } from '@/config/rules';
-import { fmtDate, fmtTime, addMinutesIso } from '@/lib/time';
+import { addMinutesIso } from '@/lib/time';
+import { useErrorText, useFmt, useT } from '@/i18n/hooks';
 import { quotaCountingBookings, computeQuotaUsage } from '@/domain/booking/quota';
 import { isCurrentlySuspended } from '@/domain/booking/strikes';
 import type { DeviceSlotId } from '@/types/demo';
+import { Odometer } from '@/ui/Odometer';
 
 export function PadelStatusCard({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
+  const errorText = useErrorText();
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const resident = useStore((s) => s.residents[actorId]);
   const unit = useStore((s) => (resident ? s.units[resident.unitId] : undefined));
@@ -77,7 +82,7 @@ export function PadelStatusCard({ slot }: { slot: DeviceSlotId }) {
     );
     pushToast(
       slot,
-      result.ok ? 'Booking cancelled.' : result.error.message,
+      result.ok ? t('padel.toast.cancelled') : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
@@ -90,7 +95,7 @@ export function PadelStatusCard({ slot }: { slot: DeviceSlotId }) {
     );
     pushToast(
       slot,
-      result.ok ? "You're checked in." : result.error.message,
+      result.ok ? t('padel.toast.checkedIn') : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
@@ -103,7 +108,7 @@ export function PadelStatusCard({ slot }: { slot: DeviceSlotId }) {
     );
     pushToast(
       slot,
-      result.ok ? 'Booking confirmed from the waitlist.' : result.error.message,
+      result.ok ? t('padel.toast.fromWaitlist') : errorText(result.error),
       result.ok ? 'success' : 'error',
     );
   }
@@ -111,13 +116,15 @@ export function PadelStatusCard({ slot }: { slot: DeviceSlotId }) {
   return (
     <div className="flex flex-col gap-3">
       {suspension && (
-        <Banner style="warning">Padel booking is suspended until {fmtDate(suspension.to)}.</Banner>
+        <Banner style="warning">
+          {t('padel.suspendedUntil', { date: fmt.date(suspension.to) })}
+        </Banner>
       )}
 
       <Card className="flex items-center justify-between">
-        <span className="text-body-2 text-text-body">Quota this week</span>
+        <span className="text-body-2 text-text-body">{t('padel.quotaThisWeek')}</span>
         <span className="text-label-2 text-text-title tabular-nums">
-          {usage.total} of {rules.padel.quota.maxBookings} used
+          {t('padel.quotaUsed', { used: usage.total, max: rules.padel.quota.maxBookings })}
         </span>
       </Card>
 
@@ -125,21 +132,21 @@ export function PadelStatusCard({ slot }: { slot: DeviceSlotId }) {
         <Card className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <span className="text-label-2 text-text-title">
-              {fmtDate(upcoming.start)} · {fmtTime(upcoming.start)}–{fmtTime(upcoming.end)}
+              {fmt.date(upcoming.start)} · {fmt.time(upcoming.start)}–{fmt.time(upcoming.end)}
             </span>
             <Tag variant={upcoming.state === 'checked_in' ? 'success' : 'brand'}>
-              {upcoming.state === 'checked_in' ? 'Checked in' : 'Booked'}
+              {upcoming.state === 'checked_in' ? t('padel.checkedIn') : t('padel.booked')}
             </Tag>
           </div>
           <div className="flex gap-2">
             {canCheckIn && (
               <Button variant="secondary" onClick={() => checkIn(upcoming.id)}>
-                Check in
+                {t('padel.checkIn')}
               </Button>
             )}
             {upcoming.state === 'confirmed' && (
               <Button variant="destructive" onClick={() => cancel(upcoming.id)}>
-                Cancel
+                {t('common.cancel')}
               </Button>
             )}
           </div>
@@ -149,15 +156,20 @@ export function PadelStatusCard({ slot }: { slot: DeviceSlotId }) {
       {myWaitlist.map((entry) => (
         <Card key={entry.id} className="flex items-center justify-between">
           <div>
-            <p className="text-label-2 text-text-body">Waitlisted</p>
+            <p className="text-label-2 text-text-body">{t('padel.waitlisted')}</p>
             <p className="text-body-3 text-text-muted">
-              {entry.state === 'offered'
-                ? 'Offer available — accept now'
-                : `Position #${entry.position}`}
+              {entry.state === 'offered' ? (
+                t('padel.offerAvailable')
+              ) : (
+                // M12: the waitlist position rolls as people ahead drop out.
+                <>
+                  {t('padel.positionLabel')} <Odometer value={`#${entry.position}`} />
+                </>
+              )}
             </p>
           </div>
           {entry.state === 'offered' && (
-            <Button onClick={() => acceptOffer(entry.id)}>Accept</Button>
+            <Button onClick={() => acceptOffer(entry.id)}>{t('padel.accept')}</Button>
           )}
         </Card>
       ))}

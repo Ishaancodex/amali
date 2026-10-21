@@ -13,7 +13,7 @@ import { Banner } from '@/ui/Banner';
 import { TopUpSheet } from '@/features/wallet/TopUpSheet';
 import { useStore } from '@/store';
 import { rules } from '@/config/rules';
-import { fmtAed } from '@/lib/money';
+import { useFmt, useT } from '@/i18n/hooks';
 import { availableFils } from '@/domain/wallet/holds';
 import { depositFor, repeatNoShowStatus } from '@/domain/dining/policy';
 import type { VenueKey } from '@/types/dining';
@@ -28,6 +28,8 @@ export function WalletPanel({
   venue: VenueKey;
   partySize: number;
 }) {
+  const t = useT();
+  const fmt = useFmt();
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const resident = useStore((s) => s.residents[actorId]);
   const wallet = useStore((s) => (resident ? s.wallets[resident.unitId] : undefined));
@@ -50,44 +52,50 @@ export function WalletPanel({
   return (
     <Card className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
-        <span className="text-label-2 text-text-title">Wallet</span>
+        <span className="text-label-2 text-text-title">{t('resident.home.quick.wallet')}</span>
         <span className="text-body-3 text-text-muted">
-          Balance {fmtAed(wallet?.balanceFils ?? 0)} · available {fmtAed(available)}
+          {t('dining.wallet.balance', {
+            balance: fmt.aed(wallet?.balanceFils ?? 0),
+            available: fmt.aed(available),
+          })}
         </span>
       </div>
       {deposit > 0 ? (
         <p className="text-body-2 text-text-body">
-          Deposit {fmtAed(deposit)} held now, applied to your bill.
+          {t('dining.wallet.deposit', { amount: fmt.aed(deposit) })}
           {venue === 'teppanyaki' &&
-            ` Set menu ${fmtAed(dining.teppanyaki.pricePerPersonFils)} per person.`}
+            ` ${t('dining.wallet.setMenu', { amount: fmt.aed(dining.teppanyaki.pricePerPersonFils) })}`}
         </p>
       ) : (
-        <p className="text-body-2 text-text-body">No deposit needed.</p>
+        <p className="text-body-2 text-text-body">{t('dining.wallet.noDeposit')}</p>
       )}
       {venue === 'pdr' && (
         <p className="text-body-3 text-text-muted">
-          Minimum spend {fmtAed(dining.pdr.minimumSpendFils)} — any shortfall is charged as a top-up
-          line.
+          {t('dining.wallet.minimumSpend', { amount: fmt.aed(dining.pdr.minimumSpendFils) })}
         </p>
       )}
       {repeat.required && venue === 'restaurant' && (
         <Banner style="warning">
-          After {repeat.noShows} no-shows, your next {repeat.remaining} Restaurant{' '}
-          {repeat.remaining === 1 ? 'reservation needs' : 'reservations need'} a{' '}
-          {fmtAed(dining.restaurant.noShow.depositRequiredFils)} per person deposit.
+          {t('dining.wallet.repeatNoShow', {
+            noShows: repeat.noShows,
+            count: repeat.remaining,
+            amount: fmt.aed(dining.restaurant.noShow.depositRequiredFils),
+          })}
         </Banner>
       )}
       {short > 0 &&
         (resident.walletRole === 'primary' ? (
           <>
-            <Banner style="warning">Top up at least {fmtAed(short)} to hold the deposit.</Banner>
+            <Banner style="warning">
+              {t('dining.wallet.topUpAtLeast', { amount: fmt.aed(short) })}
+            </Banner>
             <Button variant="secondary" fullWidth onClick={() => setTopUp(true)}>
-              Top up
+              {t('wallet.topUp')}
             </Button>
           </>
         ) : (
           <Banner style="warning">
-            {fmtAed(short)} short — ask your unit’s primary resident to top up.
+            {t('dining.wallet.askPrimary', { amount: fmt.aed(short) })}
           </Banner>
         ))}
       <TopUpSheet

@@ -5,7 +5,10 @@
  * weekday × hour heatmap. Plain SVG scaled through the viewBox, coloured
  * only by theme variables.
  */
+import { motion } from 'motion/react';
 import type { HeatmapCell } from '@/types/report';
+import { dur, ease, spring, stagger } from '@/design/motion';
+import { useFmt, useT } from '@/i18n/hooks';
 
 export const SERIES_COLOURS = [
   'var(--brand)',
@@ -29,17 +32,24 @@ export function BarChart({
   data: { label: string; value: number }[];
   format: (v: number) => string;
 }) {
+  const t = useT();
   const max = Math.max(1e-9, ...data.map((d) => d.value));
   const gap = 10;
   const barW = (W - gap * (data.length - 1)) / Math.max(1, data.length);
   return (
-    <svg viewBox={`0 0 ${W} ${H + 36}`} className="h-auto w-full" role="img" aria-label="Bar chart">
+    <svg
+      viewBox={`0 0 ${W} ${H + 36}`}
+      className="h-auto w-full"
+      role="img"
+      aria-label={t('charts.bar')}
+    >
       {data.map((d, i) => {
         const h = (d.value / max) * H;
         const x = i * (barW + gap);
         return (
           <g key={d.label}>
-            <rect
+            {/* M22: bars grow from the baseline, 20ms apart. */}
+            <motion.rect
               x={x}
               y={PAD + H - h}
               width={barW}
@@ -47,6 +57,10 @@ export function BarChart({
               rx={4}
               fill={SERIES_COLOURS[0]}
               opacity={0.85}
+              style={{ transformBox: 'fill-box', transformOrigin: 'bottom' }}
+              initial={{ scaleY: 0 }}
+              animate={{ scaleY: 1 }}
+              transition={{ ...spring.soft, delay: i * stagger.bar }}
             />
             <text
               x={x + barW / 2}
@@ -80,6 +94,7 @@ export function LineChart({
   series: { name: string; points: { label: string; value: number }[] }[];
   format: (v: number) => string;
 }) {
+  const t = useT();
   const n = Math.max(1, ...series.map((s) => s.points.length));
   const max = Math.max(1e-9, ...series.flatMap((s) => s.points.map((p) => p.value)));
   const x = (i: number) => PAD + (n === 1 ? 0 : (i / (n - 1)) * (W - PAD * 2));
@@ -92,14 +107,15 @@ export function LineChart({
         viewBox={`0 0 ${W} ${H + PAD * 2}`}
         className="h-auto w-full"
         role="img"
-        aria-label="Line chart"
+        aria-label={t('charts.line')}
       >
         <text x={0} y={PAD - 6} fontSize={10} fill="var(--text-placeholder)">
           {format(max)}
         </text>
         <line x1={PAD} x2={W - PAD} y1={PAD + H} y2={PAD + H} stroke="var(--border-card)" />
         {series.map((s, si) => (
-          <path
+          // M22: each line draws itself in.
+          <motion.path
             key={s.name}
             d={s.points
               .map((p, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(p.value).toFixed(1)}`)
@@ -108,6 +124,9 @@ export function LineChart({
             stroke={SERIES_COLOURS[si % SERIES_COLOURS.length]}
             strokeWidth={2}
             strokeLinejoin="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: dur.slower, ease: ease.standard }}
           />
         ))}
         {labels.map((p, i) =>
@@ -137,6 +156,7 @@ export function StackedBar({
   parts: { name: string; value: number }[];
   format: (v: number) => string;
 }) {
+  const t = useT();
   const total = parts.reduce((a, p) => a + p.value, 0) || 1;
   let x = 0;
   return (
@@ -145,7 +165,7 @@ export function StackedBar({
         viewBox={`0 0 ${W} 28`}
         className="h-auto w-full"
         role="img"
-        aria-label="Revenue by source"
+        aria-label={t('charts.revenue')}
       >
         {parts.map((p, i) => {
           const w = (p.value / total) * W;
@@ -184,12 +204,15 @@ function Legend({ names }: { names: string[] }) {
   );
 }
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS = [0, 1, 2, 3, 4, 5, 6];
 
 /** Weekday × hour, cell shade = value (0..1). */
 export function Heatmap({ cells }: { cells: HeatmapCell[] }) {
+  const t = useT();
+  const fmt = useFmt();
   const hours = [...new Set(cells.map((c) => c.hour))].sort((a, b) => a - b);
-  if (hours.length === 0) return <p className="text-body-3 text-text-muted">No hours in range.</p>;
+  if (hours.length === 0)
+    return <p className="text-body-3 text-text-muted">{t('charts.noHours')}</p>;
   const cw = (W - 40) / hours.length;
   const ch = 18;
   const at = new Map(cells.map((c) => [`${c.weekday}:${c.hour}`, c.value]));
@@ -198,17 +221,18 @@ export function Heatmap({ cells }: { cells: HeatmapCell[] }) {
       viewBox={`0 0 ${W} ${ch * 7 + 20}`}
       className="h-auto w-full"
       role="img"
-      aria-label="Peak-time heatmap"
+      aria-label={t('charts.heatmap')}
     >
-      {DAYS.map((d, wd) => (
-        <g key={d}>
+      {DAYS.map((wd) => (
+        <g key={wd}>
           <text x={0} y={wd * ch + ch - 5} fontSize={10} fill="var(--text-muted)">
-            {d}
+            {fmt.weekday(wd, 'EEE')}
           </text>
           {hours.map((h, i) => {
             const v = at.get(`${wd}:${h}`);
             return (
-              <rect
+              // M22: cells fade in diagonally (row + column).
+              <motion.rect
                 key={h}
                 x={40 + i * cw}
                 y={wd * ch}
@@ -216,10 +240,16 @@ export function Heatmap({ cells }: { cells: HeatmapCell[] }) {
                 height={ch - 2}
                 rx={2}
                 fill="var(--brand)"
-                opacity={v === undefined ? 0.04 : 0.08 + Math.min(1, v) * 0.92}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: v === undefined ? 0.04 : 0.08 + Math.min(1, v) * 0.92 }}
+                transition={{
+                  duration: dur.base,
+                  ease: ease.enter,
+                  delay: (wd + i) * stagger.cell,
+                }}
               >
-                <title>{`${d} ${String(h).padStart(2, '0')}:00 — ${v === undefined ? 'closed' : `${Math.round(v * 100)}%`}`}</title>
-              </rect>
+                <title>{`${fmt.weekday(wd, 'EEE')} ${String(h).padStart(2, '0')}:00 — ${v === undefined ? t('status.closed') : fmt.pct(v)}`}</title>
+              </motion.rect>
             );
           })}
         </g>

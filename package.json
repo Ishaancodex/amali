@@ -11,6 +11,7 @@
     "prebuild": "tsx scripts/tokens-to-css.ts && tsx scripts/check-tokens.ts",
     "build": "next build",
     "start": "next start",
+    "preview": "NEXT_DIST_DIR=.next-preview pnpm build && node scripts/serve-static.mjs .next-preview 4173",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",

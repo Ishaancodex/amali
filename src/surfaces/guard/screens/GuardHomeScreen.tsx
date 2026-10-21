@@ -19,10 +19,12 @@ import { useStore } from '@/store';
 import { useNav } from '@/navigation/useNav';
 import { buildOccupancyEstimate } from '@/domain/ops/occupancy';
 import { selectCurrentStatus } from '@/store/selectors/amenities';
-import { fmtTime } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import type { DeviceSlotId } from '@/types/demo';
 
 export function GuardHomeScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
+  const fmt = useFmt();
   const { push } = useNav(slot);
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const staffMember = useStore((s) => s.staff[actorId]);
@@ -79,30 +81,34 @@ export function GuardHomeScreen({ slot }: { slot: DeviceSlotId }) {
   return (
     <div className="flex h-full flex-col gap-5 overflow-y-auto p-5">
       <div>
-        <span className="text-tag font-secondary text-brand">Guard</span>
+        <span className="text-tag font-secondary text-brand">{t('guard.role')}</span>
         <h1 className="text-title-l text-text-title">{staffMember.name}</h1>
       </div>
 
       <Card className="flex flex-col items-center gap-3">
         <div className="flex items-center justify-between self-stretch">
           <p className="text-label-1 text-text-title">
-            {clearing ? 'Clear the pool' : 'Pool occupancy'}
+            {clearing ? t('guard.clearPool') : t('guard.poolOccupancy')}
           </p>
           {clearing && (
             <Tag variant={estimate.count === 0 ? 'success' : 'danger'}>
-              {estimate.count === 0 ? 'Cleared' : `${estimate.count} still in`}
+              {estimate.count === 0
+                ? t('guard.cleared')
+                : t('guard.stillIn', { count: estimate.count })}
             </Tag>
           )}
         </div>
         <RingGauge fraction={estimate.fraction} band={estimate.band} size={96} strokeWidth={8}>
           <span className="text-title-l text-text-title tabular-nums">{estimate.count}</span>
         </RingGauge>
-        <p className="text-body-3 text-text-muted">of {estimate.capacity}</p>
+        <p className="text-body-3 text-text-muted">
+          {t('guard.of', { capacity: estimate.capacity })}
+        </p>
         <div className="mt-1 flex items-center gap-4">
           <button
             type="button"
             onClick={() => adjust(-1)}
-            aria-label="Decrease"
+            aria-label={t('guard.oneOut')}
             className="border-border-card text-brand flex h-12 w-12 items-center justify-center rounded-full border active:scale-95"
           >
             <Minus className="h-5 w-5" strokeWidth={1.5} />
@@ -110,7 +116,7 @@ export function GuardHomeScreen({ slot }: { slot: DeviceSlotId }) {
           <button
             type="button"
             onClick={() => adjust(1)}
-            aria-label="Increase"
+            aria-label={t('guard.oneIn')}
             className="bg-brand text-on-brand flex h-12 w-12 items-center justify-center rounded-full active:scale-95"
           >
             <Plus className="h-5 w-5" strokeWidth={1.5} />
@@ -119,9 +125,9 @@ export function GuardHomeScreen({ slot }: { slot: DeviceSlotId }) {
       </Card>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-label-1 text-text-title">Alerts</h2>
+        <h2 className="text-label-1 text-text-title">{t('guard.alerts')}</h2>
         {alerts.length === 0 ? (
-          <EmptyState icon={CircleAlert} message="No active alerts." />
+          <EmptyState icon={CircleAlert} message={t('guard.noAlerts')} />
         ) : (
           <div className="flex flex-col gap-2">
             {alerts.map((n) => (
@@ -130,10 +136,10 @@ export function GuardHomeScreen({ slot }: { slot: DeviceSlotId }) {
                 <div className="min-w-0 flex-1">
                   <p className="text-label-2 text-text-title">{n.title}</p>
                   <p className="text-body-3 text-text-muted">{n.body}</p>
-                  <p className="text-body-3 text-text-placeholder mt-0.5">{fmtTime(n.at)}</p>
+                  <p className="text-body-3 text-text-placeholder mt-0.5">{fmt.time(n.at)}</p>
                 </div>
                 <Button variant="secondary" onClick={() => acknowledge(n.id)}>
-                  Acknowledge
+                  {t('kids.acknowledge')}
                 </Button>
               </Card>
             ))}
@@ -143,7 +149,7 @@ export function GuardHomeScreen({ slot }: { slot: DeviceSlotId }) {
 
       <Button variant="secondary" fullWidth onClick={() => push('raise-incident')}>
         <Camera className="me-2 inline h-4 w-4" strokeWidth={1.5} />
-        Raise incident
+        {t('guard.raiseIncident')}
       </Button>
     </div>
   );

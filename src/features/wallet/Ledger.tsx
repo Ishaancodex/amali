@@ -4,34 +4,17 @@
  */
 import { ArrowDownCircle, ArrowUpCircle, Wallet as WalletIcon } from '@/ui/icons';
 import { EmptyState } from '@/ui/EmptyState';
-import { fmtAed } from '@/lib/money';
-import { fmtDateTime } from '@/lib/time';
+import { useFmt, useT } from '@/i18n/hooks';
 import type { LedgerEntry } from '@/types/wallet';
 
 const CREDIT_KINDS = new Set<LedgerEntry['kind']>(['topup', 'refund', 'hold_release']);
 
-function kindLabel(kind: LedgerEntry['kind']): string {
-  switch (kind) {
-    case 'topup':
-      return 'Top-up';
-    case 'charge':
-      return 'Charge';
-    case 'hold':
-      return 'On hold';
-    case 'hold_release':
-      return 'Hold released';
-    case 'refund':
-      return 'Refund';
-    case 'fee':
-      return 'Fee';
-    case 'forfeit':
-      return 'Forfeited';
-  }
-}
-
 export function Ledger({ entries }: { entries: LedgerEntry[] }) {
+  const t = useT();
+  const fmt = useFmt();
+  const kindLabel = (kind: LedgerEntry['kind']) => t(`wallet.kind.${kind}`);
   if (entries.length === 0) {
-    return <EmptyState icon={WalletIcon} message="No wallet activity yet." />;
+    return <EmptyState icon={WalletIcon} message={t('wallet.empty')} />;
   }
 
   const sorted = [...entries].sort((a, b) => b.at.localeCompare(a.at));
@@ -52,7 +35,7 @@ export function Ledger({ entries }: { entries: LedgerEntry[] }) {
                 {entry.label || kindLabel(entry.kind)}
               </p>
               <p className="text-body-3 text-text-muted">
-                {fmtDateTime(entry.at)}
+                {fmt.dateTime(entry.at)}
                 {entry.kind === 'hold' ? ` · ${kindLabel('hold')}` : ''}
               </p>
             </div>
@@ -61,7 +44,7 @@ export function Ledger({ entries }: { entries: LedgerEntry[] }) {
             >
               {isCredit ? '+' : '−'}
               {/* Charges are stored negative — show the magnitude next to the sign. */}
-              {fmtAed(Math.abs(entry.fils))}
+              {fmt.aed(Math.abs(entry.fils))}
             </span>
           </li>
         );

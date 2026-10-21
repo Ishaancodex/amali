@@ -24,8 +24,10 @@ import { selectActiveBannersForResident } from '@/store/selectors/comms';
 import type { DeviceSlotId } from '@/types/demo';
 import { Hero } from './Hero';
 import { TodayStrip } from './TodayStrip';
+import { useT } from '@/i18n/hooks';
 
 export function HomeScreen({ slot }: { slot: DeviceSlotId }) {
+  const t = useT();
   const actorId = useStore((s) => s.demo.devices[slot]?.actorId ?? '');
   const now = useStore((s) => s.demo.clock.now);
   const resident = useStore((s) => s.residents[actorId]);
@@ -56,7 +58,7 @@ export function HomeScreen({ slot }: { slot: DeviceSlotId }) {
       <Hero
         name={resident.name.split(' ')[0] ?? resident.name}
         now={now}
-        onSos={() => pushToast(slot, 'SOS is a demo prop — no real alert sent.', 'neutral')}
+        onSos={() => pushToast(slot, t('resident.home.sosToast'), 'neutral')}
       />
 
       {activeBanners.length > 0 && (
@@ -67,7 +69,7 @@ export function HomeScreen({ slot }: { slot: DeviceSlotId }) {
               style={a.banner!.style}
               cta={
                 a.banner?.cta
-                  ? { label: 'View', onClick: () => openDeepLink(a.banner!.cta!) }
+                  ? { label: t('resident.home.view'), onClick: () => openDeepLink(a.banner!.cta!) }
                   : undefined
               }
             >
@@ -78,7 +80,7 @@ export function HomeScreen({ slot }: { slot: DeviceSlotId }) {
       )}
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-label-1 text-text-title px-4">Today at Amali</h2>
+        <h2 className="text-label-1 text-text-title px-4">{t('resident.home.today')}</h2>
         {status === 'loading' ? (
           <div className="flex gap-2 px-4">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -91,26 +93,42 @@ export function HomeScreen({ slot }: { slot: DeviceSlotId }) {
       </section>
 
       <section className="grid grid-cols-3 gap-3 px-4">
-        <QuickActionTile icon={CalendarDays} label="Amenities" onClick={() => push('amenities')} />
-        <QuickActionTile icon={Building2} label="My Bookings" onClick={() => push('activity')} />
-        <QuickActionTile icon={CalendarIcon} label="What's On" onClick={() => push('whats-on')} />
+        <QuickActionTile
+          icon={CalendarDays}
+          label={t('resident.home.quick.amenities')}
+          onClick={() => push('amenities')}
+        />
+        <QuickActionTile
+          icon={Building2}
+          label={t('resident.home.quick.bookings')}
+          onClick={() => push('activity')}
+        />
+        <QuickActionTile
+          icon={CalendarIcon}
+          label={t('resident.home.quick.whatsOn')}
+          onClick={() => push('whats-on')}
+        />
         <QuickActionTile
           icon={Baby}
-          label="Kids' Club"
+          label={t('resident.home.quick.kidsClub')}
           onClick={() => push('amenity-detail', { key: 'creche' })}
         />
         <QuickActionTile
           icon={UtensilsCrossed}
-          label="Dining"
+          label={t('resident.home.quick.dining')}
           onClick={() => push('amenity-detail', { key: 'dining' })}
         />
-        <QuickActionTile icon={Wallet} label="Wallet" onClick={() => push('wallet')} />
+        <QuickActionTile
+          icon={Wallet}
+          label={t('resident.home.quick.wallet')}
+          onClick={() => push('wallet')}
+        />
       </section>
 
       <section className="flex flex-col gap-2 px-4">
-        <h2 className="text-label-1 text-text-title">What&apos;s on this week</h2>
+        <h2 className="text-label-1 text-text-title">{t('resident.home.thisWeek')}</h2>
         <div className="rounded-card border-border-card border-[0.5px] border-dashed px-4 py-8 text-center">
-          <p className="text-body-2 text-text-muted">Nothing scheduled this week yet.</p>
+          <p className="text-body-2 text-text-muted">{t('resident.home.nothingThisWeek')}</p>
         </div>
       </section>
     </div>
